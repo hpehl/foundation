@@ -15,20 +15,10 @@
  */
 package org.jboss.hal.op;
 
-@SuppressWarnings("unused")
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public class Environment {
-
-    // ------------------------------------------------------ factory
-
-    public static Environment env() {
-        return instance;
-    }
-
-    private static Environment instance;
-
-    static {
-        instance = new Environment();
-    }
 
     // ------------------------------------------------------ instance
 
@@ -38,7 +28,7 @@ public class Environment {
     public final String base;
     public final String mode;
 
-    private Environment() {
+    Environment() {
         this.id = System.getProperty("environment.id");
         this.name = System.getProperty("environment.name");
         this.version = System.getProperty("environment.version");

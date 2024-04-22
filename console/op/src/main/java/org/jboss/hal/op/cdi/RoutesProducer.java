@@ -13,28 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op;
+package org.jboss.hal.op.cdi;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 
-import org.jboss.elemento.By;
-import org.jboss.elemento.router.PlaceManager;
+import org.jboss.elemento.router.Routes;
 import org.jboss.elemento.router.RoutesImpl;
+import org.kie.j2cl.tools.di.core.BeanManager;
 
-import static org.jboss.hal.op.Constants.MAIN_ID;
-import static org.jboss.hal.op.Environment.env;
+public class RoutesProducer {
 
-public class PlaceManagerProducer {
+    @Inject BeanManager beanManager;
 
     @Produces
     @ApplicationScoped
-    public PlaceManager placeManager() {
-        return new PlaceManager()
-                .base(env().base)
-                .root(By.id(MAIN_ID))
-                .title(title -> "HAL • " + title)
-                .notFound(NotFound::new)
-                .register(RoutesImpl.INSTANCE.places());
+    public Routes routes() {
+        return new RoutesImpl(beanManager);
     }
 }

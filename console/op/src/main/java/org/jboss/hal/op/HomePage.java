@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.op;
 
+import jakarta.inject.Inject;
+
 import org.jboss.elemento.router.Page;
 import org.jboss.elemento.router.Route;
 
@@ -22,7 +24,6 @@ import elemental2.dom.HTMLElement;
 
 import static java.util.Collections.singletonList;
 
-import static org.jboss.hal.op.Environment.env;
 import static org.patternfly.component.list.DescriptionList.descriptionList;
 import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
 import static org.patternfly.component.list.DescriptionListGroup.descriptionListGroup;
@@ -33,6 +34,9 @@ import static org.patternfly.style.Brightness.light;
 @Route("/")
 public class HomePage implements Page {
 
+    @Inject
+    Environment environment;
+
     @Override
     public Iterable<HTMLElement> elements() {
         return singletonList(pageMainSection()
@@ -40,13 +44,13 @@ public class HomePage implements Page {
                 .add(descriptionList()
                         .addGroup(descriptionListGroup()
                                 .addTerm(descriptionListTerm("ID"))
-                                .addDescription(descriptionListDescription(env().id))
+                                .addDescription(descriptionListDescription(environment.id))
                                 .addTerm(descriptionListTerm("Name"))
-                                .addDescription(descriptionListDescription(env().name))
+                                .addDescription(descriptionListDescription(environment.name))
                                 .addTerm(descriptionListTerm("Version"))
-                                .addDescription(descriptionListDescription(env().version))
+                                .addDescription(descriptionListDescription(environment.version))
                                 .addTerm(descriptionListTerm("Mode"))
-                                .addDescription(descriptionListDescription(env().mode))))
+                                .addDescription(descriptionListDescription(environment.mode))))
                 .element());
     }
 }

@@ -28,11 +28,11 @@ import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
 import static org.patternfly.style.Brightness.light;
 
-class NotFound implements Page {
+public class NotFound implements Page {
 
     private final Place place;
 
-    NotFound(Place place) {
+    public NotFound(Place place) {
         this.place = place;
     }
 

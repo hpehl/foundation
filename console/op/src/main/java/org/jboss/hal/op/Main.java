@@ -25,7 +25,7 @@ import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
 import static org.jboss.elemento.Elements.body;
 
 @SuppressWarnings("unused")
-@Application(packages = {"org.jboss.hal.op"})
+@Application(packages = {"org.jboss.hal"})
 public class Main {
 
     @Inject PlaceManager placeManager;

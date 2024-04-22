@@ -56,7 +56,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.elemento</groupId>
-            <artifactId>elemento-router-processor</artifactId>
+            <artifactId>elemento-router-processor-cdi</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
