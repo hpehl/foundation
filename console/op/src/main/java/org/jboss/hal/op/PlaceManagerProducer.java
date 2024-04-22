@@ -20,6 +20,7 @@ import jakarta.enterprise.inject.Produces;
 
 import org.jboss.elemento.By;
 import org.jboss.elemento.router.PlaceManager;
+import org.jboss.elemento.router.RoutesImpl;
 
 import static org.jboss.hal.op.Constants.MAIN_ID;
 import static org.jboss.hal.op.Environment.env;
