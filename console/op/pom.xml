@@ -60,6 +60,15 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.kie.j2cl.tools.di</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.kie.j2cl.tools.di</groupId>
+            <artifactId>processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.kie.j2cl.tools.processors</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
@@ -172,6 +181,15 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-Aroutes.package=org.jboss.hal.op</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.kie.j2cl.tools</groupId>
                 <artifactId>j2cl-maven-plugin</artifactId>
                 <executions>
@@ -184,13 +202,13 @@
                             <enableSourcemaps>${j2cl.sourcemaps}</enableSourcemaps>
                             <initialScriptFilename>console.js</initialScriptFilename>
                             <defines>
-                                <environment.application.id>${project.artifactId}</environment.application.id>
-                                <environment.application.name>${project.name}</environment.application.name>
-                                <environment.application.version>${project.version}</environment.application.version>
+                                <environment.id>${project.artifactId}</environment.id>
+                                <environment.name>${project.name}</environment.name>
+                                <environment.version>${project.version}</environment.version>
                                 <environment.base>${environment.base}</environment.base>
                                 <environment.mode>${environment.mode}</environment.mode>
                             </defines>
-                            <webappDirectory>${project.build.directory}/showcase</webappDirectory>
+                            <webappDirectory>${project.build.directory}/console</webappDirectory>
                         </configuration>
                     </execution>
                 </executions>

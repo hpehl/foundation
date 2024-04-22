@@ -13,19 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-goog.provide('environment');
+package org.jboss.hal.op;
 
-/** @define {string} */
-environment.id = goog.define('environment.id', 'undefined');
+public interface Constants {
 
-/** @define {string} */
-environment.name = goog.define('environment.name', 'undefined');
-
-/** @define {string} */
-environment.version = goog.define('environment.version', 'undefined');
-
-/** @define {string} */
-environment.base = goog.define('environment.base', '/');
-
-/** @define {string} */
-environment.mode = goog.define('environment.mode', 'undefined');
+    String MAIN_ID = "hop-main-id";
+}

@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "watch": "parcel serve src/web/dev.html --dist-dir target/console --open",
-    "dev": "parcel build src/web/dev.html --dist-dir target/showcase --no-optimize",
+    "dev": "parcel build src/web/dev.html --dist-dir target/console --no-optimize",
     "prod": "parcel build src/web/index.html --dist-dir target/console",
     "http-server": "http-server target/console -o"
   },

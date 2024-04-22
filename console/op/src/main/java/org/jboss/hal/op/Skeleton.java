@@ -22,17 +22,19 @@ import org.patternfly.style.Classes;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
+import static org.jboss.elemento.Elements.span;
 import static org.jboss.hal.op.Assets.logo;
+import static org.jboss.hal.op.Constants.MAIN_ID;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
 import static org.patternfly.component.page.MastheadBrand.mastheadBrand;
 import static org.patternfly.component.page.MastheadMain.mastheadMain;
-import static org.patternfly.component.page.MastheadToggle.mastheadToggle;
 import static org.patternfly.component.page.Page.page;
 import static org.patternfly.component.page.PageMain.pageMain;
 import static org.patternfly.component.skiptocontent.SkipToContent.skipToContent;
 import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Variable.componentVar;
 import static org.patternfly.style.Variables.Height;
 
@@ -40,18 +42,18 @@ public class Skeleton implements IsElement<HTMLElement> {
 
     private final HTMLElement root;
 
-    public Skeleton(String id) {
+    Skeleton() {
         root = page()
-                .addSkipToContent(skipToContent(id))
+                .addSkipToContent(skipToContent(MAIN_ID))
                 .addMasthead(masthead()
-                        .addToggle(mastheadToggle())
                         .addMain(mastheadMain()
                                 .addBrand(mastheadBrand(a("/"))
                                         .addBrand(brand(logo, "HAL Console")
-                                                .style(componentVar(component(Classes.brand), Height).name, "36px")))))
-                .addMain(pageMain(id))
+                                                .style(componentVar(component(Classes.brand), Height).name, "36px")))
+                                .add(span().css(util("ml-sm")).textContent("HAL Console"))))
+                .addMain(pageMain(MAIN_ID))
                 .add(backToTop().css("ws-back-to-top")
-                        .scrollableSelector(By.id(id)))
+                        .scrollableSelector(By.id(MAIN_ID)))
                 .element();
     }
 

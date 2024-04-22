@@ -88,10 +88,11 @@
         <version.checkstyle.config>1.0.8.Final</version.checkstyle.config>
         <version.elemental2>1.2.1</version.elemental2>
         <version.elemento>1.4.8</version.elemento>
-        <version.gwt>2.11.0</version.gwt>
         <version.gwt.event>1.0.0-RC1</version.gwt.event>
         <version.gwt.safehtml>1.0.0-RC1</version.gwt.safehtml>
         <version.junit>5.10.2</version.junit>
+        <version.kie.j2cl.bom>0.1</version.kie.j2cl.bom>
+        <version.kie.di.bom>0.6</version.kie.di.bom>
         <version.kotlin>1.9.23</version.kotlin>
         <version.mockito>5.11.0</version.mockito>
         <version.node>v21.7.1</version.node>
@@ -104,12 +105,10 @@
         <version.editorconfig.plugin>0.1.3</version.editorconfig.plugin>
         <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
         <version.frontend.plugin>1.15.0</version.frontend.plugin>
-        <version.gwt.plugin>1.1.0</version.gwt.plugin>
         <version.j2cl.plugin>0.23.0</version.j2cl.plugin>
         <version.impsort.plugin>1.9.0</version.impsort.plugin>
         <version.javadoc.plugin>3.6.3</version.javadoc.plugin>
         <version.keepachangelog>2.1.1</version.keepachangelog>
-        <version.kie.j2cl.bom>0.1</version.kie.j2cl.bom>
         <version.license.plugin>4.3</version.license.plugin>
         <version.nexus.staging.plugin>1.6.13</version.nexus.staging.plugin>
 
@@ -190,7 +189,7 @@
                     <artifactId>j2cl-maven-plugin</artifactId>
                     <version>${version.j2cl.plugin}</version>
                     <configuration>
-                        <webappDirectory>${project.build.directory}/showcase</webappDirectory>
+                        <webappDirectory>${project.build.directory}/console</webappDirectory>
                         <workerThreadCount>4</workerThreadCount>
                     </configuration>
                 </plugin>

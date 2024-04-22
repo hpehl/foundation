@@ -80,6 +80,13 @@
 
             <!-- J2CL / GWT -->
             <dependency>
+                <groupId>org.kie.j2cl.tools.di</groupId>
+                <artifactId>bom</artifactId>
+                <version>${version.kie.di.bom}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.kie.j2cl.tools</groupId>
                 <artifactId>bom</artifactId>
                 <version>${version.kie.j2cl.bom}</version>

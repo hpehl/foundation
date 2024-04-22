@@ -18,7 +18,7 @@
 
 # --------------------------------------------------
 #
-# Starts the GWT/J2CL development mode for the showcase
+# Starts the GWT/J2CL development mode for the console
 #
 # --------------------------------------------------
 

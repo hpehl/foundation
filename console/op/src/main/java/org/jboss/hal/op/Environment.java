@@ -32,16 +32,16 @@ public class Environment {
 
     // ------------------------------------------------------ instance
 
-    public final String applicationId;
-    public final String applicationName;
-    public final String applicationVersion;
+    public final String id;
+    public final String name;
+    public final String version;
     public final String base;
     public final String mode;
 
     private Environment() {
-        this.applicationId = System.getProperty("environment.application.id");
-        this.applicationName = System.getProperty("environment.application.name");
-        this.applicationVersion = System.getProperty("environment.application.version");
+        this.id = System.getProperty("environment.id");
+        this.name = System.getProperty("environment.name");
+        this.version = System.getProperty("environment.version");
         this.base = System.getProperty("environment.base");
         this.mode = System.getProperty("environment.mode");
     }

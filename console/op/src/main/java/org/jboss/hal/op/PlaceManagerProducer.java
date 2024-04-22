@@ -15,29 +15,25 @@
  */
 package org.jboss.hal.op;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 
+import org.jboss.elemento.By;
 import org.jboss.elemento.router.PlaceManager;
-import org.kie.j2cl.tools.di.annotation.Application;
-import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
 
-import static org.jboss.elemento.Elements.body;
+import static org.jboss.hal.op.Constants.MAIN_ID;
+import static org.jboss.hal.op.Environment.env;
 
-@SuppressWarnings("unused")
-@Application(packages = {"org.jboss.hal.op"})
-public class Main {
+public class PlaceManagerProducer {
 
-    @Inject PlaceManager placeManager;
-
-    @GWT3EntryPoint
-    public void onModuleLoad() {
-        new MainBootstrap(this).initialize();
-    }
-
-    @PostConstruct
-    void init() {
-        body().add(new Skeleton());
-        placeManager.start();
+    @Produces
+    @ApplicationScoped
+    public PlaceManager placeManager() {
+        return new PlaceManager()
+                .base(env().base)
+                .root(By.id(MAIN_ID))
+                .title(title -> "HAL • " + title)
+                .notFound(NotFound::new)
+                .register(RoutesImpl.INSTANCE.places());
     }
 }
