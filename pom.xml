@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+     Copyright 2024 Red Hat
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         https://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>44</version>
+    </parent>
+
+    <groupId>org.jboss.hal</groupId>
+    <artifactId>hal-foundation-parent</artifactId>
+    <version>4.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>HAL Foundation Parent</name>
+    <description>HAL foundation for HAL management console and halOS</description>
+    <url>https://hal.github.io/</url>
+    <inceptionYear>2024</inceptionYear>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Red Hat</name>
+        <url>https://developers.redhat.com/</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <name>Harald Pehl</name>
+            <id>hpehl</id>
+            <email>hpehl@redhat.com</email>
+            <organization>Red Hat</organization>
+            <timezone>+1</timezone>
+            <roles>
+                <role>Lead</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:${github.org}/${github.name}.git</connection>
+        <developerConnection>scm:git:git@github.com:${github.org}/${github.name}.git</developerConnection>
+        <url>https://github.com/${github.org}/${github.name}</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/${github.org}/${github.name}/issues</url>
+    </issueManagement>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>${sonatype.url}/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>${sonatype.url}/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <!-- Dependency versions -->
+        <version.checkstyle.config>1.0.8.Final</version.checkstyle.config>
+        <version.elemental2>1.2.1</version.elemental2>
+        <version.elemento>1.4.8</version.elemento>
+        <version.gwt>2.11.0</version.gwt>
+        <version.gwt.event>1.0.0-RC1</version.gwt.event>
+        <version.gwt.safehtml>1.0.0-RC1</version.gwt.safehtml>
+        <version.junit>5.10.0</version.junit>
+        <version.kotlin>1.9.23</version.kotlin>
+        <version.mockito>5.11.0</version.mockito>
+        <version.node>v21.7.1</version.node>
+        <version.patternfly>5.2.1</version.patternfly>
+        <version.patternfly.java>0.2.2</version.patternfly.java>
+        <version.yarn>v1.22.21</version.yarn>
+
+        <!-- Plugin versions -->
+        <version.checkstyle.plugin>3.3.0</version.checkstyle.plugin>
+        <version.editorconfig.plugin>0.1.3</version.editorconfig.plugin>
+        <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
+        <version.frontend.plugin>1.15.0</version.frontend.plugin>
+        <version.gwt.plugin>1.1.0</version.gwt.plugin>
+        <version.j2cl.plugin>0.23.0</version.j2cl.plugin>
+        <version.impsort.plugin>1.9.0</version.impsort.plugin>
+        <version.javadoc.plugin>3.6.3</version.javadoc.plugin>
+        <version.keepachangelog>2.1.1</version.keepachangelog>
+        <version.kie.j2cl.bom>0.1</version.kie.j2cl.bom>
+        <version.license.plugin>4.3</version.license.plugin>
+        <version.nexus.staging.plugin>1.6.13</version.nexus.staging.plugin>
+
+        <!-- Repos & URLs -->
+        <github.org>hal</github.org>
+        <github.name>foundation</github.name>
+        <repo.scm.connection>git@github.com:hal/foundation.git</repo.scm.connection>
+        <repo.scm.url>https://github.com/hal/foundation</repo.scm.url>
+
+        <!-- Build related -->
+        <encoding>UTF-8</encoding>
+        <environment.base>/</environment.base>
+        <environment.mode>development</environment.mode>
+        <j2cl.compilationLevel>BUNDLE_JAR</j2cl.compilationLevel>
+        <j2cl.sourcemaps>true</j2cl.sourcemaps>
+        <java.version>11</java.version>
+        <javadoc.options/>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.min.version>3.2.5</maven.min.version>
+        <npm.script>dev</npm.script>
+        <project.build.sourceEncoding>${encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${encoding}</project.reporting.outputEncoding>
+        <sonatype.url>https://oss.sonatype.org</sonatype.url>
+    </properties>
+
+    <modules>
+        <module>bom</module>
+        <module>build-config</module>
+        <module>code-parent</module>
+        <module>db</module>
+        <module>dmr</module>
+        <module>meta</module>
+        <module>ui</module>
+    </modules>
+
+    <!-- No dependencies! Dependencies are managed in core-parent -->
+    <dependencies/>
+
+    <build>
+        <!--
+            All plugins are declared and (partly) configured here.
+            Some of them are redefined in core-parent
+        -->
+        <pluginManagement>
+            <plugins>
+                <!-- Ordered by artifactID -->
+                <plugin>
+                    <groupId>org.ec4j.maven</groupId>
+                    <artifactId>editorconfig-maven-plugin</artifactId>
+                    <version>${version.editorconfig.plugin}</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/.parcel-cache/**</exclude>
+                            <exclude>**/node/**</exclude>
+                            <exclude>**/node_modules/**</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>${version.frontend.plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>net.revelc.code</groupId>
+                    <artifactId>impsort-maven-plugin</artifactId>
+                    <version>${version.impsort.plugin}</version>
+                    <configuration>
+                        <groups>java.,javax.,jakarta.,org.,io.,com.</groups>
+                        <staticGroups>java,*</staticGroups>
+                        <removeUnused>true</removeUnused>
+                        <staticAfter>true</staticAfter>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.kie.j2cl.tools</groupId>
+                    <artifactId>j2cl-maven-plugin</artifactId>
+                    <version>${version.j2cl.plugin}</version>
+                    <configuration>
+                        <webappDirectory>${project.build.directory}/showcase</webappDirectory>
+                        <workerThreadCount>4</workerThreadCount>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>co.enear.maven.plugins</groupId>
+                    <artifactId>keepachangelog-maven-plugin</artifactId>
+                    <version>${version.keepachangelog}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <artifactId>kotlin-maven-plugin</artifactId>
+                    <version>${version.kotlin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${version.license.plugin}</version>
+                    <configuration>
+                        <aggregate>true</aggregate>
+                        <strictCheck>true</strictCheck>
+                        <useDefaultExcludes>true</useDefaultExcludes>
+                        <mapping>
+                            <parcelrc>DOUBLESLASH_STYLE</parcelrc>
+                        </mapping>
+                        <licenseSets>
+                            <licenseSet>
+                                <header>build-config/src/main/resources/etc/license.txt</header>
+                                <excludes>
+                                    <exclude>LICENSE</exclude>
+                                    <exclude>README.md</exclude>
+                                    <exclude>CODEOWNERS</exclude>
+                                    <exclude>README.md</exclude>
+                                    <exclude>release.main.kts</exclude>
+                                    <exclude>**/*license*.txt</exclude>
+                                    <exclude>**/.parcel-cache/**</exclude>
+                                    <exclude>**/yarn.lock</exclude>
+                                    <exclude>**/node/**</exclude>
+                                    <exclude>**/node_modules/**</exclude>
+                                    <exclude>**/src/demo/java/**</exclude>
+                                    <exclude>**/src/main/resources/META-INF/externs/**</exclude>
+                                </excludes>
+                            </licenseSet>
+                        </licenseSets>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <configuration>
+                        <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failsOnError>true</failsOnError>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <excludes>**/*$logger.java,**/*$bundle.java</excludes>
+                        <useFile/>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.wildfly.checkstyle</groupId>
+                            <artifactId>wildfly-checkstyle-config</artifactId>
+                            <version>${version.checkstyle.config}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <configuration>
+                        <rules>
+                            <bannedRepositories>
+                                <message>To build this project, don't use maven repositories over HTTP. Please use HTTPS
+                                    in your settings.xml or run the build with property insecure.repositories=WARN
+                                </message>
+                                <level>ERROR</level>
+                                <bannedRepositories>
+                                    <bannedRepository>http://*</bannedRepository>
+                                </bannedRepositories>
+                                <bannedPluginRepositories>
+                                    <bannedPluginRepository>http://*</bannedPluginRepository>
+                                </bannedPluginRepositories>
+                            </bannedRepositories>
+                            <requireMavenVersion>
+                                <message>To build this project Maven ${maven.min.version} (or greater) is required.
+                                    Please install it.
+                                </message>
+                                <version>${maven.min.version}</version>
+                            </requireMavenVersion>
+                            <requireJavaVersion>
+                                <message>To build this project JDK ${maven.compiler.source} (or greater) is required.
+                                    Please install it.
+                                </message>
+                                <version>${maven.compiler.source}</version>
+                            </requireJavaVersion>
+                        </rules>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${version.javadoc.plugin}</version>
+                    <configuration combine.self="override">
+                        <additionalOptions>${javadoc.options}</additionalOptions>
+                        <detectLinks>true</detectLinks>
+                        <doclint>none</doclint>
+                        <failOnError>false</failOnError>
+                        <links>
+                            <link>https://patternfly-java.github.io/apidocs/</link>
+                            <link>https://hal.github.io/elemento/apidocs/</link>
+                            <link>https://www.gwtproject.org/javadoc/latest/</link>
+                            <link>https://javadoc.io/doc/org.gwtproject.event/gwt-event/${version.gwt.event}/</link>
+                            <link>https://javadoc.io/doc/org.gwtproject.safehtml/gwt-safehtml/${version.gwt.safehtml}/</link>
+                            <link>https://javadoc.io/doc/com.google.elemental2/elemental2-core/${version.elemental2}/</link>
+                            <link>https://javadoc.io/doc/com.google.elemental2/elemental2-dom/${version.elemental2}/</link>
+                            <link>https://javadoc.io/doc/com.google.elemental2/elemental2-webstorage/${version.elemental2}/
+                            </link>
+                        </links>
+                        <show>public</show>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <!-- Ordered by artifactID -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-demos</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/src/demo/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.ec4j.maven</groupId>
+                <artifactId>editorconfig-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>editorconfig-format</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>editorconfig-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>impsort-sort</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>sort</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>impsort-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>license-format</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>license-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforcer-enforce</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>op</id>
+            <modules>
+                <module>console/op</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>os</id>
+            <modules>
+                <module>console/os</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <j2cl.compilationLevel>ADVANCED_OPTIMIZATIONS</j2cl.compilationLevel>
+                <j2cl.sourcemaps>false</j2cl.sourcemaps>
+                <npm.script>prod</npm.script>
+                <environment.mode>production</environment.mode>
+            </properties>
+        </profile>
+        <profile>
+            <id>quick-build</id>
+            <activation>
+                <property>
+                    <name>quickly</name>
+                </property>
+            </activation>
+            <properties>
+                <checkstyle.skip>true</checkstyle.skip>
+                <editorconfig.skip>true</editorconfig.skip>
+                <enforcer.skip>true</enforcer.skip>
+                <impsort.skip>true</impsort.skip>
+                <license.skip>true</license.skip>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+                <skip.gwt>true</skip.gwt>
+                <skipITs>true</skipITs>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- Semantically ordered -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <configuration>
+                            <rules>
+                                <requireReleaseDeps>
+                                    <message>No Snapshots Allowed!</message>
+                                </requireReleaseDeps>
+                            </rules>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Prevent gpg from using pinentry programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${version.nexus.staging.plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>${sonatype.url}</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>snippets</id>
+            <properties>
+                <java.version>19</java.version>
+                <javadoc.options>--snippet-path ${project.basedir}/src/demo/java</javadoc.options>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>copy-apidocs</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <copy todir="target/site/apidocs/org/jboss/hal"
+                                              overwrite="true"
+                                              failonerror="false">
+                                            <fileset dir="db/target/site/apidocs/org/patternfly">
+                                                <exclude name="**/class-use/**"/>
+                                                <exclude name="package-*.html"/>
+                                            </fileset>
+                                            <fileset dir="dmr/target/site/apidocs/org/patternfly">
+                                                <exclude name="**/class-use/**"/>
+                                                <exclude name="package-*.html"/>
+                                            </fileset>
+                                            <fileset dir="meta/target/site/apidocs/org/patternfly">
+                                                <exclude name="**/class-use/**"/>
+                                                <exclude name="package-*.html"/>
+                                            </fileset>
+                                            <fileset dir="ui/target/site/apidocs/org/patternfly">
+                                                <exclude name="**/class-use/**"/>
+                                                <exclude name="package-*.html"/>
+                                            </fileset>
+                                        </copy>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

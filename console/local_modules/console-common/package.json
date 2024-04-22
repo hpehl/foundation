@@ -1,0 +1,6 @@
+{
+  "name": "console-common",
+  "version": "0.0.1",
+  "description": "Common console resources",
+  "private": true
+}

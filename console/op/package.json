@@ -1,0 +1,28 @@
+{
+  "name": "console-op",
+  "private": true,
+  "parcelIgnore": [
+    "console.js"
+  ],
+  "source": [
+    "src/web/dev.html",
+    "src/web/index.html"
+  ],
+  "scripts": {
+    "watch": "parcel serve src/web/dev.html --dist-dir target/console --open",
+    "dev": "parcel build src/web/dev.html --dist-dir target/showcase --no-optimize",
+    "prod": "parcel build src/web/index.html --dist-dir target/console",
+    "http-server": "http-server target/console -o"
+  },
+  "devDependencies": {
+    "@parcel/core": "^2.12.0",
+    "@parcel/reporter-cli": "^2.12.0",
+    "http-server": "^14.1.1",
+    "parcel": "^2.12.0",
+    "parcel-resolver-ignore": "^2.2.0"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^5.2.1",
+    "console-common": "file:../local_modules/console-common"
+  }
+}
