@@ -53,7 +53,7 @@ public class DashboardPage implements Page {
                         .addBody(pageMainBody()
                                 .add(textContent()
                                         .add(title(1).text("WildFly Application Server"))
-                                        .add(p().textContent("Dashboard 14"))))
+                                        .add(p().textContent("Dashboard"))))
                         .element(),
                 pageMainSection().limitWidth()
                         .add(pageMainBody()
