@@ -26,7 +26,6 @@
     "parcel-resolver-ignore": "^2.2.0"
   },
   "dependencies": {
-    "@patternfly/patternfly": "^5.2.1",
-    "console-common": "file:../local_modules/console-common"
+    "@patternfly/patternfly": "^5.2.1"
   }
 }
