@@ -19,7 +19,7 @@ The work is in a very early state and very much in progress.
 
 Run `./dev.sh` and wait until you see the message
 
-```shell
+```
 [INFO] -----  Build Complete: ready for browser refresh  -----
 ```
 
