@@ -22,7 +22,7 @@ import jakarta.inject.Inject;
 import org.jboss.elemento.By;
 import org.jboss.elemento.router.PlaceManager;
 import org.jboss.elemento.router.Routes;
-import org.jboss.hal.op.Environment;
+import org.jboss.hal.env.Environment;
 import org.jboss.hal.op.skeleton.NotFound;
 import org.patternfly.component.navigation.Navigation;
 

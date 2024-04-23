@@ -98,4 +98,4 @@ setup_colors
 msg "Start ${YELLOW}J2CL${NOFORMAT} production mode..."
 mvn --projects org.jboss.hal:hal-console-op --also-make -P op,prod ${CLEAN} package
 cd console/op
-mvn com.github.eirslett:frontend-maven-plugin:yarn@http-server
+mvn com.github.eirslett:frontend-maven-plugin:yarn@prod-server

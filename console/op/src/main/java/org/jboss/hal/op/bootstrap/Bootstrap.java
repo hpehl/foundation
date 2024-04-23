@@ -13,26 +13,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op;
+package org.jboss.hal.op.bootstrap;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.jboss.hal.dmr.Operation;
+import org.jboss.hal.dmr.ResourceAddress;
+import org.jboss.hal.dmr.dispatch.Dispatcher;
+
+import static elemental2.dom.DomGlobal.console;
 
 @ApplicationScoped
-public class Environment {
+public class Bootstrap {
 
-    // ------------------------------------------------------ instance
+    @Inject Dispatcher dispatcher;
 
-    public final String id;
-    public final String name;
-    public final String version;
-    public final String base;
-    public final String mode;
-
-    Environment() {
-        this.id = System.getProperty("environment.id");
-        this.name = System.getProperty("environment.name");
-        this.version = System.getProperty("environment.version");
-        this.base = System.getProperty("environment.base");
-        this.mode = System.getProperty("environment.mode");
+    public void init() {
+        dispatcher.execute(new Operation.Builder(ResourceAddress.root(), "nop").build())
+                .then(modelNode -> {
+                    console.log("Executed bootstrap operation");
+                    return null;
+                });
     }
 }

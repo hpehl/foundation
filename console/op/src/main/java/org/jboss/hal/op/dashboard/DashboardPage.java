@@ -15,10 +15,11 @@
  */
 package org.jboss.hal.op.dashboard;
 
-import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.Page;
 import org.jboss.elemento.router.Route;
+import org.jboss.hal.env.Environment;
 
 import elemental2.dom.HTMLElement;
 
@@ -27,17 +28,24 @@ import static org.jboss.elemento.Elements.p;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardBody.cardBody;
 import static org.patternfly.component.card.CardTitle.cardTitle;
+import static org.patternfly.component.list.DescriptionList.descriptionList;
+import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
+import static org.patternfly.component.list.DescriptionListGroup.descriptionListGroup;
+import static org.patternfly.component.list.DescriptionListTerm.descriptionListTerm;
 import static org.patternfly.component.page.PageMainBody.pageMainBody;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
+import static org.patternfly.style.Breakpoint.default_;
+import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Brightness.light;
 
-@Dependent
 @Route("/")
 public class DashboardPage implements Page {
+
+    @Inject Environment environment;
 
     @Override
     public Iterable<HTMLElement> elements() {
@@ -45,15 +53,30 @@ public class DashboardPage implements Page {
                         .addBody(pageMainBody()
                                 .add(textContent()
                                         .add(title(1).text("WildFly Application Server"))
-                                        .add(p().textContent("Dashboard"))))
+                                        .add(p().textContent("Dashboard 14"))))
                         .element(),
                 pageMainSection().limitWidth()
                         .add(pageMainBody()
                                 .add(grid().gutter()
                                         .addItem(gridItem().span(8)
                                                 .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 8"))))
+                                                        .addTitle(cardTitle().textContent("Environment:"))
+                                                        .addBody(cardBody()
+                                                                .add(descriptionList().columns(breakpoints(default_, 2))
+                                                                        .addGroup(descriptionListGroup()
+                                                                                .addTerm(descriptionListTerm("ID"))
+                                                                                .addDescription(descriptionListDescription(
+                                                                                        environment.id))
+                                                                                .addTerm(descriptionListTerm("Name"))
+                                                                                .addDescription(descriptionListDescription(
+                                                                                        environment.name)))
+                                                                        .addGroup(descriptionListGroup()
+                                                                                .addTerm(descriptionListTerm("Version"))
+                                                                                .addDescription(descriptionListDescription(
+                                                                                        environment.version))
+                                                                                .addTerm(descriptionListTerm("Mode"))
+                                                                                .addDescription(descriptionListDescription(
+                                                                                        environment.mode)))))))
                                         .addItem(gridItem().span(4).rowSpan(2)
                                                 .add(card().fullHeight()
                                                         .addTitle(cardTitle().textContent("Card"))

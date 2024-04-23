@@ -9,14 +9,18 @@
     "src/web/index.html"
   ],
   "scripts": {
-    "watch": "parcel serve src/web/dev.html --dist-dir target/console --open",
+    "watch-j2cl": "browser-sync start --proxy http://localhost:1234 --reload-debounce 500 --files ../../target/gwt3BuildCache --no-open",
+    "watch-parcel": "parcel serve src/web/dev.html --dist-dir target/console --open",
+    "watch": "concurrently --kill-others 'npm run watch-j2cl' 'npm run watch-parcel'",
     "dev": "parcel build src/web/dev.html --dist-dir target/console --no-optimize",
     "prod": "parcel build src/web/index.html --dist-dir target/console",
-    "http-server": "http-server target/console -o"
+    "prod-server": "http-server target/console -o"
   },
   "devDependencies": {
     "@parcel/core": "^2.12.0",
     "@parcel/reporter-cli": "^2.12.0",
+    "browser-sync": "^3.0.2",
+    "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
     "parcel": "^2.12.0",
     "parcel-resolver-ignore": "^2.2.0"

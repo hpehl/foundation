@@ -44,6 +44,10 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>hal-environment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>hal-meta</artifactId>
         </dependency>
         <dependency>
@@ -169,13 +173,13 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>http-server</id>
+                        <id>prod-server</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
                         <phase>none</phase>
                         <configuration>
-                            <arguments>run http-server</arguments>
+                            <arguments>run prod-server</arguments>
                         </configuration>
                     </execution>
                 </executions>

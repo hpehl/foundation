@@ -19,6 +19,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.PlaceManager;
+import org.jboss.hal.op.bootstrap.Bootstrap;
 import org.jboss.hal.op.skeleton.Skeleton;
 import org.kie.j2cl.tools.di.annotation.Application;
 import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
@@ -31,6 +32,7 @@ import static org.jboss.elemento.Elements.insertFirst;
 @Application(packages = {"org.jboss.hal"})
 public class Main {
 
+    @Inject Bootstrap bootstrap;
     @Inject PlaceManager placeManager;
     @Inject Navigation navigation;
 
@@ -41,6 +43,7 @@ public class Main {
 
     @PostConstruct
     void init() {
+        bootstrap.init();
         insertFirst(document.body, new Skeleton(navigation));
         placeManager.start();
     }

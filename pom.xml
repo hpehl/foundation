@@ -141,6 +141,7 @@
         <module>code-parent</module>
         <module>db</module>
         <module>dmr</module>
+        <module>environment</module>
         <module>meta</module>
         <module>ui</module>
     </modules>
