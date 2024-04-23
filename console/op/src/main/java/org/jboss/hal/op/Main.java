@@ -19,16 +19,20 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.PlaceManager;
+import org.jboss.hal.op.skeleton.Skeleton;
 import org.kie.j2cl.tools.di.annotation.Application;
 import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
+import org.patternfly.component.navigation.Navigation;
 
-import static org.jboss.elemento.Elements.body;
+import static elemental2.dom.DomGlobal.document;
+import static org.jboss.elemento.Elements.insertFirst;
 
 @SuppressWarnings("unused")
 @Application(packages = {"org.jboss.hal"})
 public class Main {
 
     @Inject PlaceManager placeManager;
+    @Inject Navigation navigation;
 
     @GWT3EntryPoint
     public void onModuleLoad() {
@@ -37,7 +41,7 @@ public class Main {
 
     @PostConstruct
     void init() {
-        body().add(new Skeleton());
+        insertFirst(document.body, new Skeleton(navigation));
         placeManager.start();
     }
 }

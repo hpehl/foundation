@@ -19,30 +19,23 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
-import org.jboss.elemento.By;
 import org.jboss.elemento.router.PlaceManager;
-import org.jboss.elemento.router.Routes;
-import org.jboss.hal.op.Environment;
-import org.jboss.hal.op.skeleton.NotFound;
 import org.patternfly.component.navigation.Navigation;
+import org.patternfly.component.navigation.NavigationType.Horizontal;
 
-import static org.jboss.hal.op.Ids.MAIN_ID;
+import static org.patternfly.component.navigation.NavigationItem.navigationItem;
 
-public class PlaceManagerProducer {
+public class NavigationProducer {
 
-    @Inject Environment environment;
-    @Inject Routes routes;
-    @Inject Navigation navigation;
+    @Inject PlaceManager placeManager;
 
     @Produces
     @ApplicationScoped
-    public PlaceManager placeManager() {
-        return new PlaceManager()
-                .base(environment.base)
-                .root(By.id(MAIN_ID))
-                .title(title -> "HAL • " + title)
-                .notFound(NotFound::new)
-                .register(routes.places())
-                .afterPlace((placeManager, place, page) -> navigation.select(place.route));
+    public Navigation navigation() {
+        return Navigation.navigation(Horizontal.primary)
+                .addItem(navigationItem("/", "Dashboard", placeManager.href("/")))
+                .addItem(navigationItem("/deployments", "Deployments", placeManager.href("/deployments")))
+                .addItem(navigationItem("/configuration", "Configuration", placeManager.href("/configuration")))
+                .addItem(navigationItem("/runtime", "Runtime", placeManager.href("/runtime")));
     }
 }

@@ -13,36 +13,37 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op;
+package org.jboss.hal.op.configuration;
+
+import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.Page;
-import org.jboss.elemento.router.Place;
+import org.jboss.elemento.router.PlaceManager;
+import org.jboss.elemento.router.Route;
 
 import elemental2.dom.HTMLElement;
 
 import static java.util.Collections.singletonList;
 
+import static org.jboss.elemento.Elements.h;
 import static org.jboss.elemento.Elements.p;
+import static org.jboss.elemento.router.Link.link;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
-import static org.patternfly.component.title.Title.title;
 import static org.patternfly.style.Brightness.light;
 
-public class NotFound implements Page {
+@Route("/configuration")
+public class ConfigurationPage implements Page {
 
-    private final Place place;
-
-    public NotFound(Place place) {
-        this.place = place;
-    }
+    @Inject PlaceManager placeManager;
 
     @Override
     public Iterable<HTMLElement> elements() {
-        return singletonList(pageMainSection()
-                .background(light)
+        return singletonList(pageMainSection().background(light)
                 .add(textContent()
-                        .add(title(1, "Not Found"))
-                        .add(p().textContent("Page " + place.route + " not found")))
+                        .add(h(1, "Configuration"))
+                        .add(p().textContent("Not yet implemented!"))
+                        .add(p().add(link(placeManager, "/").textContent("Home"))))
                 .element());
     }
 }

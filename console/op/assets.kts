@@ -35,8 +35,7 @@ val packageName = "org.jboss.hal.op"
 val className = "Assets"
 val target = "src/main/java"
 val resources = listOf(
-        Resource("logo", File(args[0], "src/assets/logo.svg"), "data:image/svg+xml;base64,", true),
-        Resource("logoLight", File(args[0], "src/assets/logo-light.svg"), "data:image/svg+xml;base64,", true),
+        Resource("logo", File(args[0], "src/assets/halop-logo.svg"), "data:image/svg+xml;base64,", true)
 )
 val targetPath = Path(args[0], "$target/${packageName.replace('.', '/')}")
 

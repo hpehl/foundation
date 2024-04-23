@@ -15,7 +15,7 @@
  */
 package org.jboss.hal.op;
 
-public interface Constants {
+public interface Ids {
 
     String MAIN_ID = "hop-main-id";
 }
