@@ -23,7 +23,6 @@ import org.patternfly.style.Classes;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
-import static org.jboss.elemento.Elements.span;
 import static org.jboss.hal.op.Assets.logo;
 import static org.jboss.hal.op.Ids.MAIN_ID;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
@@ -42,7 +41,6 @@ import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.fullHeight;
 import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.static_;
-import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Variable.componentVar;
 import static org.patternfly.style.Variables.Height;
 

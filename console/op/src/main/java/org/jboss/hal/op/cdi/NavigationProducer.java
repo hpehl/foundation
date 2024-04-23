@@ -33,6 +33,7 @@ public class NavigationProducer {
     @ApplicationScoped
     public Navigation navigation() {
         return Navigation.navigation(Horizontal.primary)
+                // IDs must match the routes!
                 .addItem(navigationItem("/", "Dashboard", placeManager.href("/")))
                 .addItem(navigationItem("/deployments", "Deployments", placeManager.href("/deployments")))
                 .addItem(navigationItem("/configuration", "Configuration", placeManager.href("/configuration")))
