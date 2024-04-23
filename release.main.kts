@@ -33,12 +33,6 @@ import java.lang.Thread.sleep
 import kotlin.random.Random
 import kotlin.system.exitProcess
 
-/*
- * This is an alternative version of 'release.sh' written in Kotlin
- * It was primarily an experiment to replace the bash script crap with something more readable.
- * There are slightly more lines of code, but hopefully the script reads much better.
- */
-
 // ------------------------------------------------------ error & success types
 
 sealed class ReleaseError(val message: String) {
