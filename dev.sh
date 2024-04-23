@@ -95,7 +95,5 @@ parse_params() {
 parse_params "$@"
 setup_colors
 
-msg "Prepare ${YELLOW}J2CL${NOFORMAT} development mode..."
-mvn -P quick-build,op ${CLEAN} compile
 msg "Start ${YELLOW}J2CL${NOFORMAT} development mode..."
-mvn --projects org.jboss.hal:hal-console-op --also-make -P op j2cl:watch
+mvn --projects org.jboss.hal:hal-console-op --also-make -P op ${CLEAN} compile j2cl:watch
