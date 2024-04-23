@@ -16,6 +16,7 @@
 package org.jboss.hal.op.dashboard;
 
 import jakarta.enterprise.context.Dependent;
+
 import org.jboss.elemento.router.Page;
 import org.jboss.elemento.router.Route;
 

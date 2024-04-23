@@ -24,7 +24,6 @@ import org.jboss.elemento.router.Route;
 import elemental2.dom.HTMLElement;
 
 import static java.util.Collections.singletonList;
-
 import static org.jboss.elemento.Elements.h;
 import static org.jboss.elemento.Elements.p;
 import static org.jboss.elemento.router.Link.link;

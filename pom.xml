@@ -179,7 +179,6 @@
                     <version>${version.impsort.plugin}</version>
                     <configuration>
                         <groups>java.,javax.,jakarta.,org.,io.,com.</groups>
-                        <staticGroups>java,*</staticGroups>
                         <removeUnused>true</removeUnused>
                         <staticAfter>true</staticAfter>
                     </configuration>
