@@ -28,7 +28,6 @@ import org.patternfly.component.navigation.Navigation;
 import static elemental2.dom.DomGlobal.document;
 import static org.jboss.elemento.Elements.insertFirst;
 
-@SuppressWarnings("unused")
 @Application(packages = {"org.jboss.hal"})
 public class Main {
 

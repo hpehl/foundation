@@ -20,10 +20,10 @@ import org.kie.j2cl.tools.processors.common.resources.ClientBundle;
 import org.kie.j2cl.tools.processors.common.resources.ImageResource;
 
 @GWT3Resource
-public interface Asserts extends ClientBundle {
+public interface Assets extends ClientBundle {
 
-    Asserts INSTANCE = AssertsImpl.INSTANCE;
+    Assets INSTANCE = AssetsImpl.INSTANCE;
 
-    @Source("img.png")
+    @Source("halop-logo.png")
     ImageResource logo();
 }

@@ -84,14 +84,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/java</directory>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -100,12 +92,6 @@
                     <filesets>
                         <fileset>
                             <directory>.parcel-cache</directory>
-                        </fileset>
-                        <fileset>
-                            <directory>src/main/java</directory>
-                            <includes>
-                                <include>org/jboss/hal/op/Assets.java</include>
-                            </includes>
                         </fileset>
                     </filesets>
                 </configuration>
@@ -160,17 +146,8 @@
             <plugin>
                 <groupId>org.kie.j2cl.tools</groupId>
                 <artifactId>j2cl-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>build-js</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
-                    <incrementalEnabled>true</incrementalEnabled>
+                    <incrementalEnabled>${j2cl.incremental}</incrementalEnabled>
                     <compilationLevel>${j2cl.compilationLevel}</compilationLevel>
                     <enableSourcemaps>${j2cl.sourcemaps}</enableSourcemaps>
                     <initialScriptFilename>console.js</initialScriptFilename>
@@ -183,6 +160,13 @@
                     </defines>
                     <webappDirectory>${project.build.directory}/console</webappDirectory>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -17,14 +17,13 @@ package org.jboss.hal.op.skeleton;
 
 import org.jboss.elemento.By;
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.op.resources.Assets;
 import org.patternfly.component.navigation.Navigation;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
 import static org.jboss.hal.op.Ids.MAIN_ID;
-import static org.jboss.hal.op.resources.Asserts.INSTANCE;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
@@ -37,6 +36,7 @@ import static org.patternfly.component.skiptocontent.SkipToContent.skipToContent
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
+import static org.patternfly.style.Classes.brand;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.fullHeight;
 import static org.patternfly.style.Classes.modifier;
@@ -54,8 +54,8 @@ public class Skeleton implements IsElement<HTMLElement> {
                 .addMasthead(masthead()
                         .addMain(mastheadMain()
                                 .addBrand(mastheadBrand(a("/"))
-                                        .addBrand(brand(INSTANCE.logo().getSrc(), "HAL Management Console")
-                                                .style(componentVar(component(Classes.brand), Height).name, "36px"))))
+                                        .addBrand(brand(Assets.INSTANCE.logo().getSrc(), "HAL Management Console")
+                                                .style(componentVar(component(brand), Height).name, "36px"))))
                         .addContent(mastheadContent()
                                 .addToolbar(toolbar().css(modifier(fullHeight), modifier(static_))
                                         .addContent(toolbarContent()

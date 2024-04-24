@@ -117,14 +117,6 @@
                 <artifactId>mockito-core</artifactId>
                 <version>${version.mockito}</version>
             </dependency>
-
-            <!-- Code generation -->
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib</artifactId>
-                <version>${version.kotlin}</version>
-                <scope>provided</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
