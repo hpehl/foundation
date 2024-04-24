@@ -436,6 +436,9 @@
         </profile>
         <profile>
             <id>prod</id>
+            <modules>
+                <module>console/op</module>
+            </modules>
             <properties>
                 <j2cl.compilationLevel>ADVANCED_OPTIMIZATIONS</j2cl.compilationLevel>
                 <j2cl.sourcemaps>false</j2cl.sourcemaps>
