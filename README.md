@@ -17,17 +17,43 @@ The work is in a very early state and very much in progress.
 
 ## Development mode
 
-Run `mvn j2cl:watch -P op` and wait until you see the message
+Run
+
+```shell
+mvn j2cl:watch -P op
+```
+
+and wait until you see the message
 
 ```
 [INFO] -----  Build Complete: ready for browser refresh  -----
 ```
 
-In another shell run `cd console/op` and `yarn run watch`. This will open a browser at http://localhost:1234 and watch for changes to your HTML, CSS, JavaScript, and Java code. Any change will reload the page automatically.
+In another shell run
+
+```shell
+cd console/op
+yarn run watch
+```
+
+This will open a browser at http://localhost:1234 and watch for changes to your HTML, CSS, JavaScript, and Java code. Any change will reload the page automatically.
 
 ## Production mode
 
-Run `mvn package -P op,prod`. This will compile the application in production mode to `console/op/target/console`. You can use any HTTP server you want to serve the files from this folder. The project contains configuration to start an instance of the [http-server](https://www.npmjs.com/package/http-server) package. Use it by running `mvn com.github.eirslett:frontend-maven-plugin:yarn@prod-server`.
+Run
+
+```shell
+mvn package -P op,prod
+```
+
+This will compile the application in production mode to `console/op/target/console`.
+
+You can use any HTTP server you want to serve the files from this folder. The project contains configuration to start an instance of the [http-server](https://www.npmjs.com/package/http-server) package. Use it by running
+
+```shell
+cd console/op
+mvn com.github.eirslett:frontend-maven-plugin:yarn@prod-server
+```
 
 # Contributing
 
