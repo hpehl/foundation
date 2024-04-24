@@ -23,8 +23,8 @@ import org.patternfly.style.Classes;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
-import static org.jboss.hal.op.Assets.logo;
 import static org.jboss.hal.op.Ids.MAIN_ID;
+import static org.jboss.hal.op.resources.Asserts.INSTANCE;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
@@ -54,7 +54,7 @@ public class Skeleton implements IsElement<HTMLElement> {
                 .addMasthead(masthead()
                         .addMain(mastheadMain()
                                 .addBrand(mastheadBrand(a("/"))
-                                        .addBrand(brand(logo, "HAL Management Console")
+                                        .addBrand(brand(INSTANCE.logo().getSrc(), "HAL Management Console")
                                                 .style(componentVar(component(Classes.brand), Height).name, "36px"))))
                         .addContent(mastheadContent()
                                 .addToolbar(toolbar().css(modifier(fullHeight), modifier(static_))
