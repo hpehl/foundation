@@ -1,3 +1,5 @@
+// noinspection JSVoidFunctionReturnValueUsed,JSUnresolvedReference,JSCheckFunctionSignatures
+
 /*
  *  Copyright 2024 Red Hat
  *
@@ -28,4 +30,4 @@ environment.version = goog.define('environment.version', 'undefined');
 environment.base = goog.define('environment.base', '/');
 
 /** @define {string} */
-environment.mode = goog.define('environment.mode', 'undefined');
+environment.build = goog.define('environment.build', 'undefined');

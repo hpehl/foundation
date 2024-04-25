@@ -48,7 +48,15 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>hal-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>hal-meta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-resources</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -80,6 +88,10 @@
             <groupId>org.kie.j2cl.tools.processors</groupId>
             <artifactId>processors</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.elemental2</groupId>
+            <artifactId>elemental2-webstorage</artifactId>
         </dependency>
     </dependencies>
 
@@ -132,13 +144,13 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>prod-server</id>
+                        <id>http-server</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
                         <phase>none</phase>
                         <configuration>
-                            <arguments>run prod-server</arguments>
+                            <arguments>run http-server</arguments>
                         </configuration>
                     </execution>
                 </executions>
@@ -156,7 +168,7 @@
                         <environment.name>${project.name}</environment.name>
                         <environment.version>${project.version}</environment.version>
                         <environment.base>${environment.base}</environment.base>
-                        <environment.mode>${environment.mode}</environment.mode>
+                        <environment.build>${environment.build}</environment.build>
                     </defines>
                     <webappDirectory>${project.build.directory}/console</webappDirectory>
                 </configuration>

@@ -1,5 +1,3 @@
-// noinspection JSUnresolvedReference
-
 /*
  *  Copyright 2024 Red Hat
  *
@@ -15,4 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-const environment = goog.require('environment');
+package org.jboss.hal.env;
+
+/**
+ * The operation mode of the server (standalone or domain).
+ */
+public enum OperationMode {
+
+    STANDALONE,
+
+    DOMAIN;
+
+    public static OperationMode parse(final String value) {
+        OperationMode operationMode = STANDALONE;
+        if (value != null) {
+            try {
+                operationMode = OperationMode.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException ignore) {
+                // ignore
+            }
+        }
+        return operationMode;
+    }
+}

@@ -1,5 +1,3 @@
-// noinspection JSUnresolvedReference
-
 /*
  *  Copyright 2024 Red Hat
  *
@@ -15,4 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-const environment = goog.require('environment');
+package org.jboss.hal.logging;
+
+public enum Level {
+
+    // keep this order!
+    ERROR("ERROR"), WARN("WARN "), INFO("INFO "), DEBUG("DEBUG");
+
+    final String label;
+
+    Level(String label) {
+        this.label = label;
+    }
+}

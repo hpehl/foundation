@@ -14,7 +14,7 @@
     "watch": "concurrently --kill-others 'npm run watch-j2cl' 'npm run watch-parcel'",
     "dev": "parcel build src/web/dev.html --dist-dir target/console --no-optimize",
     "prod": "parcel build src/web/index.html --dist-dir target/console",
-    "prod-server": "http-server target/console -o"
+    "http-server": "http-server target/console -o"
   },
   "devDependencies": {
     "@parcel/core": "^2.12.0",

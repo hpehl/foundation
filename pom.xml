@@ -120,7 +120,7 @@
         <!-- Build related -->
         <encoding>UTF-8</encoding>
         <environment.base>/</environment.base>
-        <environment.mode>development</environment.mode>
+        <environment.build>development</environment.build>
         <j2cl.compilationLevel>BUNDLE_JAR</j2cl.compilationLevel>
         <j2cl.incremental>true</j2cl.incremental>
         <j2cl.sourcemaps>true</j2cl.sourcemaps>
@@ -142,7 +142,9 @@
         <module>db</module>
         <module>dmr</module>
         <module>environment</module>
+        <module>logging</module>
         <module>meta</module>
+        <module>resources</module>
         <module>ui</module>
     </modules>
 
@@ -436,7 +438,7 @@
                 <j2cl.incremental>false</j2cl.incremental>
                 <j2cl.sourcemaps>false</j2cl.sourcemaps>
                 <npm.script>prod</npm.script>
-                <environment.mode>production</environment.mode>
+                <environment.build>production</environment.build>
             </properties>
         </profile>
         <profile>

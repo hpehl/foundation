@@ -24,9 +24,8 @@ import org.jboss.elemento.router.PlaceManager;
 import org.jboss.elemento.router.Routes;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.op.skeleton.NotFound;
+import org.jboss.hal.resources.Ids;
 import org.patternfly.component.navigation.Navigation;
-
-import static org.jboss.hal.op.Ids.MAIN_ID;
 
 public class PlaceManagerProducer {
 
@@ -38,8 +37,8 @@ public class PlaceManagerProducer {
     @ApplicationScoped
     public PlaceManager placeManager() {
         return new PlaceManager()
-                .base(environment.base)
-                .root(By.id(MAIN_ID))
+                .base(environment.base())
+                .root(By.id(Ids.MAIN_ID))
                 .title(title -> "HAL • " + title)
                 .notFound(NotFound::new)
                 .register(routes.places())

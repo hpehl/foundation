@@ -18,12 +18,12 @@ package org.jboss.hal.op.skeleton;
 import org.jboss.elemento.By;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.op.resources.Assets;
+import org.jboss.hal.resources.Ids;
 import org.patternfly.component.navigation.Navigation;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
-import static org.jboss.hal.op.Ids.MAIN_ID;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
@@ -50,7 +50,7 @@ public class Skeleton implements IsElement<HTMLElement> {
 
     public Skeleton(Navigation navigation) {
         root = page()
-                .addSkipToContent(skipToContent(MAIN_ID))
+                .addSkipToContent(skipToContent(Ids.MAIN_ID))
                 .addMasthead(masthead()
                         .addMain(mastheadMain()
                                 .addBrand(mastheadBrand(a("/"))
@@ -61,9 +61,9 @@ public class Skeleton implements IsElement<HTMLElement> {
                                         .addContent(toolbarContent()
                                                 .add(toolbarItem().css(modifier("overflow-container"))
                                                         .add(navigation))))))
-                .addMain(pageMain(MAIN_ID))
+                .addMain(pageMain(Ids.MAIN_ID))
                 .add(backToTop()
-                        .scrollableSelector(By.id(MAIN_ID)))
+                        .scrollableSelector(By.id(Ids.MAIN_ID)))
                 .element();
     }
 

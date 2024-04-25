@@ -15,31 +15,27 @@
  */
 package org.jboss.hal.op.bootstrap;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-
 import org.jboss.elemento.flow.FlowContext;
-import org.jboss.elemento.flow.Subscription;
+import org.jboss.elemento.flow.Task;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
-import org.jboss.hal.env.Endpoints;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.logging.Logger;
 
-import static java.util.Arrays.asList;
-import static org.jboss.elemento.flow.Flow.sequential;
+import elemental2.promise.Promise;
 
-@ApplicationScoped
-public class Bootstrap {
+public class ReadEnvironment implements Task<FlowContext> {
 
-    @Inject Endpoints endpoints;
-    @Inject Dispatcher dispatcher;
-    @Inject Environment environment;
+    private static final Logger logger = Logger.getLogger(ReadEnvironment.class.getName());
+    private final Dispatcher dispatcher;
+    private final Environment environment;
 
-    public Subscription<FlowContext> run() {
-        return sequential(new FlowContext(), asList(
-                new SetLogLevel(),
-                new SelectEndpoint(endpoints),
-                new SingleSignOnSupport(),
-                new ReadEnvironment(dispatcher, environment)
-        )).failFast(true);
+    public ReadEnvironment(Dispatcher dispatcher, Environment environment) {
+        this.dispatcher = dispatcher;
+        this.environment = environment;
+    }
+
+    @Override
+    public Promise<FlowContext> apply(FlowContext context) {
+        return context.resolve();
     }
 }

@@ -13,9 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op;
+package org.jboss.hal.op.bootstrap;
 
-public interface Ids {
+import org.jboss.elemento.flow.FlowContext;
+import org.jboss.elemento.flow.Task;
+import org.jboss.hal.logging.Logger;
 
-    String MAIN_ID = "hop-main-id";
+import elemental2.promise.Promise;
+
+public class SingleSignOnSupport implements Task<FlowContext> {
+
+    private static final Logger logger = Logger.getLogger(SingleSignOnSupport.class.getName());
+
+    @Override
+    public Promise<FlowContext> apply(FlowContext context) {
+        return context.resolve();
+    }
 }

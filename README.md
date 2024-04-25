@@ -17,7 +17,7 @@ The work is in a very early state and very much in progress.
 
 ## Development mode
 
-Run
+In the root folder, run
 
 ```shell
 mvn j2cl:watch -P op
@@ -36,11 +36,11 @@ cd console/op
 yarn run watch
 ```
 
-This will open a browser at http://localhost:1234 and watch for changes to your HTML, CSS, JavaScript, and Java code. Any change will reload the page automatically.
+This will open a browser at http://localhost:1234 and watch for changes to your HTML, CSS, JavaScript, and Java code. Each time a change is made, the browser reloads the page automatically.
 
 ## Production mode
 
-Run
+In the root folder, run
 
 ```shell
 mvn package -P op,prod
@@ -52,8 +52,10 @@ You can use any HTTP server you want to serve the files from this folder. The pr
 
 ```shell
 cd console/op
-mvn com.github.eirslett:frontend-maven-plugin:yarn@prod-server
+mvn com.github.eirslett:frontend-maven-plugin:yarn@http-server
 ```
+
+This will open a browser at http://localhost:8080.
 
 # Contributing
 

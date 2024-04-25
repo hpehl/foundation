@@ -19,7 +19,12 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.PlaceManager;
+import org.jboss.hal.logging.Level;
+import org.jboss.hal.logging.Logger;
 import org.jboss.hal.op.bootstrap.Bootstrap;
+import org.jboss.hal.op.bootstrap.BootstrapErrorElement;
+import org.jboss.hal.op.bootstrap.BootstrapError;
+import org.jboss.hal.op.bootstrap.BootstrapError.Failure;
 import org.jboss.hal.op.skeleton.Skeleton;
 import org.kie.j2cl.tools.di.annotation.Application;
 import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
@@ -42,8 +47,15 @@ public class Main {
 
     @PostConstruct
     void init() {
-        bootstrap.init();
-        insertFirst(document.body, new Skeleton(navigation));
-        placeManager.start();
+        Logger.setLevel(Level.DEBUG);
+        bootstrap.run().subscribe(context -> {
+            if (context.successful()) {
+                insertFirst(document.body, new Skeleton(navigation));
+                placeManager.start();
+            } else {
+                BootstrapError error = context.pop(BootstrapError.UNKNOWN);
+                insertFirst(document.body, new BootstrapErrorElement(error));
+            }
+        });
     }
 }

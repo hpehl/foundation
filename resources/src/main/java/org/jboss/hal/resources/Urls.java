@@ -1,5 +1,3 @@
-// noinspection JSUnresolvedReference
-
 /*
  *  Copyright 2024 Red Hat
  *
@@ -15,4 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-const environment = goog.require('environment');
+package org.jboss.hal.resources;
+
+public interface Urls {
+
+    String LOGOUT = "/logout";
+    String MANAGEMENT = "/management";
+    String UPLOAD = "/management-upload";
+}

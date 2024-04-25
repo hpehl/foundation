@@ -1,5 +1,3 @@
-// noinspection JSUnresolvedReference
-
 /*
  *  Copyright 2024 Red Hat
  *
@@ -15,4 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-const environment = goog.require('environment');
+package org.jboss.hal.env;
+
+/**
+ * The build type of the console (development or production)
+ */
+public enum BuildType {
+
+    DEVELOPMENT,
+
+    PRODUCTION;
+
+    public static BuildType parse(final String value) {
+        BuildType build = DEVELOPMENT;
+        if (value != null) {
+            try {
+                build = BuildType.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException ignore) {
+                // ignore
+            }
+        }
+        return build;
+    }
+}

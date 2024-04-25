@@ -28,19 +28,15 @@
         <relativePath>../code-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>hal-environment</artifactId>
+    <artifactId>hal-resources</artifactId>
     <packaging>jar</packaging>
-    <name>HAL Environment</name>
-    <description>Infos about the environment</description>
+    <name>HAL Resources</name>
+    <description>HAL constants and resources</description>
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-resources</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.elemental2</groupId>
-            <artifactId>elemental2-dom</artifactId>
+            <groupId>org.jboss.elemento</groupId>
+            <artifactId>elemento-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.kie.j2cl.tools.di</groupId>
@@ -50,11 +46,6 @@
             <groupId>org.kie.j2cl.tools.di</groupId>
             <artifactId>processor</artifactId>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

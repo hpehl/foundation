@@ -66,17 +66,18 @@ public class DashboardPage implements Page {
                                                                         .addGroup(descriptionListGroup()
                                                                                 .addTerm(descriptionListTerm("ID"))
                                                                                 .addDescription(descriptionListDescription(
-                                                                                        environment.id))
+                                                                                        environment.applicationId()))
                                                                                 .addTerm(descriptionListTerm("Name"))
                                                                                 .addDescription(descriptionListDescription(
-                                                                                        environment.name)))
+                                                                                        environment.applicationName())))
                                                                         .addGroup(descriptionListGroup()
                                                                                 .addTerm(descriptionListTerm("Version"))
                                                                                 .addDescription(descriptionListDescription(
-                                                                                        environment.version))
+                                                                                        environment.applicationVersion()
+                                                                                                .toString()))
                                                                                 .addTerm(descriptionListTerm("Mode"))
                                                                                 .addDescription(descriptionListDescription(
-                                                                                        environment.mode)))))))
+                                                                                        environment.buildType().name())))))))
                                         .addItem(gridItem().span(4).rowSpan(2)
                                                 .add(card().fullHeight()
                                                         .addTitle(cardTitle().textContent("Card"))
