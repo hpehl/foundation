@@ -21,7 +21,6 @@ import java.util.Map;
 import elemental2.core.JsDate;
 
 import static elemental2.dom.DomGlobal.console;
-import static java.lang.System.arraycopy;
 import static org.jboss.hal.logging.Level.DEBUG;
 import static org.jboss.hal.logging.Level.ERROR;
 import static org.jboss.hal.logging.Level.INFO;
