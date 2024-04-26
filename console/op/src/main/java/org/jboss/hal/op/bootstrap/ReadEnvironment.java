@@ -17,9 +17,9 @@ package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
-import org.jboss.hal.logging.Logger;
 
 import elemental2.promise.Promise;
 
@@ -36,6 +36,7 @@ public class ReadEnvironment implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(FlowContext context) {
+        logger.warn("Read environment is not yet implemented.");
         return context.resolve();
     }
 }

@@ -1,10 +1,8 @@
-# HAL Foundation
-
 This repository contains the foundation for the next major version of the HAL management console and the upcoming OpenShift version halOS.
 
 The work is in a very early state and very much in progress.
 
-## Technical Stack
+# Technical Stack
 
 - [Java 11](https://jdk.java.net/java-se-ri/11)
 - [J2CL](https://github.com/google/j2cl)

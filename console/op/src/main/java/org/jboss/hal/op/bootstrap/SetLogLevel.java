@@ -17,14 +17,14 @@ package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
-import org.jboss.hal.logging.Level;
-import org.jboss.hal.logging.Logger;
+import org.jboss.elemento.logger.Level;
+import org.jboss.elemento.logger.Logger;
 
 import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
 
 import static elemental2.dom.DomGlobal.location;
-import static org.jboss.hal.logging.Level.INFO;
+import static org.jboss.elemento.logger.Level.INFO;
 
 public class SetLogLevel implements Task<FlowContext> {
 

@@ -87,7 +87,7 @@
         <!-- Dependency versions -->
         <version.checkstyle.config>1.0.8.Final</version.checkstyle.config>
         <version.elemental2>1.2.1</version.elemental2>
-        <version.elemento>1.4.9</version.elemento>
+        <version.elemento>1.4.11</version.elemento>
         <version.gwt.event>1.0.0-RC1</version.gwt.event>
         <version.gwt.safehtml>1.0.0-RC1</version.gwt.safehtml>
         <version.junit>5.10.2</version.junit>
@@ -96,7 +96,7 @@
         <version.mockito>5.11.0</version.mockito>
         <version.node>v21.7.1</version.node>
         <version.patternfly>5.2.1</version.patternfly>
-        <version.patternfly.java>0.2.2</version.patternfly.java>
+        <version.patternfly.java>0.2.4</version.patternfly.java>
         <version.yarn>v1.22.21</version.yarn>
 
         <!-- Plugin versions -->
@@ -142,7 +142,6 @@
         <module>db</module>
         <module>dmr</module>
         <module>environment</module>
-        <module>logging</module>
         <module>meta</module>
         <module>resources</module>
         <module>ui</module>

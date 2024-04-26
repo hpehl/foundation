@@ -39,19 +39,6 @@
             <artifactId>hal-resources</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.google.elemental2</groupId>
-            <artifactId>elemental2-dom</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie.j2cl.tools.di</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.kie.j2cl.tools.di</groupId>
-            <artifactId>processor</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>

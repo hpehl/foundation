@@ -17,13 +17,18 @@ package org.jboss.hal.op.skeleton;
 
 import org.jboss.elemento.By;
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.op.bootstrap.BootstrapErrorElement;
 import org.jboss.hal.op.resources.Assets;
 import org.jboss.hal.resources.Ids;
 import org.patternfly.component.navigation.Navigation;
+import org.patternfly.component.page.PageMain;
+import org.patternfly.component.toolbar.ToolbarItem;
+import org.patternfly.style.Variable;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
+import static org.jboss.elemento.Elements.div;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
@@ -32,6 +37,8 @@ import static org.patternfly.component.page.MastheadContent.mastheadContent;
 import static org.patternfly.component.page.MastheadMain.mastheadMain;
 import static org.patternfly.component.page.Page.page;
 import static org.patternfly.component.page.PageMain.pageMain;
+import static org.patternfly.component.page.PageMainBody.pageMainBody;
+import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.skiptocontent.SkipToContent.skipToContent;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
@@ -42,13 +49,32 @@ import static org.patternfly.style.Classes.fullHeight;
 import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.static_;
 import static org.patternfly.style.Variable.componentVar;
+import static org.patternfly.style.Variable.globalVar;
 import static org.patternfly.style.Variables.Height;
 
 public class Skeleton implements IsElement<HTMLElement> {
 
     private final HTMLElement root;
+    private final ToolbarItem toolbarItem;
+    private final PageMain pageMain;
+
 
     public Skeleton(Navigation navigation) {
+        this();
+        toolbarItem.add(navigation.element());
+    }
+
+    public Skeleton(BootstrapErrorElement bootstrapError) {
+        this();
+        Variable white = globalVar("BackgroundColor", "100");
+        pageMain.add(pageMainSection()
+                .limitWidth()
+                .add(pageMainBody()
+                        .add(div().style("background-color", "var(" + white.name + ")")
+                                .add(bootstrapError))));
+    }
+
+    private Skeleton() {
         root = page()
                 .addSkipToContent(skipToContent(Ids.MAIN_ID))
                 .addMasthead(masthead()
@@ -59,9 +85,8 @@ public class Skeleton implements IsElement<HTMLElement> {
                         .addContent(mastheadContent()
                                 .addToolbar(toolbar().css(modifier(fullHeight), modifier(static_))
                                         .addContent(toolbarContent()
-                                                .add(toolbarItem().css(modifier("overflow-container"))
-                                                        .add(navigation))))))
-                .addMain(pageMain(Ids.MAIN_ID))
+                                                .add(toolbarItem = toolbarItem().css(modifier("overflow-container")))))))
+                .addMain(pageMain = pageMain(Ids.MAIN_ID))
                 .add(backToTop()
                         .scrollableSelector(By.id(Ids.MAIN_ID)))
                 .element();

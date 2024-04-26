@@ -17,7 +17,7 @@ package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
-import org.jboss.hal.logging.Logger;
+import org.jboss.elemento.logger.Logger;
 
 import elemental2.promise.Promise;
 
@@ -27,6 +27,7 @@ public class SingleSignOnSupport implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(FlowContext context) {
+        logger.warn("Single sign on support is not yet implemented.");
         return context.resolve();
     }
 }

@@ -32,23 +32,4 @@
     <packaging>jar</packaging>
     <name>HAL Console OpenShift</name>
     <description>HAL console for OpenShift</description>
-
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-db</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-dmr</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-meta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-ui</artifactId>
-        </dependency>
-    </dependencies>
 </project>

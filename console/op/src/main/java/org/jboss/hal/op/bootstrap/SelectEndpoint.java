@@ -17,9 +17,9 @@ package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelDescriptionConstants;
 import org.jboss.hal.env.Endpoints;
-import org.jboss.hal.logging.Logger;
 import org.jboss.hal.resources.Ids;
 import org.jboss.hal.resources.Urls;
 
@@ -33,13 +33,13 @@ import elemental2.webstorage.WebStorageWindow;
 import static elemental2.dom.DomGlobal.fetch;
 import static elemental2.dom.DomGlobal.location;
 import static elemental2.dom.DomGlobal.window;
+import static org.jboss.hal.op.bootstrap.BootstrapError.fail;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NETWORK_ERROR;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NOT_AN_ENDPOINT;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_FOUND;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_GIVEN;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_LOCAL_STORAGE;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.UNKNOWN;
-import static org.jboss.hal.op.bootstrap.BootstrapError.fail;
 
 public class SelectEndpoint implements Task<FlowContext> {
 
