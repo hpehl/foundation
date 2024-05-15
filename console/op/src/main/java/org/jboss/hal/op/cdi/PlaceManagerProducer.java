@@ -20,17 +20,19 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.By;
+import org.jboss.elemento.router.AnnotatedPlaces;
 import org.jboss.elemento.router.PlaceManager;
-import org.jboss.elemento.router.Routes;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.op.skeleton.NoData;
 import org.jboss.hal.op.skeleton.NotFound;
 import org.jboss.hal.resources.Ids;
+import org.kie.j2cl.tools.di.core.BeanManager;
 import org.patternfly.component.navigation.Navigation;
 
 public class PlaceManagerProducer {
 
+    @Inject BeanManager beanManager;
     @Inject Environment environment;
-    @Inject Routes routes;
     @Inject Navigation navigation;
 
     @Produces
@@ -41,7 +43,8 @@ public class PlaceManagerProducer {
                 .root(By.id(Ids.MAIN_ID))
                 .title(title -> "HAL • " + title)
                 .notFound(NotFound::new)
-                .register(routes.places())
-                .afterPlace((placeManager, place, page) -> navigation.select(place.route));
+                .noData(NoData::new)
+                .register(new AnnotatedPlaces(beanManager))
+                .afterPlace((placeManager, place) -> navigation.select(place.route));
     }
 }

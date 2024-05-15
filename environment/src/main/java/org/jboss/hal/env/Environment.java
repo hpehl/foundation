@@ -17,6 +17,10 @@ package org.jboss.hal.env;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import static org.jboss.hal.env.AccessControlProvider.SIMPLE;
+import static org.jboss.hal.env.OperationMode.STANDALONE;
+import static org.jboss.hal.env.Version.EMPTY_VERSION;
+
 @ApplicationScoped
 public class Environment {
 
@@ -27,9 +31,11 @@ public class Environment {
     private final BuildType buildType;
     private String instanceName;
     private String instanceOrganization;
-    private Version instanceVersion;
+    private String productName;
+    private Version productVersion;
     private Version managementVersion;
     private OperationMode operationMode;
+    private AccessControlProvider accessControlProvider;
     private boolean sso;
 
     Environment() {
@@ -39,17 +45,52 @@ public class Environment {
         this.applicationVersion = Version.parseVersion(System.getProperty("environment.version"));
         this.base = System.getProperty("environment.base");
         this.buildType = BuildType.parse(System.getProperty("environment.build"));
+
+        // default values for the non-final properties
+        this.instanceName = "undefined";
+        this.instanceOrganization = "undefined";
+        this.productName = "undefined";
+        this.productVersion = EMPTY_VERSION;
+        this.managementVersion = EMPTY_VERSION;
+        this.operationMode = STANDALONE;
+        this.accessControlProvider = SIMPLE;
+        this.sso = false;
     }
 
-    // init non-final properties as part of the bootstrap process
-    public void init(String instanceName, String instanceOrganization, Version instanceVersion,
-            Version managementVersion, OperationMode operationMode, boolean sso) {
+    // update non-final properties as part of the bootstrap process
+    public void update(String instanceName, String instanceOrganization, String productName, Version productVersion,
+            Version managementVersion, OperationMode operationMode) {
         this.instanceName = instanceName;
         this.instanceOrganization = instanceOrganization;
-        this.instanceVersion = instanceVersion;
+        this.productName = productName;
+        this.productVersion = productVersion;
         this.managementVersion = managementVersion;
         this.operationMode = operationMode;
+    }
+
+    // update non-final properties as part of the bootstrap process
+    public void update(AccessControlProvider accessControlProvider, boolean sso) {
+        this.accessControlProvider = accessControlProvider;
         this.sso = sso;
+    }
+
+    @Override
+    public String toString() {
+        return "Environment(" +
+                "applicationId='" + applicationId + '\'' +
+                ", applicationName='" + applicationName + '\'' +
+                ", applicationVersion=" + applicationVersion +
+                ", base='" + base + '\'' +
+                ", buildType=" + buildType +
+                ", instanceName='" + instanceName + '\'' +
+                ", instanceOrganization='" + instanceOrganization + '\'' +
+                ", productName='" + productName + '\'' +
+                ", productVersion=" + productVersion +
+                ", managementVersion=" + managementVersion +
+                ", operationMode=" + operationMode +
+                ", accessControlProvider=" + accessControlProvider +
+                ", sso=" + sso +
+                ')';
     }
 
     // ------------------------------------------------------ getter
@@ -82,8 +123,12 @@ public class Environment {
         return instanceOrganization;
     }
 
-    public Version instanceVersion() {
-        return instanceVersion;
+    public String productName() {
+        return productName;
+    }
+
+    public Version productVersion() {
+        return productVersion;
     }
 
     public Version managementVersion() {
@@ -92,6 +137,14 @@ public class Environment {
 
     public OperationMode operationMode() {
         return operationMode;
+    }
+
+    public boolean standalone() {
+        return operationMode == OperationMode.STANDALONE;
+    }
+
+    public AccessControlProvider accessControlProvider() {
+        return accessControlProvider;
     }
 
     public boolean sso() {

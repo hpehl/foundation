@@ -52,7 +52,7 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Elemento -->
+            <!-- Elemento / Elemental -->
             <dependency>
                 <groupId>org.jboss.elemento</groupId>
                 <artifactId>elemento-bom</artifactId>
@@ -60,8 +60,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <!-- Elemental -->
             <dependency>
                 <groupId>com.google.elemental2</groupId>
                 <artifactId>elemental2-core</artifactId>

@@ -32,4 +32,15 @@
     <packaging>jar</packaging>
     <name>HAL DMR</name>
     <description>Contains classes to talk to the domain controller using the DMR protocol</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-event</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-environment</artifactId>
+        </dependency>
+    </dependencies>
 </project>

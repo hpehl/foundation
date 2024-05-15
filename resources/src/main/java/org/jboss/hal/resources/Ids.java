@@ -29,13 +29,15 @@ public interface Ids {
 
     // ------------------------------------------------------ static IDs (a-z)
 
+    String COOKIE = "hal-cookie";
     String MAIN_ID = "hal-main-id";
-    String ENDPOINT = "hal-endpoint";
     String ENDPOINTS = "hal-endpoints";
+    String STANDALONE_HOST = "hal-standalone-host";
+    String STANDALONE_SERVER = "hal-standalone-server";
 
     // ------------------------------------------------------ dynamic IDs (a-z)
 
-    static String endpoint(String name) {
-        return Id.build(ENDPOINT, name);
+    static String hostServer(String host, String server) {
+        return Id.build(host, server);
     }
 }

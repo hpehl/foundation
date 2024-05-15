@@ -15,9 +15,13 @@
  */
 package org.jboss.hal.op.deployment;
 
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.router.LoadedData;
 import org.jboss.elemento.router.Page;
+import org.jboss.elemento.router.Parameter;
+import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.PlaceManager;
 import org.jboss.elemento.router.Route;
 
@@ -31,13 +35,19 @@ import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.style.Brightness.light;
 
+@Dependent
 @Route("/deployments")
 public class DeploymentsPage implements Page {
 
-    @Inject PlaceManager placeManager;
+    private final PlaceManager placeManager;
+
+    @Inject
+    public DeploymentsPage(PlaceManager placeManager) {
+        this.placeManager = placeManager;
+    }
 
     @Override
-    public Iterable<HTMLElement> elements() {
+    public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return singletonList(pageMainSection().background(light)
                 .add(textContent()
                         .add(h(1, "Deployments"))

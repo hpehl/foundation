@@ -15,12 +15,54 @@
  */
 package org.jboss.hal.op.bootstrap;
 
+import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.dmr.ModelDescriptionConstants;
+import org.jboss.hal.resources.Urls;
+
+import elemental2.dom.Request;
+import elemental2.dom.RequestInit;
+import elemental2.promise.Promise;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsType;
 
+import static elemental2.dom.DomGlobal.fetch;
+
 @JsType(isNative = true, namespace = JsPackage.GLOBAL, name = "Object")
 class Endpoint {
+
+    @JsOverlay
+    private static final Logger logger = Logger.getLogger(Endpoint.class.getName());
+
+    @JsOverlay
+    static Promise<Boolean> ping(String url) {
+        String managementEndpoint = url + Urls.MANAGEMENT;
+        RequestInit init = RequestInit.create();
+        init.setMethod("GET");
+        init.setMode("cors");
+        init.setCredentials("include");
+        Request request = new Request(managementEndpoint, init);
+
+        logger.debug("Ping %s", managementEndpoint);
+        return fetch(request)
+                .then(response -> {
+                    if (response.status == 200) {
+                        logger.debug("GET for endpoint %s returned 200. Check if it is a valid management interface.", url);
+                        return response.text().then(text -> {
+                            if (text.contains(ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION)) {
+                                logger.debug("Endpoint %s is valid.", url);
+                                return Promise.resolve(true);
+                            } else {
+                                logger.debug("Endpoint %s is not a valid management interface.", url);
+                                return Promise.resolve(false);
+                            }
+                        });
+                    } else {
+                        logger.debug("GET for endpoint %s returned %d. Not a valid endpoint.", url, response.status);
+                        return Promise.resolve(false);
+                    }
+                });
+    }
 
     @JsOverlay
     static Endpoint endpoint(String url) {

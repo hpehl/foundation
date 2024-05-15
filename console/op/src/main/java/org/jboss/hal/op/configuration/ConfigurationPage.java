@@ -15,9 +15,13 @@
  */
 package org.jboss.hal.op.configuration;
 
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.router.LoadedData;
 import org.jboss.elemento.router.Page;
+import org.jboss.elemento.router.Parameter;
+import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.PlaceManager;
 import org.jboss.elemento.router.Route;
 
@@ -26,22 +30,32 @@ import elemental2.dom.HTMLElement;
 import static java.util.Collections.singletonList;
 import static org.jboss.elemento.Elements.h;
 import static org.jboss.elemento.Elements.p;
+import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.router.Link.link;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.style.Brightness.light;
 
+@Dependent
 @Route("/configuration")
 public class ConfigurationPage implements Page {
 
-    @Inject PlaceManager placeManager;
+    private final PlaceManager placeManager;
+
+    @Inject
+    public ConfigurationPage(PlaceManager placeManager) {
+        this.placeManager = placeManager;
+    }
 
     @Override
-    public Iterable<HTMLElement> elements() {
+    public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return singletonList(pageMainSection().background(light)
                 .add(textContent()
                         .add(h(1, "Configuration"))
                         .add(p().textContent("Not yet implemented!"))
+                        .add(p()
+                                .add("Current time: ")
+                                .add(span().textContent(data.get())))
                         .add(p().add(link(placeManager, "/").textContent("Home"))))
                 .element());
     }

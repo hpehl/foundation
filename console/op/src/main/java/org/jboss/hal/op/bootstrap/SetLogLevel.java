@@ -19,11 +19,10 @@ import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Level;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.env.Query;
 
-import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
 
-import static elemental2.dom.DomGlobal.location;
 import static org.jboss.elemento.logger.Level.INFO;
 
 public class SetLogLevel implements Task<FlowContext> {
@@ -33,19 +32,21 @@ public class SetLogLevel implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(FlowContext context) {
-        Logger.setLevel(INFO);
-        if (!location.search.isEmpty()) {
-            URLSearchParams query = new URLSearchParams(location.search);
-            if (query.has(LOG_LEVEL_PARAMETER)) {
-                String logLevel = query.get(LOG_LEVEL_PARAMETER);
+        if (Query.getParameter(LOG_LEVEL_PARAMETER) != null) {
+            String logLevel = Query.getParameter(LOG_LEVEL_PARAMETER);
+            if (logLevel != null) {
                 try {
                     Level level = Level.valueOf(logLevel.toUpperCase());
                     Logger.setLevel(level);
-                    logger.info("Set log level to %s", level.name());
                 } catch (IllegalArgumentException e) {
                     logger.error("Unknown log level '%s'", logLevel);
+                    Logger.setLevel(INFO);
                 }
+            } else {
+                Logger.setLevel(INFO);
             }
+        } else {
+            Logger.setLevel(INFO);
         }
         return context.resolve();
     }

@@ -15,7 +15,10 @@
  */
 package org.jboss.hal.op.bootstrap;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.hal.resources.Ids;
@@ -26,6 +29,7 @@ import elemental2.webstorage.WebStorageWindow;
 
 import static elemental2.core.Global.JSON;
 import static elemental2.dom.DomGlobal.window;
+import static java.util.Comparator.comparing;
 
 class EndpointStorage {
 
@@ -45,13 +49,34 @@ class EndpointStorage {
         }
     }
 
-    void save() {
-        JsArray<Endpoint> eps = new JsArray<>();
-        endpoints.values().forEach(eps::push);
-        storage.setItem(Ids.ENDPOINTS, JSON.stringify(eps));
+    void add(Endpoint endpoint) {
+        endpoints.put(endpoint.name, endpoint);
+        save();
+    }
+
+    void remove(String name) {
+        endpoints.remove(name);
+        save();
     }
 
     Endpoint get(String name) {
         return endpoints.get(name);
+    }
+
+    boolean isEmpty() {
+        return endpoints.isEmpty();
+    }
+
+    Iterable<Endpoint> endpoints() {
+        List<Endpoint> sorted = new ArrayList<>(endpoints.values());
+        //noinspection Java8ListSort
+        Collections.sort(sorted, comparing(endpoint -> endpoint.name));
+        return sorted;
+    }
+
+    private void save() {
+        JsArray<Endpoint> eps = new JsArray<>();
+        endpoints.values().forEach(eps::push);
+        storage.setItem(Ids.ENDPOINTS, JSON.stringify(eps));
     }
 }

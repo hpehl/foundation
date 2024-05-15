@@ -15,9 +15,13 @@
  */
 package org.jboss.hal.op.dashboard;
 
+import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.router.LoadedData;
 import org.jboss.elemento.router.Page;
+import org.jboss.elemento.router.Parameter;
+import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.Route;
 import org.jboss.hal.env.Environment;
 
@@ -42,13 +46,19 @@ import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Brightness.light;
 
+@Dependent
 @Route("/")
 public class DashboardPage implements Page {
 
-    @Inject Environment environment;
+    private final Environment environment;
+
+    @Inject
+    public DashboardPage(Environment environment) {
+        this.environment = environment;
+    }
 
     @Override
-    public Iterable<HTMLElement> elements() {
+    public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return asList(pageMainSection().limitWidth().background(light)
                         .addBody(pageMainBody()
                                 .add(textContent()

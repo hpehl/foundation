@@ -22,7 +22,9 @@ public enum OperationMode {
 
     STANDALONE,
 
-    DOMAIN;
+    DOMAIN,
+
+    UNDEFINED;
 
     public static OperationMode parse(final String value) {
         OperationMode operationMode = STANDALONE;

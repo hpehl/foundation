@@ -13,23 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op.cdi;
+package org.jboss.hal.dmr.dispatch;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.inject.Inject;
-
-import org.jboss.elemento.router.Routes;
-import org.jboss.elemento.router.RoutesImpl;
-import org.kie.j2cl.tools.di.core.BeanManager;
-
-public class RoutesProducer {
-
-    @Inject BeanManager beanManager;
-
-    @Produces
-    @ApplicationScoped
-    public Routes routes() {
-        return new RoutesImpl(beanManager);
-    }
+public enum HttpMethod {
+    GET, POST;
 }

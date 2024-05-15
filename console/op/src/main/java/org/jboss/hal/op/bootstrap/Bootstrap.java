@@ -23,6 +23,10 @@ import org.jboss.elemento.flow.Subscription;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Endpoints;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.model.server.Server;
+import org.jboss.hal.model.server.Standalone;
+import org.jboss.hal.model.user.Current;
+import org.jboss.hal.model.user.User;
 
 import static java.util.Arrays.asList;
 import static org.jboss.elemento.flow.Flow.sequential;
@@ -33,13 +37,15 @@ public class Bootstrap {
     @Inject Endpoints endpoints;
     @Inject Dispatcher dispatcher;
     @Inject Environment environment;
+    @Inject @Standalone Server server;
+    @Inject @Current User user;
 
     public Subscription<FlowContext> run() {
         return sequential(new FlowContext(), asList(
                 new SetLogLevel(),
                 new SelectEndpoint(endpoints),
                 new SingleSignOnSupport(),
-                new ReadEnvironment(dispatcher, environment)
+                new ReadEnvironment(dispatcher, environment, server, user)
         )).failFast(true);
     }
 }
