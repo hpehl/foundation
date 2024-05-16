@@ -23,15 +23,11 @@ public class BootstrapError {
 
     public enum Failure {
 
-        NO_ENDPOINT_GIVEN,
+        NO_ENDPOINT_SPECIFIED,
 
         NO_ENDPOINT_FOUND,
 
-        NO_LOCAL_STORAGE,
-
         NOT_AN_ENDPOINT,
-
-        ENVIRONMENT_ERROR,
 
         NETWORK_ERROR,
 

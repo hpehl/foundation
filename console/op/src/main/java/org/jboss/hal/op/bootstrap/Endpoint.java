@@ -15,6 +15,7 @@
  */
 package org.jboss.hal.op.bootstrap;
 
+import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelDescriptionConstants;
 import org.jboss.hal.resources.Urls;
@@ -65,20 +66,15 @@ class Endpoint {
     }
 
     @JsOverlay
-    static Endpoint endpoint(String url) {
-        Endpoint endpoint = new Endpoint();
-        endpoint.url = url;
-        return endpoint;
-    }
-
-    @JsOverlay
     static Endpoint endpoint(String name, String url) {
         Endpoint endpoint = new Endpoint();
+        endpoint.id = Id.uuid();
         endpoint.name = name;
         endpoint.url = url;
         return endpoint;
     }
 
+    String id;
     String name;
     String url;
 }

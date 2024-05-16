@@ -22,12 +22,13 @@ import org.patternfly.component.form.TextInput;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.ObservableValue;
 
+import elemental2.core.TypeError;
 import elemental2.dom.HTMLElement;
 import elemental2.dom.URL;
 
-import static org.patternfly.component.ValidationStatus.default_;
 import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.ValidationStatus.success;
+import static org.patternfly.component.ValidationStatus.warning;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.form.Form.form;
 import static org.patternfly.component.form.FormGroup.formGroup;
@@ -59,8 +60,10 @@ class EndpointForm implements IsElement<HTMLElement> {
     private final FormGroupControl urlControl;
     private final TextInput urlInput;
     private final ObservableValue<String> url;
+    private Endpoint endpoint;
+    private boolean newEndpoint;
 
-    EndpointForm() {
+    EndpointForm(EndpointStorage storage) {
         this.form = form().horizontal()
                 .addGroup(formGroup().fieldId("mi-name").required()
                         .addLabel(formGroupLabel("Name"))
@@ -97,10 +100,23 @@ class EndpointForm implements IsElement<HTMLElement> {
                                                 .addButton(button("Ping").control()
                                                         .onClick((event, component) -> ping()))))));
 
+        endpoint = null;
+        newEndpoint = true;
         url = ov(DEFAULT_URL).subscribe((current, previous) -> urlInput.value(current));
-        secureSwitch.onChange((event, component, value) -> url.set(buildUrl(value, hostInput.value(), portInput.value())));
-        hostInput.onChange((event, component, value) -> url.set(buildUrl(secureSwitch.value(), value, portInput.value())));
-        portInput.onChange((event, component, value) -> url.set(buildUrl(secureSwitch.value(), hostInput.value(), value)));
+        nameInput.onChange((e, c, value) -> {
+            if (newEndpoint) {
+                if (storage.findByName(value) != null) {
+                    nameControl.setHelperText(helperText("Management interface with that name already exists", warning));
+                    nameInput.validated(warning);
+                } else {
+                    nameControl.removeHelperText();
+                    nameInput.resetValidation();
+                }
+            }
+        });
+        secureSwitch.onChange((e, c, value) -> url.set(buildUrl(value, hostInput.value(), portInput.value())));
+        hostInput.onChange((e, c, value) -> url.set(buildUrl(secureSwitch.value(), value, portInput.value())));
+        portInput.onChange((e, c, value) -> url.set(buildUrl(secureSwitch.value(), hostInput.value(), value)));
     }
 
     @Override
@@ -109,30 +125,37 @@ class EndpointForm implements IsElement<HTMLElement> {
     }
 
     boolean isValid() {
-        nameControl.removeHelperText();
         if (nameInput.value() == null || nameInput.value().isEmpty()) {
-            nameControl.addHelperText(helperText("Must not be empty", error));
+            nameControl.setHelperText(helperText("Must not be empty", error));
             nameInput.validated(error);
             return false;
         } else {
-            nameInput.validated(default_);
+            nameInput.resetValidation();
             return true;
         }
     }
 
     Endpoint endpoint() {
-        return Endpoint.endpoint(nameInput.value(), url.get());
+        if (newEndpoint) {
+            return Endpoint.endpoint(nameInput.value(), url.get());
+        } else {
+            endpoint.name = nameInput.value();
+            endpoint.url = urlInput.value();
+            return endpoint;
+        }
     }
 
     void reset() {
         nameControl.removeHelperText();
-        nameInput.validated(default_);
+        nameInput.resetValidation();
         urlControl.removeHelperText();
-        urlInput.validated(default_);
+        urlInput.resetValidation();
     }
 
     void show(Endpoint endpoint) {
-        if (endpoint == null) {
+        this.endpoint = endpoint;
+        this.newEndpoint = endpoint == null;
+        if (newEndpoint) {
             nameInput.value("", false);
             secureSwitch.value(false, false);
             hostInput.value("", false);
@@ -175,19 +198,20 @@ class EndpointForm implements IsElement<HTMLElement> {
         Endpoint.ping(failSafeUrl)
                 .then(valid -> {
                     if (valid) {
+                        urlControl.setHelperText(helperText("Valid management interface", success));
                         urlInput.validated(success);
-                        urlControl.removeHelperText();
                     } else {
-                        urlInput.validated(error);
-                        urlControl.removeHelperText();
-                        urlControl.addHelperText(helperText("Not a valid management interface", error));
+                        urlControl.setHelperText(helperText("Not a valid management interface", warning));
+                        urlInput.validated(warning);
                     }
                     return null;
                 })
-                .catch_(__ -> {
+                .catch_(failure -> {
+                    String message = failure instanceof TypeError
+                            ? "Management endpoint not accessible"
+                            : "Not a valid management interface";
+                    urlControl.setHelperText(helperText(message, error));
                     urlInput.validated(error);
-                    urlControl.removeHelperText();
-                    urlControl.addHelperText(helperText("Not a valid management interface", error));
                     return null;
                 });
     }

@@ -16,12 +16,23 @@
 package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.IsElement;
+import org.patternfly.component.text.TextContent;
 
 import elemental2.dom.HTMLElement;
 
+import static elemental2.dom.DomGlobal.location;
+import static org.jboss.elemento.Elements.a;
+import static org.jboss.elemento.Elements.br;
+import static org.jboss.elemento.Elements.code;
+import static org.jboss.elemento.Elements.p;
+import static org.jboss.elemento.Elements.pre;
+import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
+import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.style.Size.lg;
 import static org.patternfly.style.Variable.globalVar;
@@ -31,53 +42,71 @@ public class BootstrapErrorElement implements IsElement<HTMLElement> {
     private final HTMLElement root;
 
     public BootstrapErrorElement(BootstrapError error) {
+        String selectUrl = location.origin + location.pathname;
         this.root = emptyState().size(lg)
                 .addHeader(emptyStateHeader()
                         .icon(exclamationCircle(), globalVar("danger-color", "100"))
                         .text(header(error)))
                 .addBody(emptyStateBody()
-                        .textContent(text(error)))
+                        .add(details(error)))
+                .addFooter(emptyStateFooter()
+                        .addActions(emptyStateActions()
+                                .add(button("Select management interface", selectUrl))))
                 .element();
     }
 
     private String header(BootstrapError error) {
         switch (error.failure()) {
+            case NO_ENDPOINT_SPECIFIED:
+                return "No management interface specified";
+            case NO_ENDPOINT_FOUND:
+                return "Management interface not found";
+            case NOT_AN_ENDPOINT:
+                return "Not an valid management interface";
             case NETWORK_ERROR:
                 return "Network Error";
-            case NO_ENDPOINT_GIVEN:
-                return "No endpoint given";
-            case NO_ENDPOINT_FOUND:
-                return "No endpoint found";
-            case NO_LOCAL_STORAGE:
-                return "No local storage";
-            case NOT_AN_ENDPOINT:
-                return "Not an endpoint";
-            case ENVIRONMENT_ERROR:
-                return "Environment error";
             case UNKNOWN:
                 return "Unknown error";
         }
         return "Unknown error";
     }
 
-    private String text(BootstrapError error) {
+    private HTMLElement details(BootstrapError error) {
+        TextContent textContent = textContent();
         switch (error.failure()) {
-            case NETWORK_ERROR:
-                return error.data() != null ? error.data() : "Unknown network error.";
-            case NO_ENDPOINT_GIVEN:
-                return "There was no endpoint given using the query parameter: " + error.data();
+            case NO_ENDPOINT_SPECIFIED:
+                textContent.add(p()
+                        .add("You have not specified a value for parameter ")
+                        .add(code().textContent(error.data()))
+                        .add(".")
+                        .add(br())
+                        .add("You must specify a URL of a management interface or the name of a saved management interface."));
+                break;
             case NO_ENDPOINT_FOUND:
-                return "The endpoint " + error.data() + " was not found";
-            case NO_LOCAL_STORAGE:
-                return "The endpoint " + error.data() + " could not be read from the local storage";
+                textContent.add(p()
+                        .add("The management interface ")
+                        .add(code().textContent(error.data()))
+                        .add(" was not found."));
+                break;
             case NOT_AN_ENDPOINT:
-                return "The endpoint" + error.data() + " is not reachable.";
-            case ENVIRONMENT_ERROR:
-                return "There was an error when reading the environment: " + error.data();
+                textContent.add(p()
+                        .add("The management interface ")
+                        .add(a(error.data(), "_blank").textContent(error.data()))
+                        .add(" is not a valid management interface."));
+                break;
+            case NETWORK_ERROR:
+                textContent.add(p()
+                        .add("A network error occurred while accessing ")
+                        .add(a(error.data(), "_blank").textContent(error.data()))
+                        .add("."));
+                break;
             case UNKNOWN:
-                return error.data() != null ? error.data() : "Unknown error.";
+                textContent
+                        .add(p().textContent("An unknown error occurred."))
+                        .add(pre().textContent(error.data()));
+                break;
         }
-        return "Unknown error";
+        return textContent.element();
     }
 
     @Override

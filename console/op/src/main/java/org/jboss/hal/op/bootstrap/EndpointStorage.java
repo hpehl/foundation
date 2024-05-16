@@ -44,23 +44,32 @@ class EndpointStorage {
             //noinspection unchecked
             JsArray<Endpoint> eps = (JsArray<Endpoint>) JSON.parse(payload);
             for (int i = 0; i < eps.length; i++) {
-                endpoints.put(eps.getAt(i).name, eps.getAt(i));
+                endpoints.put(eps.getAt(i).id, eps.getAt(i));
             }
         }
     }
 
     void add(Endpoint endpoint) {
-        endpoints.put(endpoint.name, endpoint);
+        endpoints.put(endpoint.id, endpoint);
         save();
     }
 
-    void remove(String name) {
-        endpoints.remove(name);
+    void remove(String id) {
+        endpoints.remove(id);
         save();
     }
 
-    Endpoint get(String name) {
-        return endpoints.get(name);
+    Endpoint get(String id) {
+        return endpoints.get(id);
+    }
+
+    Endpoint findByName(String name) {
+        for (Endpoint endpoint : endpoints.values()) {
+            if (endpoint.name.equals(name)) {
+                return endpoint;
+            }
+        }
+        return null;
     }
 
     boolean isEmpty() {
