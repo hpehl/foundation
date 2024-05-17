@@ -24,12 +24,12 @@ import org.jboss.hal.env.Query;
 import elemental2.core.TypeError;
 import elemental2.promise.Promise;
 
+import static org.jboss.hal.op.bootstrap.BootstrapError.fail;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NETWORK_ERROR;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NOT_AN_ENDPOINT;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_FOUND;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_SPECIFIED;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.UNKNOWN;
-import static org.jboss.hal.op.bootstrap.BootstrapError.fail;
 
 public class SelectEndpoint implements Task<FlowContext> {
 

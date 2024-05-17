@@ -76,7 +76,7 @@ class EndpointStorage {
         return endpoints.isEmpty();
     }
 
-    Iterable<Endpoint> endpoints() {
+    List<Endpoint> endpoints() {
         List<Endpoint> sorted = new ArrayList<>(endpoints.values());
         //noinspection Java8ListSort
         Collections.sort(sorted, comparing(endpoint -> endpoint.name));

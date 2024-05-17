@@ -53,9 +53,6 @@ public class ConfigurationPage implements Page {
                 .add(textContent()
                         .add(h(1, "Configuration"))
                         .add(p().textContent("Not yet implemented!"))
-                        .add(p()
-                                .add("Current time: ")
-                                .add(span().textContent(data.get())))
                         .add(p().add(link(placeManager, "/").textContent("Home"))))
                 .element());
     }

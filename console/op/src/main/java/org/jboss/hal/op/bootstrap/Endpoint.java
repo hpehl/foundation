@@ -22,6 +22,7 @@ import org.jboss.hal.resources.Urls;
 
 import elemental2.dom.Request;
 import elemental2.dom.RequestInit;
+import elemental2.dom.URL;
 import elemental2.promise.Promise;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
@@ -38,6 +39,11 @@ class Endpoint {
     @JsOverlay
     static Promise<Boolean> ping(String url) {
         String managementEndpoint = url + Urls.MANAGEMENT;
+        if (url.contains("://") && !validUrl(managementEndpoint)) {
+            logger.error("'%s' is not a valid URL", managementEndpoint);
+            return Promise.resolve(false);
+        }
+
         RequestInit init = RequestInit.create();
         init.setMethod("GET");
         init.setMode("cors");
@@ -63,6 +69,16 @@ class Endpoint {
                         return Promise.resolve(false);
                     }
                 });
+    }
+
+    @JsOverlay
+    private static boolean validUrl(String url) {
+        try {
+            new URL(url);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @JsOverlay

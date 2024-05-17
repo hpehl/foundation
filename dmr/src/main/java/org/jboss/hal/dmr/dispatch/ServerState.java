@@ -15,8 +15,6 @@
  */
 package org.jboss.hal.dmr.dispatch;
 
-import javax.annotation.Nullable;
-
 /**
  * Server state used to process state response headers. This duplicates {@code org.jboss.hal.core.runtime.RunningState} from
  * module {@code core} to a certain degree, but since module {@code ballroom} cannot have dependencies to {@code core} this code
@@ -28,18 +26,18 @@ public class ServerState {
         RELOAD_REQUIRED, RESTART_REQUIRED
     }
 
-    @Nullable private final String host;
+    private final String host;
     private final String server;
     private final State state;
 
-    ServerState(@Nullable final String host, final String server, State state) {
+    ServerState(String host, String server, State state) {
         this.host = host;
         this.server = server;
         this.state = state;
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -80,7 +78,6 @@ public class ServerState {
         return server;
     }
 
-    @Nullable
     public String getHost() {
         return host;
     }

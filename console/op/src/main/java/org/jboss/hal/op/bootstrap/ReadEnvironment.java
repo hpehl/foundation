@@ -78,7 +78,6 @@ public class ReadEnvironment implements Task<FlowContext> {
         return dispatcher.execute(new Composite(operations))
                 .then(result -> {
                     ModelNode root = result.step(0).get(RESULT);
-                    ;
 
                     // standalone or domain mode?
                     OperationMode operationMode = asEnumValue(root, LAUNCH_TYPE, OperationMode::valueOf,

@@ -1,4 +1,4 @@
-/*
+/**
  *  Copyright 2024 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import "@patternfly/patternfly/patternfly.css";
-import "@patternfly/patternfly/patternfly-addons.css";
-import "./styles.css"
+.hal-inline-help {
+    cursor: help;
+    text-decoration-line: underline;
+    text-decoration-color: var(--pf-v5-global--Color--200);
+}

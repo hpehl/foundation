@@ -18,8 +18,6 @@ package org.jboss.hal.dmr.dispatch;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Property;
 import org.jboss.hal.resources.Names;
@@ -55,7 +53,7 @@ public class DmrHeader {
                 }
             }
         }
-        return new DmrHeader[0];
+        return headers.toArray(new DmrHeader[0]);
     }
 
     // ------------------------------------------------------ instance
@@ -65,24 +63,17 @@ public class DmrHeader {
     private final String server;
     private final ModelNode header;
 
-    public DmrHeader(final ModelNode header) {
-        this(null, null, Names.STANDALONE_SERVER, header);
-    }
-
-    public DmrHeader(@Nullable final String serverGroup, @Nullable final String host, final String server,
-            final ModelNode header) {
+    public DmrHeader(String serverGroup, String host, String server, ModelNode header) {
         this.serverGroup = serverGroup;
         this.host = host;
         this.server = server;
         this.header = header;
     }
 
-    @Nullable
     public String getServerGroup() {
         return serverGroup;
     }
 
-    @Nullable
     public String getHost() {
         return host;
     }

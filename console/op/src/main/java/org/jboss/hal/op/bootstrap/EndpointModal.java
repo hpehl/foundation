@@ -15,44 +15,30 @@
  */
 package org.jboss.hal.op.bootstrap;
 
+import java.util.List;
+
+import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.modal.Modal;
-import org.patternfly.component.table.Table;
-import org.patternfly.component.table.Tr;
 import org.patternfly.component.toolbar.Toolbar;
-import org.patternfly.icon.IconSets;
-import org.patternfly.style.Size;
 
 import elemental2.promise.Promise;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.RejectCallbackFn;
 import elemental2.promise.Promise.PromiseExecutorCallbackFn.ResolveCallbackFn;
 
+import static java.util.Collections.emptyList;
 import static org.jboss.elemento.Elements.isVisible;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.emptystate.EmptyState.emptyState;
-import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
-import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
-import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.modal.Modal.modal;
 import static org.patternfly.component.modal.ModalBody.modalBody;
 import static org.patternfly.component.modal.ModalFooter.modalFooter;
 import static org.patternfly.component.modal.ModalHeader.modalHeader;
-import static org.patternfly.component.table.Table.table;
-import static org.patternfly.component.table.TableText.tableText;
-import static org.patternfly.component.table.Tbody.tbody;
-import static org.patternfly.component.table.Td.td;
-import static org.patternfly.component.table.Th.th;
-import static org.patternfly.component.table.Thead.thead;
-import static org.patternfly.component.table.Tr.tr;
-import static org.patternfly.component.table.Wrap.fitContent;
+import static org.patternfly.component.modal.ModalHeaderDescription.modalHeaderDescription;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
-import static org.patternfly.icon.IconSets.fas.pencilAlt;
-import static org.patternfly.icon.IconSets.fas.trash;
-import static org.patternfly.layout.bullseye.Bullseye.bullseye;
 import static org.patternfly.style.Size.md;
 
 class EndpointModal {
@@ -64,8 +50,7 @@ class EndpointModal {
     private final Button cancel;
     private final EndpointForm form;
     private final Modal modal;
-    private final Table table;
-    private final Tr emptyRow;
+    private final EndpointTable table;
     private final Toolbar toolbar;
     private Endpoint endpoint;
     private ResolveCallbackFn<Endpoint> resolve;
@@ -75,6 +60,10 @@ class EndpointModal {
         this.storage = storage;
         this.endpoint = null;
 
+        toolbar = toolbar()
+                .addContent(toolbarContent()
+                        .addItem(toolbarItem()
+                                .add(button().primary().text("Add").onClick((event, component) -> newEndpoint()))));
         ok = button("Connect")
                 .primary()
                 .disabled()
@@ -82,38 +71,15 @@ class EndpointModal {
         cancel = button("Cancel")
                 .link()
                 .onClick((event, component) -> cancel());
-        toolbar = toolbar()
-                .addContent(toolbarContent()
-                        .addItem(toolbarItem()
-                                .add(button().primary().text("Add").onClick((event, component) -> newEndpoint()))));
 
         form = new EndpointForm(storage);
-        emptyRow = tr()
-                .addData(td().colSpan(4)
-                        .add(bullseye()
-                                .add(emptyState().size(Size.sm)
-                                        .addHeader(emptyStateHeader(2)
-                                                .icon(IconSets.fas.ban())
-                                                .text("No management interfaces found"))
-                                        .addBody(emptyStateBody().textContent(
-                                                "Please add a new management interface."))
-                                        .addFooter(emptyStateFooter()
-                                                .add(button().link().text("Add management interface")
-                                                        .onClick((event, component) -> newEndpoint()))))));
-        table = table().compact()
+        table = new EndpointTable(this::newEndpoint, this::edit, this::remove)
                 .onSelect((e, tr, selected) -> {
                     ok.disabled(!selected);
                     if (selected) {
                         endpoint = storage.get(tr.key);
                     }
-                })
-                .addHead(thead()
-                        .addRow(tr()
-                                .addHeader(th().textContent("Name"))
-                                .addHeader(th().textContent("URL"))
-                                .addHeader(th().screenReader("Edit"))
-                                .addHeader(th().screenReader("Remove"))))
-                .addBody(tbody());
+                });
 
         modal = modal()
                 .size(md)
@@ -121,8 +87,8 @@ class EndpointModal {
                 .autoClose(false)
                 .addHeader(modalHeader()
                         .addTitle("Connect to a management interface")
-                        .addDescription(
-                                "HAL is running in standalone mode. In order to proceed, you must connect to a management interface. Pick one from the list below or add a new one."))
+                        .addDescription(modalHeaderDescription()
+                                .add(new EndpointDescription())))
                 .addBody(modalBody()
                         .add(form)
                         .add(toolbar)
@@ -157,8 +123,7 @@ class EndpointModal {
     }
 
     private void noEndpoints() {
-        table.tbody().removeRows();
-        table.tbody().addRow(emptyRow);
+        table.show(emptyList());
         ok.text("Connect").disabled(true);
 
         setVisible(form, false);
@@ -167,20 +132,8 @@ class EndpointModal {
         setVisible(cancel, false);
     }
 
-    private void existingEndpoints(Iterable<Endpoint> endpoints) {
-        table.tbody().removeRows();
-        table.tbody().addRows(endpoints, endpoint -> tr(endpoint.id)
-                .clickable()
-                .addData(td("Name").textContent(endpoint.name))
-                .addData(td("URL").textContent(endpoint.url))
-                .addData(td("Edit").wrap(fitContent)
-                        .add(tableText()
-                                .add(button().plain().icon(pencilAlt())
-                                        .onClick((event, component) -> edit(endpoint)))))
-                .addData(td("Remove").wrap(fitContent)
-                        .add(tableText()
-                                .add(button().plain().icon(trash())
-                                        .onClick((event, component) -> remove(endpoint))))));
+    private void existingEndpoints(List<Endpoint> endpoints) {
+        table.show(endpoints);
         ok.text("Connect").disabled(true); // will be enabled on endpoint selection
 
         setVisible(form, false);
@@ -189,7 +142,7 @@ class EndpointModal {
         setVisible(cancel, false);
     }
 
-    private void newEndpoint() {
+    void newEndpoint() {
         form.reset();
         form.show(null);
         ok.text("Add").disabled(false);

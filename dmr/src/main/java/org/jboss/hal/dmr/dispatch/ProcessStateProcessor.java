@@ -31,7 +31,7 @@ public class ProcessStateProcessor implements DmrHeaderProcessor {
     @Inject Event<ProcessStateEvent> processStateEventEvent;
 
     @Override
-    public void process(final DmrHeader[] headers) {
+    public void process(DmrHeader[] headers) {
         ProcessState processState = new ProcessState();
         for (DmrHeader header : headers) {
             if (header.getHeader().hasDefined(PROCESS_STATE)) {

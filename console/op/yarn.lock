@@ -776,10 +776,10 @@
     "@parcel/utils" "2.12.0"
     nullthrows "^1.1.1"
 
-"@patternfly/patternfly@^5.2.1":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@patternfly/patternfly/-/patternfly-5.3.0.tgz#96f2fdd78fe85577744bd7408f9d611a831c79cc"
-  integrity sha512-93uWA15bOJDgu8NF2iReWbbNtWdtM+v7iaDpK33mJChgej+whiFpGLtQPI2jFk1aVW3rDpbt4qm4OaNinpzSsg==
+"@patternfly/patternfly@^5.3.1":
+  version "5.3.1"
+  resolved "https://registry.yarnpkg.com/@patternfly/patternfly/-/patternfly-5.3.1.tgz#3bc80386482ee86291a34fbc72b651ab9f40d752"
+  integrity sha512-KYIr9pKRTzHZNGuDuaa5j5CaZyLltvotPFGG1BiJalBDBGSOyk0BZCgHLowm4txKZXrLhorEuuv9XLrMQL8eoA==
 
 "@socket.io/component-emitter@~3.1.0":
   version "3.1.1"

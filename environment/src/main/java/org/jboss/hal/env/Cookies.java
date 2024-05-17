@@ -38,9 +38,6 @@ class Cookies {
 
     static native void remove(String name);
 
-    private Cookies() {
-    }
-
     @JsType(isNative = true, namespace = GLOBAL, name = "Object")
     static class CookieOptions {
 
