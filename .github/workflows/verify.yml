@@ -26,3 +26,5 @@ jobs:
       - name: Verify
         id: verify
         run: $MVN verify
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
