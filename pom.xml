@@ -584,4 +584,31 @@
             </build>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <id>elemento</id>
+            <name>Elemento GitHub Packages</name>
+            <url>https://maven.pkg.github.com/hal/elemento</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>patternfly-java</id>
+            <name>PatternFly Java GitHub Packages</name>
+            <url>https://maven.pkg.github.com/patternfly-java/patternfly-java</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
