@@ -33,23 +33,6 @@
     <name>HAL On Premise</name>
     <description>HAL console on premise</description>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>hal-console-op</artifactId>
-                <version>${project.version}</version>
-                <classifier>webroot</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
