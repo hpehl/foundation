@@ -22,7 +22,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          cache: maven
       - name: Install
         id: mvn-install
         run: $MVN install -P op,prod,native
