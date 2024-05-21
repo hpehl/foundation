@@ -43,7 +43,7 @@ This will open a browser at http://localhost:1234 and watch for changes to your 
 In the root folder, run
 
 ```shell
-mvn clean install -P op,prod,native
+mvn clean install -P op,prod
 ```
 
 This will create a standalone console served by a simple, Quarkus-based HTTP server. To start it, run
