@@ -22,28 +22,27 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          cache: maven
       - name: Install
         id: mvn-install
-        run: $MVN install -P op
-#      - name: Login to Quay.io
-#        id: login-to-quay
-#        uses: redhat-actions/podman-login@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
-#      - name: Build image
-#        id: build-image
-#        uses: redhat-actions/buildah-build@v2
-#        with:
-#          tags: quay.io/halconsole/halop:latest
-#          containerfiles: op/standalone/src/main/docker/Dockerfile.native-micro
-#          context: op/standalone
-#      - name: Push To quay.io
-#        id: push-to-quay
-#        uses: redhat-actions/push-to-registry@v2
-#        with:
-#          tags: ${{ steps.build-image.outputs.tags }}
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+        run: $MVN install -P op,prod,native
+      - name: Login to Quay.io
+        id: login-to-quay
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - name: Build image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          tags: quay.io/halconsole/halop:latest
+          containerfiles: op/standalone/src/main/docker/Dockerfile.native-micro
+          context: op/standalone
+      - name: Push To quay.io
+        id: push-to-quay
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          tags: ${{ steps.build-image.outputs.tags }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
