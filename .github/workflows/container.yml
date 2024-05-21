@@ -25,7 +25,7 @@ jobs:
           cache: maven
       - name: Install
         id: mvn-install
-        run: $MVN install -P op,prod,native
+        run: $MVN install -P op
 #      - name: Login to Quay.io
 #        id: login-to-quay
 #        uses: redhat-actions/podman-login@v1

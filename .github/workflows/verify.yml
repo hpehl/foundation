@@ -25,4 +25,4 @@ jobs:
           cache: maven
       - name: Verify
         id: verify
-        run: $MVN verify
+        run: $MVN verify -P op
