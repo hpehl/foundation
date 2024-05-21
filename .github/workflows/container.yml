@@ -20,12 +20,12 @@ jobs:
         id: setup-jdk
         uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 17
           distribution: temurin
           cache: maven
       - name: Install
         id: mvn-install
-        run: $MVN install -P op,prod,native -Dquarkus.native.container-build=true
+        run: $MVN install -P op,prod,native
 #      - name: Login to Quay.io
 #        id: login-to-quay
 #        uses: redhat-actions/podman-login@v1

@@ -34,7 +34,7 @@
     <description>HAL standalone console on premise</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <skipITs>true</skipITs>
     </properties>
 
@@ -96,6 +96,7 @@
             </activation>
             <properties>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.native.container-build>true</quarkus.native.container-build>
             </properties>
         </profile>
     </profiles>
