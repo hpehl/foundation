@@ -11,7 +11,7 @@ jobs:
     name: Verify Codebase
     runs-on: ubuntu-latest
     env:
-      MVN: ./mvnw --show-version --batch-mode
+      MVN: ./mvnw --show-version --batch-mode --no-transfer-progress
     steps:
       - name: Checkout
         id: checkout
@@ -24,4 +24,4 @@ jobs:
           distribution: temurin
       - name: Verify
         id: verify
-        run: $MVN verify -P op
+        run: $MVN verify

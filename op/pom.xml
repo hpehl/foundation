@@ -41,7 +41,7 @@
 
     <modules>
         <module>console</module>
-<!--        <module>standalone</module>-->
+        <module>standalone</module>
     </modules>
 
     <dependencyManagement>
