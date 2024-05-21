@@ -41,7 +41,7 @@
 
     <modules>
         <module>console</module>
-        <module>standalone</module>
+<!--        <module>standalone</module>-->
     </modules>
 
     <dependencyManagement>
@@ -67,5 +67,4 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
 </project>
