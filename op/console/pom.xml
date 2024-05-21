@@ -23,15 +23,32 @@
 
     <parent>
         <groupId>org.jboss.hal</groupId>
-        <artifactId>hal-code-parent</artifactId>
+        <artifactId>hal-op-parent</artifactId>
         <version>4.0.0-SNAPSHOT</version>
-        <relativePath>../../code-parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>hal-console-op</artifactId>
+    <artifactId>hal-op</artifactId>
     <packaging>jar</packaging>
-    <name>HAL Console On Premise</name>
-    <description>HAL console for on premise</description>
+    <name>HAL On Premise</name>
+    <description>HAL console on premise</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hal-console-op</artifactId>
+                <version>${project.version}</version>
+                <classifier>webroot</classifier>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
@@ -134,16 +151,6 @@
                             <arguments>run ${npm.script}</arguments>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>http-server</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <phase>none</phase>
-                        <configuration>
-                            <arguments>run http-server</arguments>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -168,6 +175,24 @@
                         <goals>
                             <goal>build</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>webroot</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/webroot.xml</descriptor>
+                            </descriptors>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

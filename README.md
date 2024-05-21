@@ -32,7 +32,7 @@ and wait until you see the message
 In another shell run
 
 ```shell
-cd console/op
+cd op/console
 yarn run watch
 ```
 
@@ -43,19 +43,16 @@ This will open a browser at http://localhost:1234 and watch for changes to your 
 In the root folder, run
 
 ```shell
-mvn package -P op,prod
+mvn clean install -P op,prod,native
 ```
 
-This will compile the application in production mode to `console/op/target/console`.
-
-You can use any HTTP server you want to serve the files from this folder. The project contains configuration to start an instance of the [http-server](https://www.npmjs.com/package/http-server) package. Use it by running
+This will create a standalone console served by a simple, Quarkus-based HTTP server. To start it, run
 
 ```shell
-cd console/op
-mvn com.github.eirslett:frontend-maven-plugin:yarn@http-server
+java -jar op/standalone/target/quarkus-app/quarkus-run.jar
 ```
 
-This will open a browser at http://localhost:8080.
+Open a browser at http://localhost:9090.
 
 # Contributing
 

@@ -17,7 +17,6 @@ package org.jboss.hal.op.bootstrap;
 
 import java.util.List;
 
-import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.modal.Modal;
@@ -86,7 +85,7 @@ class EndpointModal {
                 .hideClose()
                 .autoClose(false)
                 .addHeader(modalHeader()
-                        .addTitle("Connect to a management interface")
+                        .addTitle("Connect to WildFly")
                         .addDescription(modalHeaderDescription()
                                 .add(new EndpointDescription())))
                 .addBody(modalBody()

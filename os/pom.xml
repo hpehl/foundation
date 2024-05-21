@@ -25,11 +25,11 @@
         <groupId>org.jboss.hal</groupId>
         <artifactId>hal-code-parent</artifactId>
         <version>4.0.0-SNAPSHOT</version>
-        <relativePath>../../code-parent/pom.xml</relativePath>
+        <relativePath>../code-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>hal-console-os</artifactId>
-    <packaging>jar</packaging>
-    <name>HAL Console OpenShift</name>
-    <description>HAL console for OpenShift</description>
+    <artifactId>hal-os-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>HAL OpenShift Parent</name>
+    <description>HAL OpenShift parent POM</description>
 </project>

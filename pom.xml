@@ -32,7 +32,7 @@
     <version>4.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>HAL Foundation Parent</name>
-    <description>HAL foundation for HAL management console and halOS</description>
+    <description>HAL foundation for HAL on premise and OpenShift</description>
     <url>https://hal.github.io/</url>
     <inceptionYear>2024</inceptionYear>
 
@@ -223,6 +223,7 @@
                                     <exclude>release.main.kts</exclude>
                                     <exclude>**/*license*.txt</exclude>
                                     <exclude>**/.parcel-cache/**</exclude>
+                                    <exclude>**/banner.txt</exclude>
                                     <exclude>**/yarn.lock</exclude>
                                     <exclude>**/node/**</exclude>
                                     <exclude>**/node_modules/**</exclude>
@@ -423,13 +424,13 @@
         <profile>
             <id>op</id>
             <modules>
-                <module>console/op</module>
+                <module>op</module>
             </modules>
         </profile>
         <profile>
             <id>os</id>
             <modules>
-                <module>console/os</module>
+                <module>os</module>
             </modules>
         </profile>
         <profile>
@@ -584,19 +585,4 @@
             </build>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>github</id>
-            <name>PatternFly Java GitHub Packages</name>
-            <url>https://maven.pkg.github.com/patternfly-java/patternfly-java</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>

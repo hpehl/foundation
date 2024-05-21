@@ -30,7 +30,6 @@ import elemental2.dom.HTMLElement;
 import static java.util.Collections.singletonList;
 import static org.jboss.elemento.Elements.h;
 import static org.jboss.elemento.Elements.p;
-import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.router.Link.link;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
