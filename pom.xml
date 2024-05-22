@@ -96,7 +96,7 @@
         <version.mockito>5.12.0</version.mockito>
         <version.node>v21.7.1</version.node>
         <version.patternfly>5.2.1</version.patternfly>
-        <version.patternfly.java>0.2.6</version.patternfly.java>
+        <version.patternfly.java>0.2.5</version.patternfly.java>
         <version.yarn>v1.22.21</version.yarn>
 
         <!-- Plugin versions -->
