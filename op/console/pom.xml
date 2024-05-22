@@ -166,14 +166,14 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>webroot</id>
+                        <id>resources</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/assembly/webroot.xml</descriptor>
+                                <descriptor>src/assembly/resources.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>

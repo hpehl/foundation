@@ -25,7 +25,6 @@ import io.vertx.ext.web.handler.StaticHandler;
 public class Main {
 
     public void init(@Observes Router router) {
-        StaticHandler staticHandler = StaticHandler.create();
-        router.get().order(0).handler(staticHandler);
+        router.get().order(0).handler(StaticHandler.create());
     }
 }

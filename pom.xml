@@ -588,6 +588,7 @@
         </profile>
     </profiles>
 
+<!--
     <repositories>
         <repository>
             <id>oss-snapshots</id>
@@ -602,4 +603,5 @@
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
     </repositories>
+-->
 </project>

@@ -41,8 +41,8 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>hal-console-op</artifactId>
-            <classifier>webroot</classifier>
+            <artifactId>hal-op</artifactId>
+            <classifier>resources</classifier>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
