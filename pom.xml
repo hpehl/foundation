@@ -96,7 +96,7 @@
         <version.mockito>5.12.0</version.mockito>
         <version.node>v21.7.1</version.node>
         <version.patternfly>5.2.1</version.patternfly>
-        <version.patternfly.java>0.2.5</version.patternfly.java>
+        <version.patternfly.java>0.2.6-SNAPSHOT</version.patternfly.java>
         <version.yarn>v1.22.21</version.yarn>
 
         <!-- Plugin versions -->
@@ -434,6 +434,18 @@
             <modules>
                 <module>os</module>
             </modules>
+        </profile>
+        <profile>
+            <id>pfj-snapshot</id>
+            <repositories>
+                <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/patternfly-java/patternfly-java</url>
+                    <layout>default</layout>
+                    <releases><enabled>false</enabled></releases>
+                    <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+            </repositories>
         </profile>
         <profile>
             <id>prod</id>
