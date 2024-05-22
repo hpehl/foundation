@@ -1,9 +1,11 @@
 name: Container
 
 on:
-  workflow_run:
-    workflows: [Verify Codebase]
-    types: [completed]
+  workflow_dispatch:
+# Form some reason, the op build doesn't work on GitHub :-(
+#  workflow_run:
+#    workflows: [Verify Codebase]
+#    types: [completed]
 
 jobs:
   container:
@@ -18,8 +20,7 @@ jobs:
           java-version: 21
           distribution: temurin
           cache: maven
-      - run: $MVN install --projects org.jboss.hal:hal-op --also-make -DskipTests -P op,prod
-      - run: $MVN package --projects org.jboss.hal:hal-op-standalone --also-make -DskipTests -P op,native
+      - run: $MVN package -DskipTests -P op,prod,native
       - uses: redhat-actions/podman-login@v1
         with:
           registry: quay.io

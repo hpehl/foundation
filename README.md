@@ -54,6 +54,16 @@ java -jar op/standalone/target/quarkus-app/quarkus-run.jar
 
 Open a browser at http://localhost:9090.
 
+## Container
+
+The latest version is also available as a container image at https://quay.io/repository/halconsole/halop. Use
+
+```shell
+podman run -it -p 9090:9090 quay.io/halconsole/halop
+```
+
+to start it and open a browser at http://localhost:9090.
+
 # Contributing
 
 This is an open source project. That means that everybody can contribute. It's not hard to get started. So start [contributing](CONTRIBUTING.md) today!

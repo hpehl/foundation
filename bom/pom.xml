@@ -47,18 +47,6 @@
             -->
             <dependency>
                 <groupId>${project.groupId}</groupId>
-                <artifactId>hal-console-op</artifactId>
-                <version>${project.version}</version>
-                <classifier>webroot</classifier>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
                 <artifactId>hal-db</artifactId>
                 <version>${project.version}</version>
             </dependency>
