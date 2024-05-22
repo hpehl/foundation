@@ -31,9 +31,14 @@ jobs:
           tags: quay.io/halconsole/halop:latest
           labels: |
             maintainer=hpehl@redhat.com
-            org.opencontainers.image.source=https://github.com/hal/foundation
-            org.opencontainers.image.url=https://hal.github.io
+            org.opencontainers.image.authors=hpehl@redhat.com
+            org.opencontainers.image.description=HAL console on premise
             org.opencontainers.image.licenses=Apache-2.0
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/hal/foundation
+            org.opencontainers.image.title=HAL On Premise
+            org.opencontainers.image.url=https://hal.github.io
+            org.opencontainers.image.vendor=Red Hat
           containerfiles: op/standalone/src/main/docker/Dockerfile.native-micro
           context: op/standalone
       - uses: redhat-actions/push-to-registry@v2
