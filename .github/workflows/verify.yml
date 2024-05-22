@@ -19,6 +19,4 @@ jobs:
           java-version: 11
           distribution: temurin
           cache: maven
-      - run: $MVN verify -P pfj-snapshot
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: $MVN verify

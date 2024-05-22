@@ -17,10 +17,8 @@ jobs:
         with:
           java-version: 11
           distribution: temurin
-#          cache: maven
-      - run: $MVN install --projects org.jboss.hal:hal-op --also-make -DskipTests -P op,prod,pfj-snapshot
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cache: maven
+      - run: $MVN install --projects org.jboss.hal:hal-op --also-make -DskipTests -P op,prod
 
   container:
     name: Container
@@ -35,9 +33,7 @@ jobs:
           java-version: 21
           distribution: temurin
           cache: maven
-      - run: $MVN install --projects org.jboss.hal:hal-op-standalone -DskipTests -P op,prod
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: $MVN install --projects org.jboss.hal:hal-op-standalone --also-make -DskipTests -P op,prod
       - uses: redhat-actions/podman-login@v1
         with:
           registry: quay.io
