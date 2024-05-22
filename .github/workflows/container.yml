@@ -19,21 +19,21 @@ jobs:
           distribution: temurin
           cache: maven
       - run: $MVN install --projects org.jboss.hal:hal-op --also-make -DskipTests -P op,prod
-#      - run: $MVN package --projects org.jboss.hal:hal-op-standalone --also-make -DskipTests -P op,native
-#      - uses: redhat-actions/podman-login@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
-#      - name: Build image
-#        id: build-image
-#        uses: redhat-actions/buildah-build@v2
-#        with:
-#          tags: quay.io/halconsole/halop:latest
-#          containerfiles: op/standalone/src/main/docker/Dockerfile.native-micro
-#          context: op/standalone
-#      - uses: redhat-actions/push-to-registry@v2
-#        with:
-#          tags: ${{ steps.build-image.outputs.tags }}
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - run: $MVN package --projects org.jboss.hal:hal-op-standalone --also-make -DskipTests -P op,native
+      - uses: redhat-actions/podman-login@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - name: Build image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          tags: quay.io/halconsole/halop:latest
+          containerfiles: op/standalone/src/main/docker/Dockerfile.native-micro
+          context: op/standalone
+      - uses: redhat-actions/push-to-registry@v2
+        with:
+          tags: ${{ steps.build-image.outputs.tags }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
