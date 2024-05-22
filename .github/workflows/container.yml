@@ -17,7 +17,7 @@ jobs:
         with:
           java-version: 11
           distribution: temurin
-          cache: maven
+#          cache: maven
       - run: $MVN install --projects org.jboss.hal:hal-op --also-make -DskipTests -P op,prod,pfj-snapshot
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
