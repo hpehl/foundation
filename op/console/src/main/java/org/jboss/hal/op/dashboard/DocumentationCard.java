@@ -15,8 +15,6 @@
  */
 package org.jboss.hal.op.dashboard;
 
-import org.jboss.hal.dmr.dispatch.Dispatcher;
-
 import elemental2.dom.HTMLElement;
 
 import static org.patternfly.component.card.Card.card;

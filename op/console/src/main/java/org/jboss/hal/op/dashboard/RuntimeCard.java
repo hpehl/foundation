@@ -18,6 +18,7 @@ package org.jboss.hal.op.dashboard;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.meta.StatementContext;
 
 import elemental2.dom.HTMLElement;
 
@@ -28,10 +29,12 @@ import static org.patternfly.component.card.Card.card;
 
 class RuntimeCard implements DashboardCard {
 
+    private final StatementContext statementContext;
     private final Dispatcher dispatcher;
     private final HTMLElement root;
 
-    RuntimeCard(Dispatcher dispatcher) {
+    RuntimeCard(StatementContext statementContext, Dispatcher dispatcher) {
+        this.statementContext = statementContext;
         this.dispatcher = dispatcher;
         this.root = card()
                 .element();

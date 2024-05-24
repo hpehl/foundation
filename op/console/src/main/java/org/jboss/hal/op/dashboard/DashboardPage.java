@@ -27,6 +27,7 @@ import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.Route;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.meta.StatementContext;
 
 import elemental2.dom.HTMLElement;
 
@@ -48,11 +49,13 @@ import static org.patternfly.style.Brightness.light;
 public class DashboardPage implements Page {
 
     private final Environment environment;
+    private final StatementContext statementContext;
     private final Dispatcher dispatcher;
 
     @Inject
-    public DashboardPage(Environment environment, Dispatcher dispatcher) {
+    public DashboardPage(Environment environment, StatementContext statementContext, Dispatcher dispatcher) {
         this.environment = environment;
+        this.statementContext = statementContext;
         this.dispatcher = dispatcher;
     }
 
@@ -62,7 +65,7 @@ public class DashboardPage implements Page {
         DashboardCard documentationCard = new DocumentationCard();
         DashboardCard environmentCard = new EnvironmentCard(environment);
         DashboardCard logCard = new LogCard(dispatcher);
-        DashboardCard runtimeCard = new RuntimeCard(dispatcher);
+        DashboardCard runtimeCard = new RuntimeCard(statementContext, dispatcher);
         DashboardCard statusCard = new StatusCard(dispatcher);
         List<DashboardCard> cards = asList(deploymentCard, documentationCard, environmentCard, logCard, runtimeCard,
                 statusCard);
