@@ -37,8 +37,8 @@ public class Segment {
         return value != null && value.startsWith("{") && value.endsWith("}");
     }
 
-    public String placeholder() {
-        return containsPlaceholder() ? value.substring(1, value.length() - 1) : null;
+    public Placeholder placeholder() {
+        return containsPlaceholder() ? new Placeholder(value.substring(1, value.length() - 1)) : null;
     }
 
     @Override

@@ -15,28 +15,56 @@
  */
 package org.jboss.hal.meta;
 
+import java.util.Objects;
+
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.HOST;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.PROFILE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
+
 public class Placeholder {
 
-    // ------------------------------------------------------ factory
+    // ------------------------------------------------------ well-known placeholders
 
-    public static Placeholder placeholder(String name) {
-        return new Placeholder(name);
-    }
-
-    public static Placeholder placeholder(String name, String value) {
-        return new Placeholder(name, value);
-    }
+    public static final Placeholder DOMAIN_CONTROLLER = new Placeholder("domain.controller", HOST);
+    public static final Placeholder SELECTED_DEPLOYMENT = new Placeholder("selected.deployment", DEPLOYMENT);
+    public static final Placeholder SELECTED_HOST = new Placeholder("selected.host", HOST);
+    public static final Placeholder SELECTED_PROFILE = new Placeholder("selected.profile", PROFILE);
+    public static final Placeholder SELECTED_RESOURCE = new Placeholder("selected.resource");
+    public static final Placeholder SELECTED_SERVER = new Placeholder("selected.server", SERVER);
+    public static final Placeholder SELECTED_SERVER_CONFIG = new Placeholder("selected.server-config", SERVER_CONFIG);
+    public static final Placeholder SELECTED_SERVER_GROUP = new Placeholder("selected.server-group", SERVER_GROUP);
 
     public final String name;
     public final String resource;
 
-    public Placeholder(String name) {
+    Placeholder(String name) {
         this(name, null);
     }
 
-    public Placeholder(String name, String resource) {
+    Placeholder(String name, String resource) {
         this.name = name;
         this.resource = resource;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        Placeholder that = (Placeholder) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
+    }
+
+    @Override
+    public String toString() {
+        return expression();
     }
 
     /** @return the {@code name} surrounded by "{" and "}" */

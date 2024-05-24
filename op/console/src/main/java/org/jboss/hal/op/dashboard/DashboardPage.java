@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.op.dashboard;
 
+import java.util.List;
+
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 
@@ -23,6 +25,7 @@ import org.jboss.elemento.router.Page;
 import org.jboss.elemento.router.Parameter;
 import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.Route;
+import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 
 import elemental2.dom.HTMLElement;
@@ -32,18 +35,12 @@ import static org.jboss.elemento.Elements.p;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardBody.cardBody;
 import static org.patternfly.component.card.CardTitle.cardTitle;
-import static org.patternfly.component.list.DescriptionList.descriptionList;
-import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
-import static org.patternfly.component.list.DescriptionListGroup.descriptionListGroup;
-import static org.patternfly.component.list.DescriptionListTerm.descriptionListTerm;
 import static org.patternfly.component.page.PageMainBody.pageMainBody;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
-import static org.patternfly.style.Breakpoint.default_;
-import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Brightness.light;
 
 @Dependent
@@ -51,15 +48,27 @@ import static org.patternfly.style.Brightness.light;
 public class DashboardPage implements Page {
 
     private final Environment environment;
+    private final Dispatcher dispatcher;
 
     @Inject
-    public DashboardPage(Environment environment) {
+    public DashboardPage(Environment environment, Dispatcher dispatcher) {
         this.environment = environment;
+        this.dispatcher = dispatcher;
     }
 
     @Override
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
-        return asList(pageMainSection().limitWidth().background(light)
+        DashboardCard deploymentCard = new DeploymentCard(dispatcher);
+        DashboardCard documentationCard = new DocumentationCard();
+        DashboardCard environmentCard = new EnvironmentCard(environment);
+        DashboardCard logCard = new LogCard(dispatcher);
+        DashboardCard runtimeCard = new RuntimeCard(dispatcher);
+        DashboardCard statusCard = new StatusCard(dispatcher);
+        List<DashboardCard> cards = asList(deploymentCard, documentationCard, environmentCard, logCard, runtimeCard,
+                statusCard);
+
+        List<HTMLElement> elements = asList(
+                pageMainSection().limitWidth().background(light)
                         .addBody(pageMainBody()
                                 .add(textContent()
                                         .add(title(1).text("WildFly Application Server"))
@@ -69,25 +78,7 @@ public class DashboardPage implements Page {
                         .add(pageMainBody()
                                 .add(grid().gutter()
                                         .addItem(gridItem().span(8)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Environment:"))
-                                                        .addBody(cardBody()
-                                                                .add(descriptionList().columns(breakpoints(default_, 2))
-                                                                        .addGroup(descriptionListGroup()
-                                                                                .addTerm(descriptionListTerm("ID"))
-                                                                                .addDescription(descriptionListDescription(
-                                                                                        environment.applicationId()))
-                                                                                .addTerm(descriptionListTerm("Name"))
-                                                                                .addDescription(descriptionListDescription(
-                                                                                        environment.applicationName())))
-                                                                        .addGroup(descriptionListGroup()
-                                                                                .addTerm(descriptionListTerm("Version"))
-                                                                                .addDescription(descriptionListDescription(
-                                                                                        environment.applicationVersion()
-                                                                                                .toString()))
-                                                                                .addTerm(descriptionListTerm("Mode"))
-                                                                                .addDescription(descriptionListDescription(
-                                                                                        environment.buildType().name())))))))
+                                                .add(environmentCard))
                                         .addItem(gridItem().span(4).rowSpan(2)
                                                 .add(card().fullHeight()
                                                         .addTitle(cardTitle().textContent("Card"))
@@ -133,5 +124,10 @@ public class DashboardPage implements Page {
                                                         .addTitle(cardTitle().textContent("Card"))
                                                         .addBody(cardBody().textContent("span = 4"))))))
                         .element());
+
+        for (DashboardCard card : cards) {
+            card.refresh();
+        }
+        return elements;
     }
 }

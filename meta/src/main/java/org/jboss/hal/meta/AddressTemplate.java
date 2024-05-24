@@ -66,16 +66,18 @@ public final class AddressTemplate implements Iterable<Segment> {
         return new AddressTemplate(withSlash(template));
     }
 
-    /** Creates a new address template from a well-known placeholder. */
+    /** Creates a new address template from a placeholder. */
     public static AddressTemplate of(Placeholder placeholder) {
         return AddressTemplate.of(String.join("/", placeholder.expression()));
     }
 
     // ------------------------------------------------------ instance
 
-    private static final String ENCODED_SLASH = "%2F";
-    private final SegmentResolver DEFAULT_SEGMENT_RESOLVER = (context, template, segment, first, last, index) ->
-            context.resolve(segment);
+    private static final String[][] SPECIAL_CHARACTERS = new String[][]{
+            new String[]{"/", "\\/"},
+            new String[]{":", "\\:"},
+            new String[]{"=", "\\="},
+    };
     public final String template;
     private final LinkedList<Segment> segments;
 
@@ -144,8 +146,8 @@ public final class AddressTemplate implements Iterable<Segment> {
     // ------------------------------------------------------ append / sub and parent
 
     /**
-     * Appends the specified encoded template to this template and returns a new template. If the specified template
-     * does not start with a slash, '/' is automatically appended.
+     * Appends the specified encoded template to this template and returns a new template. If the specified template does not
+     * start with a slash, '/' is automatically appended.
      *
      * @param template the encoded template to append (makes no difference whether it starts with '/' or not)
      * @return a new template
@@ -165,8 +167,8 @@ public final class AddressTemplate implements Iterable<Segment> {
      * @param fromIndex low endpoint (inclusive) of the sub template
      * @param toIndex   high endpoint (exclusive) of the sub template
      * @return a new address template containing the specified tokens.
-     * @throws IndexOutOfBoundsException for an illegal endpoint index value (<tt>fromIndex &lt; 0 || toIndex &gt; size
-     *                                   || fromIndex &gt; toIndex</tt>)
+     * @throws IndexOutOfBoundsException for an illegal endpoint index value (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
+     *                                   fromIndex &gt; toIndex</tt>)
      */
     public AddressTemplate subTemplate(int fromIndex, int toIndex) {
         LinkedList<Segment> subSegments = new LinkedList<>(this.segments.subList(fromIndex, toIndex));
@@ -224,20 +226,20 @@ public final class AddressTemplate implements Iterable<Segment> {
             wildcards.addAll(Arrays.asList(rest));
         }
 
-        List<Segment> replacedSegments = new ArrayList<>();
+        List<Segment> processedSegments = new ArrayList<>();
         Iterator<String> wi = wildcards.iterator();
         for (Segment segment : segments) {
             if (wi.hasNext() && segment.hasKey() && "*".equals(segment.value)) {
-                replacedSegments.add(new Segment(segment.key, wi.next()));
+                processedSegments.add(new Segment(segment.key, wi.next()));
             } else {
-                replacedSegments.add(new Segment(segment.key, segment.value));
+                processedSegments.add(new Segment(segment.key, segment.value));
             }
         }
-        return AddressTemplate.of(join(replacedSegments));
+        return AddressTemplate.of(join(processedSegments));
     }
 
     public ResourceAddress resolve(StatementContext context) {
-        return resolve(context, DEFAULT_SEGMENT_RESOLVER);
+        return resolve(context, null);
     }
 
     public ResourceAddress resolve(StatementContext context, SegmentResolver resolver) {
@@ -247,9 +249,10 @@ public final class AddressTemplate implements Iterable<Segment> {
             ModelNode model = new ModelNode();
             for (int i = 0; i < segments.size(); i++) {
                 Segment segment = segments.get(i);
-                Segment resolved = resolver.resolve(context, this, segment,
-                        i == 0, i == segments.size() - 1, i);
-                model.add(resolved.key, decodeValue(segment.value));
+                Segment resolved = resolver == null
+                        ? context.resolve(segment)
+                        : resolver.resolve(context, this, segment, i == 0, i == segments.size() - 1, i);
+                model.add(resolved.key, decodeValue(resolved.value));
             }
             return new ResourceAddress(model);
         }
@@ -265,11 +268,43 @@ public final class AddressTemplate implements Iterable<Segment> {
     }
 
     static String encodeValue(String value) {
-        return value.replace("/", ENCODED_SLASH);
+        boolean encode = false;
+        if (value != null) {
+            for (String[] specialCharacter : SPECIAL_CHARACTERS) {
+                if (value.contains(specialCharacter[0])) {
+                    encode = true;
+                    break;
+                }
+            }
+            if (encode) {
+                String localValue = value;
+                for (String[] special : SPECIAL_CHARACTERS) {
+                    localValue = localValue.replace(special[0], special[1]);
+                }
+                return localValue;
+            }
+        }
+        return value;
     }
 
     private static String decodeValue(String value) {
-        return value.replace(ENCODED_SLASH, "/");
+        boolean decode = false;
+        if (value != null) {
+            for (String[] specialCharacter : SPECIAL_CHARACTERS) {
+                if (value.contains(specialCharacter[1])) {
+                    decode = true;
+                    break;
+                }
+            }
+            if (decode) {
+                String localValue = value;
+                for (String[] special : SPECIAL_CHARACTERS) {
+                    localValue = localValue.replace(special[1], special[0]);
+                }
+                return localValue;
+            }
+        }
+        return value;
     }
 
     private static class StringTokenizer {

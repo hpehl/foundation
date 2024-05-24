@@ -36,10 +36,11 @@ public class ResourceAddress extends ModelNode {
         }
 
         ResourceAddress ra;
-        if (address.trim().isEmpty()) {
+        String trimmed = address.trim();
+        if (trimmed.isEmpty()) {
             ra = ResourceAddress.root();
         } else {
-            String safeAddress = address.startsWith("/") ? address.substring(1) : address;
+            String safeAddress = trimmed.startsWith("/") ? trimmed.substring(1) : address;
             if (safeAddress.isEmpty()) {
                 ra = ResourceAddress.root();
             } else if (!safeAddress.contains("/")) {

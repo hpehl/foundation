@@ -13,9 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta;
+package org.jboss.hal.meta.description;
 
-class WildcardResolver implements SegmentResolver {
+import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.meta.Placeholder;
+import org.jboss.hal.meta.Segment;
+import org.jboss.hal.meta.SegmentResolver;
+import org.jboss.hal.meta.StatementContext;
+
+/**
+ * A segment resolver that resolves all placeholders and the value of the last segment with wildcards ({@code *}).
+ * <pre>
+ * / → /
+ * /subsystem=io → subsystem=io
+ * {selected.server} → server=*
+ * {selected.server}/deployment=foo → server=*&#47;deployment=*
+ * subsystem=logging/logger={selection} → subsystem=logging/logger=*
+ * </pre>
+ */
+class ResourceDescriptionResolver implements SegmentResolver {
 
     @Override
     public Segment resolve(StatementContext context, AddressTemplate template,
@@ -25,11 +41,7 @@ class WildcardResolver implements SegmentResolver {
             if (segment.hasKey()) {
                 return new Segment(segment.key, "*");
             } else {
-                String placeholderName = segment.placeholder();
-                Placeholder placeholder = context.placeholder(placeholderName);
-                if (placeholder == null) {
-                    throw new ResolveException("Unknown placeholder " + placeholderName + " in " + template);
-                }
+                Placeholder placeholder = segment.placeholder();
                 return new Segment(placeholder.resource, "*");
             }
         } else if (last && !"*".equals(segment.value)) {

@@ -15,43 +15,44 @@
  */
 package org.jboss.hal.meta;
 
-/** Holds global state which can be used when resolving an {@linkplain AddressTemplate address template}. */
-public interface StatementContext {
+import java.util.HashMap;
+import java.util.Map;
 
-    StatementContext NOOP = new StatementContext() {
-        @Override
-        public Segment resolve(Segment segment) {
-            return segment;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class StatementContext {
+
+    private final Map<Placeholder, String> values;
+
+    StatementContext() {
+        values = new HashMap<>();
+    }
+
+    public Segment resolve(Segment segment) {
+        if (segment.containsPlaceholder()) {
+            Placeholder placeholder = segment.placeholder();
+            String resolvedValue = value(placeholder);
+            if (resolvedValue != null) {
+                if (segment.hasKey()) {
+                    // key={placeholder}
+                    return new Segment(segment.key, resolvedValue);
+                } else {
+                    // {placeholder}
+                    return new Segment(placeholder.resource, resolvedValue);
+                }
+            } else {
+                throw new ResolveException("No value found for placeholder " + placeholder.name + " in segment " + segment);
+            }
         }
+        return segment;
+    }
 
-        @Override
-        public void add(Placeholder placeholder) {
-            // noop
-        }
+    public void assign(String placeholder, String value) {
+        values.put(new Placeholder(placeholder), value);
+    }
 
-        @Override
-        public Placeholder placeholder(String name) {
-            return null;
-        }
-
-        @Override
-        public String value(Placeholder placeHolder) {
-            return null;
-        }
-
-        @Override
-        public void assign(String placeholder, String value) {
-            // noop
-        }
-    };
-
-    Segment resolve(Segment segment);
-
-    void add(Placeholder placeholder);
-
-    Placeholder placeholder(String name);
-
-    String value(Placeholder placeHolder);
-
-    void assign(String placeholder, String value);
+    public String value(Placeholder placeHolder) {
+        return values.get(placeHolder);
+    }
 }
