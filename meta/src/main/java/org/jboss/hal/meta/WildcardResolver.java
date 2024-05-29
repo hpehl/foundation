@@ -16,28 +16,42 @@
 package org.jboss.hal.meta;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
 
-import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
+public class WildcardResolver implements TemplateResolver {
 
-public class SelectionResolver implements TemplateResolver {
+    private final Iterator<String> iterator;
 
-    private final Supplier<String> selection;
-
-    public SelectionResolver(Supplier<String> selection) {
-        if (selection == null) {
-            throw new IllegalArgumentException("Selection provider must not be null");
+    public WildcardResolver(String first, String... more) {
+        List<String> values = new ArrayList<>();
+        if (valid(first)) {
+            values.add(first);
         }
-        this.selection = selection;
+        if (more != null) {
+            for (String value : more) {
+                if (valid(value)) {
+                    values.add(value);
+                }
+            }
+        }
+        iterator = values.iterator();
+    }
+
+    private boolean valid(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     @Override
     public AddressTemplate resolve(AddressTemplate template) {
         List<Segment> resolved = new ArrayList<>();
         for (Segment segment : template) {
-            if (segment.containsPlaceholder() && segment.hasKey() && SELECTED_RESOURCE.equals(segment.placeholder())) {
-                resolved.add(new Segment(segment.key, selection.get()));
+            if (!segment.containsPlaceholder() && segment.hasKey() && "*".equals(segment.value)) {
+                if (iterator.hasNext()) {
+                    resolved.add(new Segment(segment.key, iterator.next()));
+                } else {
+                    resolved.add(segment);
+                }
             } else {
                 resolved.add(segment);
             }

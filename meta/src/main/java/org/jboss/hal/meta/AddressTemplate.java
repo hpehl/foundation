@@ -15,8 +15,6 @@
  */
 package org.jboss.hal.meta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +23,7 @@ import java.util.NoSuchElementException;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -57,18 +56,31 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     /** Creates a new address template from an encoded string template. */
     public static AddressTemplate root() {
-        return new AddressTemplate("/");
+        return new AddressTemplate(emptyList());
     }
 
 
     /** Creates a new address template from an encoded string template. */
     public static AddressTemplate of(String template) {
-        return new AddressTemplate(withSlash(template));
+        return new AddressTemplate(parse(template));
     }
 
     /** Creates a new address template from a placeholder. */
     public static AddressTemplate of(Placeholder placeholder) {
-        return AddressTemplate.of(String.join("/", placeholder.expression()));
+        if (placeholder != null) {
+            return new AddressTemplate(parse("/" + placeholder.expression()));
+        } else {
+            return new AddressTemplate(emptyList());
+        }
+    }
+
+    /** Creates a new address template from a list of segments. */
+    public static AddressTemplate of(List<Segment> segments) {
+        if (segments != null) {
+            return new AddressTemplate(segments);
+        } else {
+            return new AddressTemplate(emptyList());
+        }
     }
 
     // ------------------------------------------------------ instance
@@ -83,37 +95,7 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     private AddressTemplate(List<Segment> segments) {
         this.segments = new LinkedList<>(segments);
-        this.template = join(segments);
-    }
-
-    private AddressTemplate(String template) {
-        assert template != null : "template must not be null";
-        this.segments = parse(template);
-        this.template = join(segments);
-    }
-
-    private LinkedList<Segment> parse(String template) {
-        LinkedList<Segment> segments = new LinkedList<>();
-
-        if (template.equals("/")) {
-            return segments;
-        }
-
-        StringTokenizer tok = new StringTokenizer(template);
-        while (tok.hasMoreTokens()) {
-            String nextToken = tok.nextToken();
-            if (nextToken.contains("=")) {
-                String[] split = nextToken.split("=");
-                segments.add(new Segment(split[0], split[1]));
-            } else {
-                segments.add(new Segment(nextToken));
-            }
-        }
-        return segments;
-    }
-
-    private String join(List<Segment> segments) {
-        return segments.stream().map(Segment::toString).collect(joining("/"));
+        this.template = join(this.segments);
     }
 
     @Override
@@ -188,7 +170,7 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     /** @return the first segment or null if this address template is empty. */
     public Segment first() {
-        if (!segments.isEmpty() && segments.getFirst().hasKey()) {
+        if (!segments.isEmpty()) {
             return segments.getFirst();
         }
         return null;
@@ -196,7 +178,7 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     /** @return the last segment or null if this address template is empty. */
     public Segment last() {
-        if (!segments.isEmpty() && segments.getFirst().hasKey()) {
+        if (!segments.isEmpty()) {
             return segments.getLast();
         }
         return null;
@@ -217,42 +199,23 @@ public final class AddressTemplate implements Iterable<Segment> {
         return segments.iterator();
     }
 
-    // ------------------------------------------------------ wildcards & resolve
-
-    public AddressTemplate wildcards(String first, String... rest) {
-        List<String> wildcards = new ArrayList<>();
-        wildcards.add(first);
-        if (rest != null) {
-            wildcards.addAll(Arrays.asList(rest));
-        }
-
-        List<Segment> processedSegments = new ArrayList<>();
-        Iterator<String> wi = wildcards.iterator();
-        for (Segment segment : segments) {
-            if (wi.hasNext() && segment.hasKey() && "*".equals(segment.value)) {
-                processedSegments.add(new Segment(segment.key, wi.next()));
-            } else {
-                processedSegments.add(new Segment(segment.key, segment.value));
-            }
-        }
-        return AddressTemplate.of(join(processedSegments));
-    }
+    // ------------------------------------------------------ resolve
 
     public ResourceAddress resolve(StatementContext context) {
-        return resolve(context, null);
+        return resolve(new StatementContextResolver(context));
     }
 
-    public ResourceAddress resolve(StatementContext context, SegmentResolver resolver) {
+    public ResourceAddress resolve(TemplateResolver resolver) {
         if (isEmpty()) {
             return ResourceAddress.root();
         } else {
             ModelNode model = new ModelNode();
-            for (int i = 0; i < segments.size(); i++) {
-                Segment segment = segments.get(i);
-                Segment resolved = resolver == null
-                        ? context.resolve(segment)
-                        : resolver.resolve(context, this, segment, i == 0, i == segments.size() - 1, i);
-                model.add(resolved.key, decodeValue(resolved.value));
+            AddressTemplate resolved = resolver.resolve(this);
+            for (Segment segment : resolved) {
+                if (segment.containsPlaceholder()) {
+                    throw new ResolveException("Unable to resolve segment '" + segment + "' in template '" + this + "'");
+                }
+                model.add(segment.key, decodeValue(segment.value));
             }
             return new ResourceAddress(model);
         }
@@ -260,11 +223,34 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ internal
 
-    private static String withSlash(String template) {
-        if (template != null && !template.startsWith("/")) {
-            return "/" + template;
+    private static LinkedList<Segment> parse(String template) {
+        LinkedList<Segment> segments = new LinkedList<>();
+
+        if (template != null && !template.trim().isEmpty()) {
+            String trimmed = template.trim();
+            String withSlash = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
+            if (withSlash.equals("/")) {
+                return segments;
+            }
+
+            StringTokenizer tok = new StringTokenizer(withSlash);
+            while (tok.hasMoreTokens()) {
+                String nextToken = tok.nextToken();
+                int index = nextToken.indexOf('=');
+                if (index != -1 && !escaped(nextToken, index)) {
+                    String key = nextToken.substring(0, index);
+                    String value = nextToken.substring(index + 1);
+                    segments.add(new Segment(key, value));
+                } else {
+                    segments.add(new Segment(nextToken));
+                }
+            }
         }
-        return template;
+        return segments;
+    }
+
+    private static String join(List<Segment> segments) {
+        return segments.stream().map(Segment::toString).collect(joining("/"));
     }
 
     static String encodeValue(String value) {
@@ -307,6 +293,13 @@ public final class AddressTemplate implements Iterable<Segment> {
         return value;
     }
 
+    private static boolean escaped(String string, int index) {
+        if (index > 0 && index < string.length()) {
+            return string.charAt(index - 1) == '\\';
+        }
+        return false;
+    }
+
     private static class StringTokenizer {
 
         private final String delim;
@@ -336,7 +329,9 @@ public final class AddressTemplate implements Iterable<Segment> {
                 return true;
             }
             // skip leading delimiters
-            while (pos < len && delim.indexOf(s.charAt(pos)) != -1) {
+            while (pos < len) {
+                char ch = s.charAt(pos);
+                if (delim.indexOf(ch) == -1) {break;}
                 pos++;
             }
 
@@ -344,12 +339,14 @@ public final class AddressTemplate implements Iterable<Segment> {
                 return false;
             }
 
-            int p0 = pos++;
-            while (pos < len && delim.indexOf(s.charAt(pos)) == -1) {
+            int index = pos++;
+            while (pos < len) {
+                char ch = s.charAt(pos);
+                if (delim.indexOf(ch) != -1) {break;}
                 pos++;
             }
 
-            next = s.substring(p0, pos++);
+            next = s.substring(index, pos++);
             return true;
         }
     }

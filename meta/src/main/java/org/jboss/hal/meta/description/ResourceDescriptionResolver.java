@@ -15,11 +15,14 @@
  */
 package org.jboss.hal.meta.description;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Placeholder;
 import org.jboss.hal.meta.Segment;
-import org.jboss.hal.meta.SegmentResolver;
-import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.meta.TemplateResolver;
 
 /**
  * A segment resolver that resolves all placeholders and the value of the last segment with wildcards ({@code *}).
@@ -31,22 +34,27 @@ import org.jboss.hal.meta.StatementContext;
  * subsystem=logging/logger={selection} → subsystem=logging/logger=*
  * </pre>
  */
-class ResourceDescriptionResolver implements SegmentResolver {
+class ResourceDescriptionResolver implements TemplateResolver {
 
     @Override
-    public Segment resolve(StatementContext context, AddressTemplate template,
-            Segment segment, boolean first, boolean last, int index) {
-        // use wildcards where possible
-        if (segment.containsPlaceholder()) {
-            if (segment.hasKey()) {
-                return new Segment(segment.key, "*");
+    public AddressTemplate resolve(AddressTemplate template) {
+        List<Segment> resolved = new ArrayList<>();
+        for (Iterator<Segment> iterator = template.iterator(); iterator.hasNext(); ) {
+            Segment segment = iterator.next();
+            // use wildcards where possible
+            if (segment.containsPlaceholder()) {
+                if (segment.hasKey()) {
+                    resolved.add(new Segment(segment.key, "*"));
+                } else {
+                    Placeholder placeholder = segment.placeholder();
+                    resolved.add(new Segment(placeholder.resource, "*"));
+                }
+            } else if (!iterator.hasNext() && !"*".equals(segment.value)) {
+                resolved.add(new Segment(segment.key, "*"));
             } else {
-                Placeholder placeholder = segment.placeholder();
-                return new Segment(placeholder.resource, "*");
+                resolved.add(segment);
             }
-        } else if (last && !"*".equals(segment.value)) {
-            return new Segment(segment.key, "*");
         }
-        return segment;
+        return AddressTemplate.of(resolved);
     }
 }

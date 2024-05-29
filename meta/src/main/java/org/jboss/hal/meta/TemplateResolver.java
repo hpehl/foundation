@@ -15,9 +15,18 @@
  */
 package org.jboss.hal.meta;
 
-@FunctionalInterface
-public interface SegmentResolver {
+import java.util.Objects;
 
-    Segment resolve(StatementContext context, AddressTemplate template, Segment segment,
-            boolean first, boolean last, int index);
+@FunctionalInterface
+public interface TemplateResolver {
+
+    AddressTemplate resolve(AddressTemplate template);
+
+    default TemplateResolver andThen(TemplateResolver after) {
+        Objects.requireNonNull(after);
+        return template -> {
+            AddressTemplate resolved = resolve(template);
+            return after.resolve(resolved);
+        };
+    }
 }

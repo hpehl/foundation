@@ -24,35 +24,34 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class StatementContext {
 
     private final Map<Placeholder, String> values;
+    private final Map<String, Placeholder> placeholders;
 
     StatementContext() {
         values = new HashMap<>();
-    }
-
-    public Segment resolve(Segment segment) {
-        if (segment.containsPlaceholder()) {
-            Placeholder placeholder = segment.placeholder();
-            String resolvedValue = value(placeholder);
-            if (resolvedValue != null) {
-                if (segment.hasKey()) {
-                    // key={placeholder}
-                    return new Segment(segment.key, resolvedValue);
-                } else {
-                    // {placeholder}
-                    return new Segment(placeholder.resource, resolvedValue);
-                }
-            } else {
-                throw new ResolveException("No value found for placeholder " + placeholder.name + " in segment " + segment);
-            }
-        }
-        return segment;
+        placeholders = new HashMap<>();
     }
 
     public void assign(String placeholder, String value) {
-        values.put(new Placeholder(placeholder), value);
+        assign(new Placeholder(placeholder), value);
     }
 
-    public String value(Placeholder placeHolder) {
-        return values.get(placeHolder);
+    public void assign(Placeholder placeholder, String value) {
+        values.put(placeholder, value);
+        placeholders.put(placeholder.name, placeholder);
+    }
+
+    public Placeholder placeholder(String placeholder) {
+        return placeholders.get(placeholder);
+    }
+
+    public String value(String placeholder) {
+        return value(placeholder(placeholder));
+    }
+
+    public String value(Placeholder placeholder) {
+        if (placeholder != null) {
+            return values.get(placeholder);
+        }
+        return null;
     }
 }
