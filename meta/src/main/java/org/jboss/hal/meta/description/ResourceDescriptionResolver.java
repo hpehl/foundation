@@ -56,7 +56,7 @@ class ResourceDescriptionResolver implements TemplateResolver {
                 if (segment.hasKey()) {
                     resolved.add(new Segment(segment.key, "*"));
                 } else {
-                    Placeholder placeholder = segment.placeholder();
+                    placeholder = segment.placeholder();
                     resolved.add(new Segment(placeholder.resource, "*"));
                 }
             } else if (!iterator.hasNext() && !"*".equals(segment.value)) {
