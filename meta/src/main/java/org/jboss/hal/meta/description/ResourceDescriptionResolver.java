@@ -24,6 +24,9 @@ import org.jboss.hal.meta.Placeholder;
 import org.jboss.hal.meta.Segment;
 import org.jboss.hal.meta.TemplateResolver;
 
+import static org.jboss.hal.meta.Placeholder.DOMAIN_CONTROLLER;
+import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
+
 /**
  * A segment resolver that resolves all placeholders and the value of the last segment with wildcards ({@code *}).
  * <pre>
@@ -43,6 +46,13 @@ class ResourceDescriptionResolver implements TemplateResolver {
             Segment segment = iterator.next();
             // use wildcards where possible
             if (segment.containsPlaceholder()) {
+                Placeholder placeholder = segment.placeholder();
+                if (SELECTED_RESOURCE.equals(placeholder) ||
+                        (template.size() == 1 &&
+                                DOMAIN_CONTROLLER.equals(segment.placeholder()) ||
+                                SELECTED_RESOURCE.equals(placeholder))) {
+                    resolved.add(new Segment(segment.key, "*"));
+                }
                 if (segment.hasKey()) {
                     resolved.add(new Segment(segment.key, "*"));
                 } else {
