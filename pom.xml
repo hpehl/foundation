@@ -87,7 +87,7 @@
         <!-- Dependency versions -->
         <version.checkstyle.config>1.0.8.Final</version.checkstyle.config>
         <version.elemental2>1.2.1</version.elemental2>
-        <version.elemento>1.6.1</version.elemento>
+        <version.elemento>1.6.2-SNAPSHOT</version.elemento>
         <version.gwt.event>1.0.0-RC1</version.gwt.event>
         <version.gwt.safehtml>1.0.0-RC1</version.gwt.safehtml>
         <version.junit>5.10.2</version.junit>
@@ -96,7 +96,7 @@
         <version.mockito>5.12.0</version.mockito>
         <version.node>v21.7.1</version.node>
         <version.patternfly>5.2.1</version.patternfly>
-        <version.patternfly.java>0.2.5</version.patternfly.java>
+        <version.patternfly.java>0.2.6-SNAPSHOT</version.patternfly.java>
         <version.yarn>v1.22.21</version.yarn>
 
         <!-- Plugin versions -->
@@ -216,9 +216,8 @@
                             <licenseSet>
                                 <header>build-config/src/main/resources/etc/license.txt</header>
                                 <excludes>
-                                    <exclude>LICENSE</exclude>
-                                    <exclude>README.md</exclude>
                                     <exclude>CODEOWNERS</exclude>
+                                    <exclude>LICENSE</exclude>
                                     <exclude>README.md</exclude>
                                     <exclude>release.main.kts</exclude>
                                     <exclude>**/*license*.txt</exclude>
@@ -226,6 +225,7 @@
                                     <exclude>**/.parcel-cache/**</exclude>
                                     <exclude>**/banner.txt</exclude>
                                     <exclude>**/Dockerfile*</exclude>
+                                    <exclude>**/js-cookie.js</exclude>
                                     <exclude>**/node/**</exclude>
                                     <exclude>**/node_modules/**</exclude>
                                     <exclude>**/src/demo/java/**</exclude>

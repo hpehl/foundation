@@ -57,12 +57,10 @@ public class ReadEnvironment implements Task<FlowContext> {
     private final Dispatcher dispatcher;
     private final Environment environment;
     private final User user;
-    private final Server standaloneServer;
 
-    public ReadEnvironment(Dispatcher dispatcher, Environment environment, Server standaloneServer, User user) {
+    public ReadEnvironment(Dispatcher dispatcher, Environment environment, User user) {
         this.dispatcher = dispatcher;
         this.environment = environment;
-        this.standaloneServer = standaloneServer;
         this.user = user;
     }
 
@@ -110,7 +108,7 @@ public class ReadEnvironment implements Task<FlowContext> {
                     environment.update(name, organisation, productName, productVersion, managementModelVersion, operationMode);
                     logger.info("Environment: %s", environment);
                     if (operationMode == OperationMode.STANDALONE) {
-                        standaloneServer.addServerAttributes(root);
+                        Server.standalone().addServerAttributes(root);
                     }
 
                     ModelNode whoami = result.step(1);

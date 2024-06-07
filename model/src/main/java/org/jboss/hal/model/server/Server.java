@@ -41,6 +41,13 @@ import static org.jboss.hal.dmr.ModelNodeHelper.asEnumValue;
  */
 public class Server extends NamedNode {
 
+    /** Use this constant to reference the standalone server. */
+    private static final Server STANDALONE = new Server(Ids.STANDALONE_HOST, Ids.STANDALONE_SERVER, new ModelNode(), true);
+
+    public static Server standalone() {
+        return STANDALONE;
+    }
+
     private final boolean standalone;
     private Version managementVersion;
     private boolean bootErrors;
@@ -69,7 +76,7 @@ public class Server extends NamedNode {
 
     /** Unique server identifier containing the host and server name. */
     public String getId() {
-        return Ids.hostServer(getHost(), getName());
+        return Ids.hostServer(getHost(), name());
     }
 
     public boolean isStandalone() {
@@ -184,7 +191,7 @@ public class Server extends NamedNode {
     public ResourceAddress getServerConfigAddress() {
         return isStandalone() ? ResourceAddress.root()
                 : new ResourceAddress().add(HOST, getHost())
-                .add(SERVER_CONFIG, getName());
+                .add(SERVER_CONFIG, name());
     }
 
     /**
@@ -194,7 +201,7 @@ public class Server extends NamedNode {
     public ResourceAddress getServerAddress() {
         return isStandalone() ? ResourceAddress.root()
                 : new ResourceAddress().add(HOST, getHost())
-                .add(SERVER, getName());
+                .add(SERVER, name());
     }
 
     /** Adds the {@code server} related attributes to this instance. Existing attributes will be overwritten. */

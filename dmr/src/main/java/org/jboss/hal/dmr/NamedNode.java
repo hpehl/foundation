@@ -20,6 +20,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.NAME;
 /** A model node with a name. */
 public class NamedNode extends ModelNode {
 
+    // ------------------------------------------------------ instance
+
     private final String name;
     private final ModelNode node;
 
@@ -38,7 +40,7 @@ public class NamedNode extends ModelNode {
         this.name = name;
         this.node = node;
         set(node);
-        setName(name);
+        assignName(name);
     }
 
     @Override
@@ -77,14 +79,16 @@ public class NamedNode extends ModelNode {
         return "NamedNode(" + name + ")";
     }
 
+    // ------------------------------------------------------ api
+
     /**
      * @return the name of this named node
      */
-    public String getName() {
+    public String name() {
         return get(NAME).asString();
     }
 
-    public void setName(String name) {
+    public void assignName(String name) {
         get(NAME).set(name);
     }
 
@@ -97,6 +101,6 @@ public class NamedNode extends ModelNode {
 
     public void update(ModelNode node) {
         set(node);
-        setName(name); // restore name!
+        assignName(name); // restore name!
     }
 }

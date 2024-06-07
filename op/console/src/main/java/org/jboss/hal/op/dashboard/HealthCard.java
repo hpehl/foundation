@@ -13,20 +13,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.model.server;
+package org.jboss.hal.op.dashboard;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
+import org.jboss.hal.dmr.dispatch.Dispatcher;
 
-import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.resources.Ids;
+import elemental2.dom.HTMLElement;
 
-public class StandaloneServer {
+import static org.patternfly.component.card.Card.card;
 
-    @Produces
-    @Standalone
-    @ApplicationScoped
-    public Server standaloneServer() {
-        return new Server(Ids.STANDALONE_HOST, Ids.STANDALONE_SERVER, new ModelNode(), true);
+class HealthCard implements DashboardCard {
+
+    private final Dispatcher dispatcher;
+    private final HTMLElement root;
+
+    HealthCard(Dispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+        this.root = card()
+                .element();
+    }
+
+    @Override
+    public void refresh() {
+
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
     }
 }

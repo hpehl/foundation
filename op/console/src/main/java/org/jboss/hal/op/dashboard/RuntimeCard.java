@@ -25,7 +25,12 @@ import elemental2.dom.HTMLElement;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
+import static org.patternfly.component.card.CardActions.cardActions;
+import static org.patternfly.component.card.CardHeader.cardHeader;
+import static org.patternfly.component.card.CardTitle.cardTitle;
+import static org.patternfly.icon.IconSets.fas.redo;
 
 class RuntimeCard implements DashboardCard {
 
@@ -37,6 +42,10 @@ class RuntimeCard implements DashboardCard {
         this.statementContext = statementContext;
         this.dispatcher = dispatcher;
         this.root = card()
+                .addHeader(cardHeader()
+                        .addTitle(cardTitle().textContent("Runtime"))
+                        .addActions(cardActions()
+                                .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
                 .element();
     }
 

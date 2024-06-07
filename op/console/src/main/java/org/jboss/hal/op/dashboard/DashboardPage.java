@@ -15,6 +15,7 @@
  */
 package org.jboss.hal.op.dashboard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.enterprise.context.Dependent;
@@ -28,9 +29,12 @@ import org.jboss.elemento.router.Route;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.model.deployment.Deployments;
 
 import elemental2.dom.HTMLElement;
 
+import static elemental2.dom.DomGlobal.clearInterval;
+import static elemental2.dom.DomGlobal.setInterval;
 import static java.util.Arrays.asList;
 import static org.jboss.elemento.Elements.p;
 import static org.patternfly.component.card.Card.card;
@@ -48,27 +52,37 @@ import static org.patternfly.style.Brightness.light;
 @Route("/")
 public class DashboardPage implements Page {
 
+    private static final double REFRESH_INTERVAL = 1_000;
+
     private final Environment environment;
     private final StatementContext statementContext;
     private final Dispatcher dispatcher;
+    private final Deployments deployments;
+    private final List<DashboardCard> cards;
+    private double refreshHandle;
 
     @Inject
-    public DashboardPage(Environment environment, StatementContext statementContext, Dispatcher dispatcher) {
+    public DashboardPage(Environment environment,
+            StatementContext statementContext,
+            Dispatcher dispatcher,
+            Deployments deployments) {
         this.environment = environment;
         this.statementContext = statementContext;
         this.dispatcher = dispatcher;
+        this.deployments = deployments;
+        this.cards = new ArrayList<>();
     }
 
     @Override
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
-        DashboardCard deploymentCard = new DeploymentCard(dispatcher);
-        DashboardCard documentationCard = new DocumentationCard();
-        DashboardCard environmentCard = new EnvironmentCard(environment);
-        DashboardCard logCard = new LogCard(dispatcher);
+        DashboardCard deploymentCard = new DeploymentCard(environment, deployments);
+        DashboardCard documentationCard = new DocumentationCard(environment);
+        DashboardCard environmentCard = new ProductInfoCard(environment);
+        DashboardCard logCard = new LogCard(environment, statementContext, dispatcher);
         DashboardCard runtimeCard = new RuntimeCard(statementContext, dispatcher);
-        DashboardCard statusCard = new StatusCard(dispatcher);
-        List<DashboardCard> cards = asList(deploymentCard, documentationCard, environmentCard, logCard, runtimeCard,
-                statusCard);
+        DashboardCard statusCard = new HealthCard(dispatcher);
+        cards.addAll(asList(deploymentCard, documentationCard, environmentCard, logCard, runtimeCard,
+                statusCard));
 
         List<HTMLElement> elements = asList(
                 pageMainSection().limitWidth().background(light)
@@ -127,10 +141,23 @@ public class DashboardPage implements Page {
                                                         .addTitle(cardTitle().textContent("Card"))
                                                         .addBody(cardBody().textContent("span = 4"))))))
                         .element());
+        return elements;
+    }
 
+    @Override
+    public void attach() {
+        refresh();
+        refreshHandle = setInterval(__ -> refresh(), REFRESH_INTERVAL);
+    }
+
+    @Override
+    public void detach() {
+        clearInterval(refreshHandle);
+    }
+
+    private void refresh() {
         for (DashboardCard card : cards) {
             card.refresh();
         }
-        return elements;
     }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 Red Hat
+ *  Copyright 2022 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,32 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.op.dashboard;
+package org.jboss.hal.model.subsystem;
 
-import org.jboss.hal.dmr.dispatch.Dispatcher;
+import org.jboss.hal.dmr.NamedNode;
+import org.jboss.hal.dmr.Property;
 
-import elemental2.dom.HTMLElement;
+public class Subsystem extends NamedNode {
 
-import static org.patternfly.component.card.Card.card;
-
-class StatusCard implements DashboardCard {
-
-    private final Dispatcher dispatcher;
-    private final HTMLElement root;
-
-    StatusCard(Dispatcher dispatcher) {
-        this.dispatcher = dispatcher;
-        this.root = card()
-                .element();
-    }
-
-    @Override
-    public void refresh() {
-
-    }
-
-    @Override
-    public HTMLElement element() {
-        return root;
+    public Subsystem(Property property) {
+        super(property);
     }
 }

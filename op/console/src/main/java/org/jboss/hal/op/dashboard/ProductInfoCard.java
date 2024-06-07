@@ -33,11 +33,11 @@ import static org.patternfly.component.list.DescriptionListTerm.descriptionListT
 import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoints.breakpoints;
 
-class EnvironmentCard implements DashboardCard {
+class ProductInfoCard implements DashboardCard {
 
     private final HTMLElement root;
 
-    EnvironmentCard(Environment environment) {
+    ProductInfoCard(Environment environment) {
         this.root = card()
                 .addTitle(cardTitle().textContent("Details"))
                 .addBody(cardBody()
@@ -66,12 +66,12 @@ class EnvironmentCard implements DashboardCard {
     }
 
     @Override
-    public void refresh() {
-        // nop
+    public HTMLElement element() {
+        return root;
     }
 
     @Override
-    public HTMLElement element() {
-        return root;
+    public void refresh() {
+        // nop
     }
 }

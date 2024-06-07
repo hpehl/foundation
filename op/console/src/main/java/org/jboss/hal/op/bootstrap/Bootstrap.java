@@ -23,8 +23,6 @@ import org.jboss.elemento.flow.Subscription;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Endpoints;
 import org.jboss.hal.env.Environment;
-import org.jboss.hal.model.server.Server;
-import org.jboss.hal.model.server.Standalone;
 import org.jboss.hal.model.user.Current;
 import org.jboss.hal.model.user.User;
 
@@ -37,7 +35,6 @@ public class Bootstrap {
     @Inject Endpoints endpoints;
     @Inject Dispatcher dispatcher;
     @Inject Environment environment;
-    @Inject @Standalone Server server;
     @Inject @Current User user;
 
     public Subscription<FlowContext> run() {
@@ -45,7 +42,7 @@ public class Bootstrap {
                 new SetLogLevel(),
                 new SelectEndpoint(endpoints),
                 new SingleSignOnSupport(),
-                new ReadEnvironment(dispatcher, environment, server, user)
+                new ReadEnvironment(dispatcher, environment, user)
         )).failFast(true);
     }
 }

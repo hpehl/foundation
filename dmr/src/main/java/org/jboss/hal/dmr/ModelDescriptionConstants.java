@@ -26,7 +26,6 @@ public interface ModelDescriptionConstants {
 
     // HAL_* attributes are used internally only!
     // KEEP THESE IN ALPHABETICAL ORDER!
-    @SuppressWarnings("unused") String REMOTE = "remote"; // used by test suite
     String ABORTED_MESSAGE_COUNT = "aborted-message-count";
     String ACCEPTOR = "acceptor";
     String ACCESS = "access";
