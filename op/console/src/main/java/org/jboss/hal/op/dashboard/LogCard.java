@@ -15,59 +15,102 @@
  */
 package org.jboss.hal.op.dashboard;
 
-import org.jboss.hal.dmr.ModelNode;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
-import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.StatementContext;
 import org.patternfly.component.card.CardBody;
+import org.patternfly.component.card.CardTitle;
+import org.patternfly.icon.PredefinedIcon;
+import org.patternfly.layout.flex.Flex;
 
 import elemental2.dom.HTMLElement;
 
 import static elemental2.dom.DomGlobal.alert;
-import static java.util.stream.Collectors.joining;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.code;
-import static org.jboss.elemento.Elements.pre;
+import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LINES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_LOG_FILE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TAIL;
-import static org.jboss.hal.op.skeleton.Domain.domainModeNotSupported;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
 import static org.patternfly.component.card.CardBody.cardBody;
+import static org.patternfly.component.card.CardFooter.cardFooter;
 import static org.patternfly.component.card.CardHeader.cardHeader;
 import static org.patternfly.component.card.CardTitle.cardTitle;
+import static org.patternfly.component.divider.Divider.divider;
+import static org.patternfly.component.divider.DividerType.hr;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
+import static org.patternfly.icon.IconSets.fas.checkCircle;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
+import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
 import static org.patternfly.icon.IconSets.fas.redo;
+import static org.patternfly.icon.IconSets.fas.timesCircle;
+import static org.patternfly.layout.flex.Flex.flex;
+import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.layout.flex.JustifyContent.center;
+import static org.patternfly.layout.flex.SpaceItems.md;
+import static org.patternfly.layout.flex.SpaceItems.sm;
+import static org.patternfly.style.Orientation.vertical;
 import static org.patternfly.style.Size.xs;
+import static org.patternfly.style.Variable.globalVar;
 
 class LogCard implements DashboardCard {
 
-    private final Environment environment;
-    private final StatementContext statementContext;
+    private enum Status {
+        ERROR("errors", () -> timesCircle().attr("color", globalVar("danger-color", "100").asVar())),
+        WARN("warnings", () -> exclamationTriangle().attr("color", globalVar("warning-color", "100").asVar())),
+        SKIP(null, null);
+
+        final String text;
+        final Supplier<PredefinedIcon> icon;
+
+        Status(String text, Supplier<PredefinedIcon> icon) {
+            this.text = text;
+            this.icon = icon;
+        }
+
+        static Status parse(final String line) {
+            if (line.contains("ERROR")) {
+                return Status.ERROR;
+            } else if (line.contains("WARN")) {
+                return Status.WARN;
+            } else {
+                return Status.SKIP;
+            }
+        }
+    }
+
     private final Dispatcher dispatcher;
     private final HTMLElement root;
+    private final CardTitle cardTitle;
     private final CardBody cardBody;
+    private String logFile = "server.log";
 
-    LogCard(Environment environment, StatementContext statementContext, Dispatcher dispatcher) {
-        this.environment = environment;
-        this.statementContext = statementContext;
+    LogCard(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.root = card()
                 .addHeader(cardHeader()
-                        .addTitle(cardTitle().textContent("Log"))
                         .addActions(cardActions()
                                 .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
-                .addBody(cardBody = cardBody().style("max-height: 20em;overflow-y: auto"))
+                .addTitle(cardTitle = cardTitle().style("text-align", "center"))
+                .addBody(cardBody = cardBody().style("text-align", "center"))
+                .addFooter(cardFooter()
+                        .add(a("#").textContent("View log file")))
                 .element();
     }
 
@@ -78,38 +121,60 @@ class LogCard implements DashboardCard {
 
     @Override
     public void refresh() {
+        cardTitle.textContent(logFile);
         removeChildrenFrom(cardBody);
-        if (environment.standalone()) {
-            ResourceAddress address = AddressTemplate.of("subsystem=logging/log-file=server.log").resolve(statementContext);
-            Operation operation = new Operation.Builder(address, READ_LOG_FILE)
-                    .param(LINES, 50)
-                    .param(TAIL, true)
-                    .build();
-            dispatcher.execute(operation,
-                    result -> {
-                        String lines = result.asList()
-                                .stream()
-                                .map(ModelNode::asString)
-                                .collect(joining("\n"));
-                        cardBody.add(pre().textContent(lines));
-                    },
-                    (op, error) -> cardBody.add(emptyState().size(xs)
-                            .addHeader(emptyStateHeader()
-                                    .icon(exclamationCircle())
-                                    .text("Log file not found"))
-                            .addBody(emptyStateBody()
-                                    .add("The log file ")
-                                    .add(code().textContent("server.log"))
-                                    .add(" was not found!"))
-                            .addFooter(emptyStateFooter()
-                                    .addActions(emptyStateActions()
-                                            .add(button("Choose log file")
-                                                    .link()
-                                                    .onClick((event, component) -> chooseLogFile()))))));
-        } else {
-            // TODO Add support for domain mode
-            cardBody.add(domainModeNotSupported(xs));
-        }
+        ResourceAddress address = AddressTemplate.of("subsystem=logging/log-file=" + logFile).resolve();
+        Operation operation = new Operation.Builder(address, READ_LOG_FILE)
+                .param(LINES, 100)
+                .param(TAIL, true)
+                .build();
+        dispatcher.execute(operation,
+                result -> {
+                    Map<Status, Long> statusMap = result.asList()
+                            .stream()
+                            .map(node -> Status.parse(node.asString()))
+                            .filter(status -> status != Status.SKIP)
+                            .collect(groupingBy(identity(), counting()));
+                    if (statusMap.isEmpty()) {
+                        cardBody.add(flex().justifyContent(center).spaceItems(md)
+                                .add(flex().spaceItems(sm)
+                                        .add(flexItem()
+                                                .add(checkCircle().attr("color", globalVar("success-color", "100").asVar())))
+                                        .add(div().textContent("No errors or warnings"))));
+                    } else if (statusMap.size() == 1) {
+                        Map.Entry<Status, Long> entry = statusMap.entrySet().iterator().next();
+                        cardBody.add(flex().justifyContent(center).spaceItems(md)
+                                .add(flex().spaceItems(sm)
+                                        .add(flexItem().add(entry.getKey().icon.get()))
+                                        .add(div().textContent(entry.getValue() + " " + entry.getKey().text))));
+                    } else {
+                        Flex flex = flex();
+                        cardBody.add(flex.justifyContent(center).spaceItems(md));
+                        for (Iterator<Map.Entry<Status, Long>> iterator = statusMap.entrySet().iterator();
+                                iterator.hasNext(); ) {
+                            Map.Entry<Status, Long> entry = iterator.next();
+                            flex.add(flex().spaceItems(sm)
+                                    .add(flexItem().add(entry.getKey().icon.get())));
+                            flex.add(div().textContent(entry.getValue() + " " + entry.getKey().text));
+                            if (iterator.hasNext()) {
+                                flex.add(divider(hr).orientation(vertical));
+                            }
+                        }
+                    }
+                },
+                (op, error) -> cardBody.add(emptyState().size(xs)
+                        .addHeader(emptyStateHeader()
+                                .icon(exclamationCircle().attr("color", globalVar("danger-color", "100").asVar()))
+                                .text("Log file not found"))
+                        .addBody(emptyStateBody()
+                                .add("The log file ")
+                                .add(code().textContent("server.log"))
+                                .add(" was not found!"))
+                        .addFooter(emptyStateFooter()
+                                .addActions(emptyStateActions()
+                                        .add(button("Choose log file")
+                                                .link()
+                                                .onClick((event, component) -> chooseLogFile()))))));
     }
 
     private void chooseLogFile() {

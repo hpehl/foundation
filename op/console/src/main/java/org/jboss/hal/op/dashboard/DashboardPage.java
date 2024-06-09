@@ -33,13 +33,8 @@ import org.jboss.hal.model.deployment.Deployments;
 
 import elemental2.dom.HTMLElement;
 
-import static elemental2.dom.DomGlobal.clearInterval;
-import static elemental2.dom.DomGlobal.setInterval;
 import static java.util.Arrays.asList;
 import static org.jboss.elemento.Elements.p;
-import static org.patternfly.component.card.Card.card;
-import static org.patternfly.component.card.CardBody.cardBody;
-import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.component.page.PageMainBody.pageMainBody;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
@@ -52,7 +47,7 @@ import static org.patternfly.style.Brightness.light;
 @Route("/")
 public class DashboardPage implements Page {
 
-    private static final double REFRESH_INTERVAL = 1_000;
+    private static final double REFRESH_INTERVAL = 5_000;
 
     private final Environment environment;
     private final StatementContext statementContext;
@@ -77,82 +72,76 @@ public class DashboardPage implements Page {
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         DashboardCard deploymentCard = new DeploymentCard(environment, deployments);
         DashboardCard documentationCard = new DocumentationCard(environment);
-        DashboardCard environmentCard = new ProductInfoCard(environment);
-        DashboardCard logCard = new LogCard(environment, statementContext, dispatcher);
-        DashboardCard runtimeCard = new RuntimeCard(statementContext, dispatcher);
-        DashboardCard statusCard = new HealthCard(dispatcher);
-        cards.addAll(asList(deploymentCard, documentationCard, environmentCard, logCard, runtimeCard,
-                statusCard));
+        DashboardCard domainCard = new DomainCard();
+        DashboardCard healthCard = new HealthCard(dispatcher);
+        DashboardCard logCard = new LogCard(dispatcher);
+        DashboardCard productInfoCard = new ProductInfoCard(environment);
+        DashboardCard runtimeCard = new RuntimeCard(dispatcher);
 
-        List<HTMLElement> elements = asList(
-                pageMainSection().limitWidth().background(light)
-                        .addBody(pageMainBody()
-                                .add(textContent()
-                                        .add(title(1).text("WildFly Application Server"))
-                                        .add(p().textContent("Dashboard"))))
-                        .element(),
-                pageMainSection().limitWidth()
-                        .add(pageMainBody()
-                                .add(grid().gutter()
-                                        .addItem(gridItem().span(8)
-                                                .add(environmentCard))
-                                        .addItem(gridItem().span(4).rowSpan(2)
-                                                .add(card().fullHeight()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 4, rowSpan = 2"))))
-                                        .addItem(gridItem().span(2).rowSpan(3)
-                                                .add(card().fullHeight()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2, rowSpan = 3"))))
-                                        .addItem(gridItem().span(2)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2"))))
-                                        .addItem(gridItem().span(4)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 4"))))
-                                        .addItem(gridItem().span(2)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2"))))
-                                        .addItem(gridItem().span(2)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2"))))
-                                        .addItem(gridItem().span(2)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2"))))
-                                        .addItem(gridItem().span(4)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 4"))))
-                                        .addItem(gridItem().span(2)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 2"))))
-                                        .addItem(gridItem().span(4)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 4"))))
-                                        .addItem(gridItem().span(4)
-                                                .add(card()
-                                                        .addTitle(cardTitle().textContent("Card"))
-                                                        .addBody(cardBody().textContent("span = 4"))))))
-                        .element());
-        return elements;
+        if (environment.standalone()) {
+            cards.addAll(asList(
+                    deploymentCard,
+                    documentationCard,
+                    logCard,
+                    productInfoCard,
+                    runtimeCard,
+                    healthCard));
+        } else {
+            cards.addAll(asList(
+                    deploymentCard,
+                    documentationCard,
+                    domainCard,
+                    productInfoCard));
+        }
+
+        HTMLElement header = pageMainSection().limitWidth().background(light)
+                .addBody(pageMainBody()
+                        .add(textContent()
+                                .add(title(1).text("WildFly Application Server"))
+                                .add(p().textContent("Dashboard"))))
+                .element();
+        HTMLElement dashboard = pageMainSection().limitWidth()
+                .add(pageMainBody().add(grid().gutter().run(grid -> {
+                            if (environment.standalone()) {
+                                grid
+                                        .addItem(gridItem().span(12)
+                                                .add(productInfoCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(deploymentCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(runtimeCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(logCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(healthCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(documentationCard));
+                            } else {
+                                grid
+                                        .addItem(gridItem().span(12)
+                                                .add(productInfoCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(domainCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(deploymentCard))
+                                        .addItem(gridItem().span(12)
+                                                .add(documentationCard));
+                            }
+                        })
+                ))
+                .element();
+        return asList(header, dashboard);
     }
 
     @Override
     public void attach() {
         refresh();
-        refreshHandle = setInterval(__ -> refresh(), REFRESH_INTERVAL);
+        // refreshHandle = setInterval(__ -> refresh(), REFRESH_INTERVAL);
     }
 
     @Override
     public void detach() {
-        clearInterval(refreshHandle);
+        // clearInterval(refreshHandle);
     }
 
     private void refresh() {

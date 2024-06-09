@@ -38,7 +38,6 @@ import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.FlexShorthand._1;
 import static org.patternfly.style.Breakpoint.md;
 import static org.patternfly.style.Breakpoints.breakpoints;
-import static org.patternfly.style.Inset._3xl;
 import static org.patternfly.style.Orientation.vertical;
 
 class DocumentationCard implements DashboardCard {
@@ -72,18 +71,16 @@ class DocumentationCard implements DashboardCard {
                         .alignSelf(AlignSelf.stretch)
                         .addItem(flexItem().flex(_1)
                                 .add(card().fullHeight().plain()
-                                        .addHeader(cardHeader().addTitle(cardTitle().title("General Resources")))
+                                        .addHeader(cardHeader().addTitle(cardTitle().textContent("General Resources")))
                                         .addBody(cardBody()
                                                 .add(list().plain()
                                                         .addItems(GENERAL_RESOURCES, tuple -> listItem()
                                                                 .add(a(replaceVersion(tuple[1]), "_blank")
                                                                         .textContent(tuple[0])))))))
-                        .add(divider(hr)
-                                .inset(_3xl)
-                                .orientation(breakpoints(md, vertical)))
+                        .add(divider(hr).orientation(breakpoints(md, vertical)))
                         .addItem(flexItem().flex(_1)
                                 .add(card().fullHeight().plain()
-                                        .addHeader(cardHeader().addTitle(cardTitle().title("Get Help")))
+                                        .addHeader(cardHeader().addTitle(cardTitle().textContent("Get Help")))
                                         .addBody(cardBody()
                                                 .add(list().plain()
                                                         .addItems(GET_HELP, tuple -> listItem()

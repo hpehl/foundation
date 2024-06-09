@@ -15,9 +15,7 @@
  */
 package org.jboss.hal.op.dashboard;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.jboss.hal.env.Environment;
@@ -30,13 +28,12 @@ import org.patternfly.icon.PredefinedIcon;
 
 import elemental2.dom.HTMLElement;
 
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
-import static org.jboss.hal.model.deployment.DeploymentStatus.FAILED;
-import static org.jboss.hal.model.deployment.DeploymentStatus.OK;
-import static org.jboss.hal.model.deployment.DeploymentStatus.STOPPED;
-import static org.jboss.hal.op.skeleton.Domain.domainModeNotSupported;
+import static org.jboss.hal.op.skeleton.EmptyStates.domainModeNotSupported;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
@@ -79,7 +76,7 @@ class DeploymentCard implements DashboardCard {
                 .addTitle(cardTitle = cardTitle().style("text-align", "center"))
                 .addBody(cardBody = cardBody().style("text-align", "center"))
                 .addFooter(cardFooter()
-                        .add(a("#").textContent("All deployments")))
+                        .add(a("#").textContent("View deployments")))
                 .element();
     }
 
@@ -90,7 +87,6 @@ class DeploymentCard implements DashboardCard {
 
     @Override
     public void refresh() {
-        removeChildrenFrom(cardTitle);
         removeChildrenFrom(cardBody);
         if (environment.standalone()) {
             deployments.readStandaloneDeployments().then(deployments -> {
@@ -98,23 +94,24 @@ class DeploymentCard implements DashboardCard {
                     cardBody.add(emptyState().size(xs)
                             .addHeader(emptyStateHeader().text("No deployments"))
                             .addBody(emptyStateBody().textContent("This server contains no deployments.")));
-                } else if (deployments.size() == 1) {
-                    cardTitle.textContent("1 Deployment");
-                    cardBody.add(status(deployments.get(0).status()));
                 } else {
-                    cardTitle.textContent(deployments.size() + " Deployments");
-                    Map<Integer, PredefinedIcon> status = status(deployments);
+                    if (deployments.size() ==1) {
+                        cardTitle.textContent("1 Deployment");
+                    } else {
+                        cardTitle.textContent(deployments.size() + " Deployments");
+                    }
+                    Map<DeploymentStatus, Long> status = deployments.stream().collect(groupingBy(Deployment::status, counting()));
                     if (status.size() == 1) {
-                        cardBody.add(status.values().iterator().next());
+                        cardBody.add(status(status.keySet().iterator().next()));
                     } else {
                         cardBody.add(flex().display(inlineFlex)
                                 .run(flex -> {
-                                    for (Iterator<Map.Entry<Integer, PredefinedIcon>> iterator = status.entrySet().iterator();
+                                    for (Iterator<Map.Entry<DeploymentStatus, Long>> iterator = status.entrySet().iterator();
                                             iterator.hasNext(); ) {
-                                        Map.Entry<Integer, PredefinedIcon> entry = iterator.next();
+                                        Map.Entry<DeploymentStatus, Long> entry = iterator.next();
                                         flex.add(flex().spaceItems(sm)
-                                                .add(div().add(entry.getValue()))
-                                                .add(div().textContent(entry.getKey().toString())));
+                                                .add(div().add(status(entry.getKey())))
+                                                .add(div().textContent(String.valueOf(entry.getValue()))));
                                         if (iterator.hasNext()) {
                                             flex.add(divider(hr).orientation(vertical));
                                         }
@@ -130,50 +127,17 @@ class DeploymentCard implements DashboardCard {
         }
     }
 
-    private Map<Integer, PredefinedIcon> status(List<Deployment> deployments) {
-        int[] status = new int[4];
-        Map<Integer, PredefinedIcon> result = new HashMap<>();
-        for (Deployment deployment : deployments) {
-            switch (deployment.status()) {
-                case OK:
-                    status[0]++;
-                    break;
-                case STOPPED:
-                    status[1]++;
-                    break;
-                case FAILED:
-                    status[2]++;
-                    break;
-                case UNDEFINED:
-                    status[3]++;
-            }
-        }
-        if (status[0] > 0) {
-            result.put(status[0], status(OK));
-        }
-        if (status[1] > 0) {
-            result.put(status[1], status(STOPPED));
-        }
-        if (status[2] > 0) {
-            result.put(status[2], status(FAILED));
-        }
-        if (status[3] > 0) {
-            result.put(status[3], status(FAILED));
-        }
-        return result;
-    }
-
     private PredefinedIcon status(DeploymentStatus status) {
         switch (status) {
             case OK:
-                return checkCircle().attr("color", globalVar("success-color", "100").name);
+                return checkCircle().attr("color", globalVar("success-color", "100").asVar());
             case FAILED:
-                return timesCircle().attr("color", globalVar("danger-color", "100").name);
+                return timesCircle().attr("color", globalVar("danger-color", "100").asVar());
             case STOPPED:
                 return pauseCircle();
             case UNDEFINED:
             default:
-                return question().attr("color", globalVar("warning-color", "100").name);
+                return question().attr("color", globalVar("warning-color", "100").asVar());
         }
     }
 }

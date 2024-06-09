@@ -201,6 +201,17 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ resolve
 
+    /** Resolve this template using the {@link NoopResolver} */
+    public ResourceAddress resolve() {
+        return resolve(new NoopResolver());
+    }
+
+    /** Resolve this template using the {@link WildcardResolver} */
+    public ResourceAddress resolve(String first, String... more) {
+        return resolve(new WildcardResolver(first, more));
+    }
+
+    /** Resolve this template using the {@link StatementContextResolver} */
     public ResourceAddress resolve(StatementContext context) {
         return resolve(new StatementContextResolver(context));
     }

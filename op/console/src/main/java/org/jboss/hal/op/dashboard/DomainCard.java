@@ -15,34 +15,27 @@
  */
 package org.jboss.hal.op.dashboard;
 
-import org.jboss.hal.dmr.Operation;
-import org.jboss.hal.dmr.dispatch.Dispatcher;
-import org.jboss.hal.meta.AddressTemplate;
-
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.hal.op.skeleton.EmptyStates.domainModeNotSupported;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
 import static org.patternfly.component.card.CardHeader.cardHeader;
-import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.icon.IconSets.fas.redo;
+import static org.patternfly.style.Size.sm;
 
-class RuntimeCard implements DashboardCard {
+class DomainCard implements DashboardCard {
 
-    private final Dispatcher dispatcher;
     private final HTMLElement root;
 
-    RuntimeCard(Dispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+    DomainCard() {
         this.root = card()
                 .addHeader(cardHeader()
-                        .addTitle(cardTitle().textContent("Runtime"))
+                        // .addTitle(cardTitle().textContent("Domain"))
                         .addActions(cardActions()
                                 .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
+                .add(domainModeNotSupported(sm))
                 .element();
     }
 
@@ -53,16 +46,6 @@ class RuntimeCard implements DashboardCard {
 
     @Override
     public void refresh() {
-        AddressTemplate mbean = AddressTemplate.of("core-service=platform-mbean");
-        AddressTemplate memory = mbean.append("type=memory");
-        AddressTemplate threading = mbean.append("type=threading");
-        Operation osOp = new Operation.Builder(memory.resolve(), READ_RESOURCE_OPERATION)
-                .param(ATTRIBUTES_ONLY, true)
-                .param(INCLUDE_RUNTIME, true)
-                .build();
-        Operation runtimeOp = new Operation.Builder(threading.resolve(), READ_RESOURCE_OPERATION)
-                .param(ATTRIBUTES_ONLY, true)
-                .param(INCLUDE_RUNTIME, true)
-                .build();
+        // TODO Implement domain card
     }
 }

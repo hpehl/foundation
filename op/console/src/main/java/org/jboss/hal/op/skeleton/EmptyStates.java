@@ -23,13 +23,17 @@ import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 
-public class Domain {
+public class EmptyStates {
 
     public static EmptyState domainModeNotSupported(Size size) {
+        return nyi(size, "Domain mode", "Domain mode is not supported yet.");
+    }
+
+    public static EmptyState nyi(Size size, String header, String text) {
         return emptyState().size(size)
                 .addHeader(emptyStateHeader()
                         .icon(exclamationCircle())
-                        .text("Domain mode"))
-                .addBody(emptyStateBody().textContent("Domain mode is not supported yet."));
+                        .text(header))
+                .addBody(emptyStateBody().textContent(text));
     }
 }

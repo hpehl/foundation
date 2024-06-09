@@ -19,7 +19,13 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 
 import elemental2.dom.HTMLElement;
 
+import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
+import static org.patternfly.component.card.CardActions.cardActions;
+import static org.patternfly.component.card.CardBody.cardBody;
+import static org.patternfly.component.card.CardHeader.cardHeader;
+import static org.patternfly.component.card.CardTitle.cardTitle;
+import static org.patternfly.icon.IconSets.fas.redo;
 
 class HealthCard implements DashboardCard {
 
@@ -29,6 +35,11 @@ class HealthCard implements DashboardCard {
     HealthCard(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.root = card()
+                .addHeader(cardHeader()
+                        .addActions(cardActions()
+                                .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
+                .addTitle(cardTitle().style("text-align", "center").textContent("Health"))
+                .addBody(cardBody().textContent("Not yet implemented!"))
                 .element();
     }
 
