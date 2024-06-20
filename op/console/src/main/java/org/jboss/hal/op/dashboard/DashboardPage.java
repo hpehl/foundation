@@ -30,6 +30,7 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.model.deployment.Deployments;
+import org.patternfly.layout.grid.Grid;
 
 import elemental2.dom.HTMLElement;
 

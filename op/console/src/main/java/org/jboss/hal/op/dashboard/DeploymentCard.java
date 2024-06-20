@@ -24,6 +24,7 @@ import org.jboss.hal.model.deployment.DeploymentStatus;
 import org.jboss.hal.model.deployment.Deployments;
 import org.patternfly.component.card.CardBody;
 import org.patternfly.component.card.CardTitle;
+import org.patternfly.icon.IconSets;
 import org.patternfly.icon.PredefinedIcon;
 
 import elemental2.dom.HTMLElement;
@@ -92,7 +93,9 @@ class DeploymentCard implements DashboardCard {
             deployments.readStandaloneDeployments().then(deployments -> {
                 if (deployments.isEmpty()) {
                     cardBody.add(emptyState().size(xs)
-                            .addHeader(emptyStateHeader().text("No deployments"))
+                            .addHeader(emptyStateHeader()
+                                    .icon(IconSets.fas.ban())
+                                    .text("No deployments"))
                             .addBody(emptyStateBody().textContent("This server contains no deployments.")));
                 } else {
                     if (deployments.size() ==1) {

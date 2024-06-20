@@ -67,7 +67,7 @@ class EndpointDescription implements IsElement<HTMLElement> {
                                                 .add(code().textContent("/host=primary"))
                                                 .add(" and use ")
                                                 .add(code().textContent("reload --host=primary"))
-                                                .add(" to reload the server.")))
+                                                .add(" to reload the domain.")))
                                 .add(codeBlock()
                                         .code("/core-service=management/management-interface=http-interface:list-add(name=allowed-origins,value=" + location.origin + ")\nreload"))))
                 .element();
