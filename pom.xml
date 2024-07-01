@@ -90,7 +90,7 @@
         <version.elemento>1.6.2</version.elemento>
         <version.gwt.event>1.0.0-RC1</version.gwt.event>
         <version.gwt.safehtml>1.0.0-RC1</version.gwt.safehtml>
-        <version.junit>5.10.2</version.junit>
+        <version.junit>5.10.3</version.junit>
         <version.kie.j2cl.bom>0.1</version.kie.j2cl.bom>
         <version.kie.di.bom>0.6</version.kie.di.bom>
         <version.mockito>5.12.0</version.mockito>
@@ -105,7 +105,7 @@
         <version.enforcer.plugin>3.3.0</version.enforcer.plugin>
         <version.frontend.plugin>1.15.0</version.frontend.plugin>
         <version.j2cl.plugin>0.23.0</version.j2cl.plugin>
-        <version.impsort.plugin>1.10.0</version.impsort.plugin>
+        <version.impsort.plugin>1.11.0</version.impsort.plugin>
         <version.javadoc.plugin>3.7.0</version.javadoc.plugin>
         <version.keepachangelog>2.1.1</version.keepachangelog>
         <version.license.plugin>4.5</version.license.plugin>
