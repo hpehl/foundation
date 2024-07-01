@@ -19,20 +19,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.jboss.hal.env.Environment;
 
 @ApplicationScoped
 public class StatementContext {
 
+    final Environment environment;
     private final Map<Placeholder, String> values;
     private final Map<String, Placeholder> placeholders;
 
-    StatementContext() {
-        values = new HashMap<>();
-        placeholders = new HashMap<>();
+    @Inject
+    StatementContext(Environment environment) {
+        this.environment = environment;
+        this.values = new HashMap<>();
+        this.placeholders = new HashMap<>();
     }
 
     public void assign(String placeholder, String value) {
-        assign(new Placeholder(placeholder), value);
+        assign(new Placeholder(placeholder, null, false), value);
     }
 
     public void assign(Placeholder placeholder, String value) {

@@ -19,21 +19,23 @@ import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.router.PlaceManager;
+import org.jboss.hal.env.Environment;
 import org.jboss.hal.op.bootstrap.Bootstrap;
 import org.jboss.hal.op.bootstrap.BootstrapError;
-import org.jboss.hal.op.bootstrap.BootstrapErrorElement;
-import org.jboss.hal.op.skeleton.Skeleton;
 import org.kie.j2cl.tools.di.annotation.Application;
 import org.kie.j2cl.tools.processors.annotations.GWT3EntryPoint;
 import org.patternfly.component.navigation.Navigation;
 
 import static elemental2.dom.DomGlobal.document;
 import static org.jboss.elemento.Elements.insertFirst;
+import static org.jboss.hal.op.bootstrap.BootstrapErrorElement.bootstrapError;
+import static org.jboss.hal.op.skeleton.Skeleton.skeleton;
 
 @Application(packages = {"org.jboss.hal"})
 public class Main {
 
     @Inject Bootstrap bootstrap;
+    @Inject Environment environment;
     @Inject PlaceManager placeManager;
     @Inject Navigation navigation;
 
@@ -46,11 +48,11 @@ public class Main {
     void init() {
         bootstrap.run().subscribe(context -> {
             if (context.successful()) {
-                insertFirst(document.body, new Skeleton(navigation));
+                insertFirst(document.body, skeleton(environment).add(navigation));
                 placeManager.start();
             } else {
                 BootstrapError error = context.pop(BootstrapError.UNKNOWN);
-                insertFirst(document.body, new Skeleton(new BootstrapErrorElement(error)));
+                insertFirst(document.body, skeleton().add(bootstrapError(error)));
             }
         });
     }

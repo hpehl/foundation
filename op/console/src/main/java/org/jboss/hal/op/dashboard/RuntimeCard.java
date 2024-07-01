@@ -20,14 +20,6 @@ import org.gwtproject.safehtml.shared.SafeHtmlUtils;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
-import org.patternfly.component.card.CardBody;
-import org.patternfly.layout.flex.AlignItems;
-import org.patternfly.layout.flex.AlignSelf;
-import org.patternfly.layout.flex.Display;
-import org.patternfly.layout.flex.SpaceItems;
-import org.patternfly.style.Breakpoint;
-import org.patternfly.style.Breakpoints;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 
@@ -45,12 +37,7 @@ import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.layout.flex.Display.inlineFlex;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
-import static org.patternfly.layout.flex.FlexShorthand._1;
 import static org.patternfly.layout.flex.SpaceItems.md;
-import static org.patternfly.layout.grid.Grid.grid;
-import static org.patternfly.style.Breakpoint.default_;
-import static org.patternfly.style.Breakpoint.sm;
-import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Classes.util;
 
 class RuntimeCard implements DashboardCard {

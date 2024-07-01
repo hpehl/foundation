@@ -31,14 +31,14 @@ import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_FOUN
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NO_ENDPOINT_SPECIFIED;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.UNKNOWN;
 
-public class SelectEndpoint implements Task<FlowContext> {
+class SelectEndpoint implements Task<FlowContext> {
 
     private static final Logger logger = Logger.getLogger(SelectEndpoint.class.getName());
     private static final String CONNECT_PARAMETER = "connect";
     private final Endpoints endpoints;
     private final EndpointStorage endpointStorage;
 
-    public SelectEndpoint(Endpoints endpoints) {
+    SelectEndpoint(Endpoints endpoints) {
         this.endpoints = endpoints;
         this.endpointStorage = new EndpointStorage();
     }

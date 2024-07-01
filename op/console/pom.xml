@@ -150,6 +150,7 @@
                         <environment.version>${project.version}</environment.version>
                         <environment.base>${environment.base}</environment.base>
                         <environment.build>${environment.build}</environment.build>
+                        <environment.stability>${environment.stability}</environment.stability>
                     </defines>
                     <webappDirectory>${project.build.directory}/console</webappDirectory>
                 </configuration>

@@ -110,7 +110,6 @@ public class Role {
         if (isStandard()) {
             return name;
         }
-        // noinspection DuplicateStringLiteralInspection
         return name + " extends " + baseRole.getName() + " scoped to " + type.name()
                 .toLowerCase() + scope + ", includeAll: " + includeAll;
     }

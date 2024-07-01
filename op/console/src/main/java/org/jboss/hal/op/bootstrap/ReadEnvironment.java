@@ -51,14 +51,14 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.VERBOSE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI;
 import static org.jboss.hal.dmr.ModelNodeHelper.asEnumValue;
 
-public class ReadEnvironment implements Task<FlowContext> {
+class ReadEnvironment implements Task<FlowContext> {
 
     private static final Logger logger = Logger.getLogger(ReadEnvironment.class.getName());
     private final Dispatcher dispatcher;
     private final Environment environment;
     private final User user;
 
-    public ReadEnvironment(Dispatcher dispatcher, Environment environment, User user) {
+    ReadEnvironment(Dispatcher dispatcher, Environment environment, User user) {
         this.dispatcher = dispatcher;
         this.environment = environment;
         this.user = user;

@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.meta;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPLOYMENT;
@@ -28,25 +30,36 @@ public class Placeholder {
 
     // ------------------------------------------------------ well-known placeholders
 
-    public static final Placeholder DOMAIN_CONTROLLER = new Placeholder("domain.controller", HOST);
-    public static final Placeholder SELECTED_DEPLOYMENT = new Placeholder("selected.deployment", DEPLOYMENT);
-    public static final Placeholder SELECTED_HOST = new Placeholder("selected.host", HOST);
-    public static final Placeholder SELECTED_PROFILE = new Placeholder("selected.profile", PROFILE);
-    public static final Placeholder SELECTED_RESOURCE = new Placeholder("selected.resource");
-    public static final Placeholder SELECTED_SERVER = new Placeholder("selected.server", SERVER);
-    public static final Placeholder SELECTED_SERVER_CONFIG = new Placeholder("selected.server-config", SERVER_CONFIG);
-    public static final Placeholder SELECTED_SERVER_GROUP = new Placeholder("selected.server-group", SERVER_GROUP);
+    public static final Placeholder DOMAIN_CONTROLLER = new Placeholder("domain.controller", HOST, true);
+    public static final Placeholder SELECTED_DEPLOYMENT = new Placeholder("selected.deployment", DEPLOYMENT, false);
+    public static final Placeholder SELECTED_HOST = new Placeholder("selected.host", HOST, true);
+    public static final Placeholder SELECTED_PROFILE = new Placeholder("selected.profile", PROFILE, true);
+    public static final Placeholder SELECTED_RESOURCE = new Placeholder("selected.resource", null, false);
+    public static final Placeholder SELECTED_SERVER = new Placeholder("selected.server", SERVER, true);
+    public static final Placeholder SELECTED_SERVER_CONFIG = new Placeholder("selected.server-config", SERVER_CONFIG, true);
+    public static final Placeholder SELECTED_SERVER_GROUP = new Placeholder("selected.server-group", SERVER_GROUP, true);
+
+    static final Map<String, Placeholder> WELL_KNOWN_NAMES = new HashMap<>();
+
+    static {
+        WELL_KNOWN_NAMES.put("domain.controller", DOMAIN_CONTROLLER);
+        WELL_KNOWN_NAMES.put("selected.deployment", SELECTED_DEPLOYMENT);
+        WELL_KNOWN_NAMES.put("selected.host", SELECTED_HOST);
+        WELL_KNOWN_NAMES.put("selected.profile", SELECTED_PROFILE);
+        WELL_KNOWN_NAMES.put("selected.resource", SELECTED_RESOURCE);
+        WELL_KNOWN_NAMES.put("selected.server", SELECTED_SERVER);
+        WELL_KNOWN_NAMES.put("selected.server-config", SELECTED_SERVER_CONFIG);
+        WELL_KNOWN_NAMES.put("selected.server-group", SELECTED_SERVER_GROUP);
+    }
 
     public final String name;
     public final String resource;
+    public final boolean domainOnly;
 
-    Placeholder(String name) {
-        this(name, null);
-    }
-
-    Placeholder(String name, String resource) {
+    Placeholder(String name, String resource, boolean domainOnly) {
         this.name = name;
         this.resource = resource;
+        this.domainOnly = domainOnly;
     }
 
     @Override

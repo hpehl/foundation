@@ -15,24 +15,35 @@
  */
 package org.jboss.hal.env;
 
-/**
- * The build type of the console (development or production)
- */
-public enum BuildType {
+public enum Stability {
 
-    DEVELOPMENT,
+    EXPERIMENTAL(300, "E", "experimental"),
 
-    PRODUCTION;
+    PREVIEW(200, "P", "preview"),
 
-    public static BuildType parse(String value) {
-        BuildType build = DEVELOPMENT;
+    COMMUNITY(100, "C", "community"),
+
+    DEFAULT(0, "D", "default");
+
+    public static Stability parse(String value) {
+        Stability stability = COMMUNITY;
         if (value != null) {
             try {
-                build = BuildType.valueOf(value.toUpperCase());
+                stability = Stability.valueOf(value.toUpperCase());
             } catch (IllegalArgumentException ignore) {
                 // ignore
             }
         }
-        return build;
+        return stability;
+    }
+
+    public final int order;
+    public final String letter;
+    public final String label;
+
+    Stability(int order, String letter, String label) {
+        this.order = order;
+        this.letter = letter;
+        this.label = label;
     }
 }

@@ -62,9 +62,7 @@ class DocumentationCard implements DashboardCard {
     private final HTMLElement root;
 
     DocumentationCard(Environment environment) {
-        this.version = environment.productVersion().minor() == 0
-                ? String.valueOf(environment.productVersion().major())
-                : environment.productVersion().major() + "." + environment.productVersion().minor();
+        this.version = environment.productVersionLink();
         this.root = card()
                 .add(flex()
                         .alignItems(AlignItems.stretch)

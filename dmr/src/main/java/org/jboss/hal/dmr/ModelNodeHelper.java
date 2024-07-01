@@ -28,8 +28,18 @@ public final class ModelNodeHelper {
     // ------------------------------------------------------ enums
 
     /**
-     * Looks for the specified attribute and tries to convert it to an enum constant using
-     * {@code LOWER_HYPHEN.to(UPPER_UNDERSCORE, modelNode.get(attribute).asString())}.
+     * Converts the given {@link ModelNode} value to an enum constant using the provided {@link Function}. If the conversion
+     * fails, the method returns the default value.
+     * <p>
+     * The method checks if the {@code attribute} is defined in {@code modelNode} and delegates to
+     * {@link #asEnumValue(ModelNode, Function, Enum)}.
+     *
+     * @param <E>          the type of the enum
+     * @param modelNode    the {@link ModelNode} that contains the value to convert
+     * @param attribute    the attribute name of the value in the {@link ModelNode}
+     * @param valueOf      the function to convert the value to an enum constant
+     * @param defaultValue the default value to return if the conversion fails
+     * @return the converted enum constant or the default value if the conversion fails
      */
     public static <E extends Enum<E>> E asEnumValue(ModelNode modelNode, String attribute, Function<String, E> valueOf,
             E defaultValue) {
@@ -39,6 +49,19 @@ public final class ModelNodeHelper {
         return defaultValue;
     }
 
+    /**
+     * Converts the given {@link ModelNode} value to an enum constant using the provided {@link Function}. If the conversion
+     * fails, the method returns the default value.
+     * <p>
+     * {@link ModelNode#asString()} is used to get the model node value. Before the conversion, '-' are replaced by '_' and
+     * {@code String.toUpperCase()} is applied to the model node value.
+     *
+     * @param <E>            the type of the enum
+     * @param modelNodeValue the ModelNode value to convert
+     * @param valueOf        the function to convert the value to an enum constant
+     * @param defaultValue   the default value to return if the conversion fails
+     * @return the converted enum constant or the default value if the conversion fails
+     */
     public static <E extends Enum<E>> E asEnumValue(ModelNode modelNodeValue, Function<String, E> valueOf, E defaultValue) {
         E value = defaultValue;
         String convertedValue = modelNodeValue.asString().replace('-', '_').toUpperCase();

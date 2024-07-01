@@ -31,3 +31,6 @@ environment.base = goog.define('environment.base', '/');
 
 /** @define {string} */
 environment.build = goog.define('environment.build', 'undefined');
+
+/** @define {string} */
+environment.build = goog.define('environment.stability', 'community');

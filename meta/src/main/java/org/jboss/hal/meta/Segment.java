@@ -38,7 +38,8 @@ public class Segment {
     }
 
     public Placeholder placeholder() {
-        return containsPlaceholder() ? new Placeholder(value.substring(1, value.length() - 1)) : null;
+        String name = value.substring(1, value.length() - 1);
+        return Placeholder.WELL_KNOWN_NAMES.getOrDefault(name, new Placeholder(name, null, false));
     }
 
     @Override

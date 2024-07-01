@@ -25,7 +25,7 @@ import elemental2.promise.Promise;
 
 import static org.jboss.elemento.logger.Level.INFO;
 
-public class SetLogLevel implements Task<FlowContext> {
+class SetLogLevel implements Task<FlowContext> {
 
     private static final Logger logger = Logger.getLogger(SetLogLevel.class.getName());
     private static final String LOG_LEVEL_PARAMETER = "log-level";

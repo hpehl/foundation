@@ -15,18 +15,19 @@
  */
 package org.jboss.hal.meta;
 
+import org.jboss.hal.env.Environment;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class StatementContextTest {
 
     @Test
     void assign() {
-        StatementContext context = new StatementContext();
+        StatementContext context = new StatementContext(new Environment());
         context.assign("foo", "bar");
         assertEquals("bar", context.value("foo"));
-        assertEquals("bar", context.value(new Placeholder("foo")));
-        assertEquals(new Placeholder("foo"), context.placeholder("foo"));
+        assertEquals("bar", context.value(new Placeholder("foo", null, false)));
+        assertEquals(new Placeholder("foo", null, false), context.placeholder("foo"));
     }
 }

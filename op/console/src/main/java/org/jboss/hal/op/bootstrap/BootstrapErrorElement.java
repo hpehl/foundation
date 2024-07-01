@@ -39,9 +39,17 @@ import static org.patternfly.style.Variable.globalVar;
 
 public class BootstrapErrorElement implements IsElement<HTMLElement> {
 
+    // ------------------------------------------------------ factory
+
+    public static BootstrapErrorElement bootstrapError(BootstrapError error) {
+        return new BootstrapErrorElement(error);
+    }
+
+    // ------------------------------------------------------ instance
+
     private final HTMLElement root;
 
-    public BootstrapErrorElement(BootstrapError error) {
+    BootstrapErrorElement(BootstrapError error) {
         String selectUrl = location.origin + location.pathname;
         this.root = emptyState().size(lg)
                 .addHeader(emptyStateHeader()

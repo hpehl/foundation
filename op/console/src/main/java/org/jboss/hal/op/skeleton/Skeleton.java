@@ -17,18 +17,23 @@ package org.jboss.hal.op.skeleton;
 
 import org.jboss.elemento.By;
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.env.Environment;
 import org.jboss.hal.op.bootstrap.BootstrapErrorElement;
 import org.jboss.hal.op.resources.Assets;
 import org.jboss.hal.resources.Ids;
 import org.patternfly.component.navigation.Navigation;
+import org.patternfly.component.page.Page;
 import org.patternfly.component.page.PageMain;
 import org.patternfly.component.toolbar.ToolbarItem;
 import org.patternfly.style.Variable;
 
 import elemental2.dom.HTMLElement;
 
+import static elemental2.dom.DomGlobal.document;
 import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
+import static org.jboss.hal.op.skeleton.StabilityBanner.stabilityBanner;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
 import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
@@ -43,6 +48,11 @@ import static org.patternfly.component.skiptocontent.SkipToContent.skipToContent
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
+import static org.patternfly.layout.flex.Direction.column;
+import static org.patternfly.layout.flex.Flex.flex;
+import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.layout.flex.SpaceItems.none;
+import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Classes.brand;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.fullHeight;
@@ -54,28 +64,25 @@ import static org.patternfly.style.Variables.Height;
 
 public class Skeleton implements IsElement<HTMLElement> {
 
-    private final HTMLElement root;
-    private final ToolbarItem toolbarItem;
+    // ------------------------------------------------------ factory
+
+    public static Skeleton skeleton(Environment environment) {
+        return new Skeleton(environment);
+    }
+
+    public static Skeleton skeleton() {
+        return new Skeleton(null);
+    }
+
+    // ------------------------------------------------------ instance
+
+    private final Page page;
     private final PageMain pageMain;
+    private final ToolbarItem toolbarItem;
+    private HTMLElement root;
 
-
-    public Skeleton(Navigation navigation) {
-        this();
-        toolbarItem.add(navigation.element());
-    }
-
-    public Skeleton(BootstrapErrorElement bootstrapError) {
-        this();
-        Variable white = globalVar("BackgroundColor", "100");
-        pageMain.add(pageMainSection()
-                .limitWidth()
-                .add(pageMainBody()
-                        .add(div().style("background-color", "var(" + white.name + ")")
-                                .add(bootstrapError))));
-    }
-
-    private Skeleton() {
-        root = page()
+    Skeleton(Environment environment) {
+        page = page()
                 .addSkipToContent(skipToContent(Ids.MAIN_ID))
                 .addMasthead(masthead()
                         .addMain(mastheadMain()
@@ -88,12 +95,51 @@ public class Skeleton implements IsElement<HTMLElement> {
                                                 .add(toolbarItem = toolbarItem().css(modifier("overflow-container")))))))
                 .addMain(pageMain = pageMain(Ids.MAIN_ID))
                 .add(backToTop()
-                        .scrollableSelector(By.id(Ids.MAIN_ID)))
-                .element();
+                        .scrollableSelector(By.id(Ids.MAIN_ID)));
+        if (environment != null && environment.highlightStabilityLevel()) {
+            root = flex()
+                    .direction(column)
+                    .css(modifier("nowrap")) // TODO .flexWrap(FlexWrap.noWrap)
+                    .spaceItems(none)
+                    .style("height", "100%")
+                    .add(stabilityBanner(environment, this::dismiss))
+                    .addItem(flexItem().grow(default_).style("min-height", 0)
+                            .add(page))
+                    .element();
+        } else {
+            root = page.element();
+        }
     }
 
     @Override
     public HTMLElement element() {
         return root;
+    }
+
+    // ------------------------------------------------------ add
+
+    public Skeleton add(Navigation navigation) {
+        toolbarItem.add(navigation.element());
+        return this;
+    }
+
+    public Skeleton add(BootstrapErrorElement bootstrapError) {
+        Variable white = globalVar("BackgroundColor", "100");
+        pageMain.add(pageMainSection()
+                .limitWidth()
+                .add(pageMainBody()
+                        .add(div().style("background-color", "var(" + white.name + ")")
+                                .add(bootstrapError))));
+        return this;
+    }
+
+    // ------------------------------------------------------ internal
+
+    private void dismiss() {
+        if (root != page.element()) {
+            document.body.prepend(page.element());
+            failSafeRemoveFromParent(root);
+            root = page.element();
+        }
     }
 }

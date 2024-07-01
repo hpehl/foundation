@@ -34,16 +34,20 @@ public class StatementContextResolver implements TemplateResolver {
         List<Segment> resolved = new ArrayList<>();
         for (Segment segment : template) {
             if (segment.containsPlaceholder()) {
-                Placeholder placeholder = statementContext.placeholder(segment.placeholder().name);
-                if (placeholder != null) {
-                    String resolvedValue = statementContext.value(placeholder);
+                Placeholder segmentPlaceholder = segment.placeholder();
+                if (statementContext.environment.standalone() && segmentPlaceholder.domainOnly) {
+                    continue;
+                }
+                Placeholder statementPlaceholder = statementContext.placeholder(segmentPlaceholder.name);
+                if (statementPlaceholder != null) {
+                    String resolvedValue = statementContext.value(statementPlaceholder);
                     if (resolvedValue != null) {
                         if (segment.hasKey()) {
                             // key={placeholder}
                             resolved.add(new Segment(segment.key, resolvedValue));
                         } else {
                             // {placeholder}
-                            resolved.add(new Segment(placeholder.resource, resolvedValue));
+                            resolved.add(new Segment(statementPlaceholder.resource, resolvedValue));
                         }
                     } else {
                         resolved.add(segment);

@@ -21,7 +21,7 @@ import org.jboss.elemento.logger.Logger;
 
 import elemental2.promise.Promise;
 
-public class SingleSignOnSupport implements Task<FlowContext> {
+class SingleSignOnSupport implements Task<FlowContext> {
 
     private static final Logger logger = Logger.getLogger(SingleSignOnSupport.class.getName());
 

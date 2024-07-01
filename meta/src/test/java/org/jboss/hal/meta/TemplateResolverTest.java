@@ -76,7 +76,7 @@ class TemplateResolverTest {
         return template -> {
             List<Segment> resolved = new ArrayList<>();
             for (Segment segment : template) {
-                if (segment.containsPlaceholder() && segment.placeholder().equals(new Placeholder(character))) {
+                if (segment.containsPlaceholder() && segment.placeholder().equals(new Placeholder(character, null, false))) {
                     resolved.add(new Segment(character, character));
                 } else {
                     resolved.add(segment);
