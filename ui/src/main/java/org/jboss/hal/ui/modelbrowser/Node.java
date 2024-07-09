@@ -28,8 +28,19 @@ import static org.jboss.hal.ui.modelbrowser.NodeType.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.NodeType.SINGLETON_PARENT;
 import static org.jboss.hal.ui.modelbrowser.NodeType.SINGLETON_RESOURCE;
 
+/**
+ * Holds data necessary to create tree view items from the management model. The node is the layer between the model nodes and
+ * the tree view items.
+ */
 class Node {
 
+    /**
+     * Read nodes from a DMR payload.
+     *
+     * @param address the address template of the DMR operation
+     * @param result  the operation result
+     * @return a list of Node objects created from the operation result
+     */
     static List<Node> readNodes(AddressTemplate address, ModelNode result) {
         Map<String, Node> nodes = new LinkedHashMap<>();
         for (ModelNode modelNode : result.asList()) {

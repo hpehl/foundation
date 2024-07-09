@@ -18,3 +18,8 @@
     text-decoration-line: underline;
     text-decoration-color: var(--pf-v5-global--Color--200);
 }
+
+.hal-model-browser-tree {
+    max-height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
+    overflow: scroll;
+}

@@ -28,12 +28,9 @@ import org.jboss.hal.meta.AddressTemplate;
 
 import elemental2.dom.HTMLElement;
 
-import static java.util.Arrays.asList;
-import static org.jboss.elemento.Elements.h;
-import static org.jboss.elemento.Elements.p;
+import static java.util.Collections.singletonList;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowser.modelBrowser;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
-import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.style.Brightness.light;
 
 @Dependent
@@ -49,13 +46,8 @@ public class ModelBrowserPage implements Page {
 
     @Override
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
-        return asList(
+        return singletonList(
                 pageMainSection().background(light)
-                        .add(textContent()
-                                .add(h(1, "Model browser"))
-                                .add(p().textContent("Not yet fully implemented!")))
-                        .element(),
-                pageMainSection()
                         .add(modelBrowser(dispatcher, AddressTemplate.root()))
                         .element());
     }

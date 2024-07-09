@@ -3,8 +3,10 @@ package org.jboss.hal.ui.modelbrowser;
 import java.util.function.Function;
 
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
+import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.component.tree.TreeViewItem;
 
 import elemental2.promise.Promise;
@@ -18,6 +20,10 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OP
 import static org.jboss.hal.ui.modelbrowser.ModelBrowser.NODE;
 import static org.jboss.hal.ui.modelbrowser.Node.readNodes;
 
+/**
+ * Function that returns a promise that reads the child resources of the selected tree view item.
+ * Uses {@link Node#readNodes(AddressTemplate, ModelNode)} and {@link NodeFunction}.
+ */
 class ReadChildren implements Function<TreeViewItem, Promise<Iterable<TreeViewItem>>> {
 
     private static final Logger logger = Logger.getLogger(ReadChildren.class.getName());

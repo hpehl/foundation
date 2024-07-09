@@ -6,7 +6,6 @@ import org.jboss.elemento.Id;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.patternfly.component.tree.TreeViewItem;
 
-import static elemental2.dom.DomGlobal.console;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowser.NODE;
 import static org.patternfly.component.tree.TreeViewItem.treeViewItem;
 import static org.patternfly.icon.IconSets.fas.fileAlt;
@@ -14,6 +13,9 @@ import static org.patternfly.icon.IconSets.fas.folder;
 import static org.patternfly.icon.IconSets.fas.folderOpen;
 import static org.patternfly.icon.IconSets.fas.listUl;
 
+/**
+ * Function that turns a {@link Node} into a {@link TreeViewItem}.
+ */
 class NodeFunction implements Function<Node, TreeViewItem> {
 
     private final Dispatcher dispatcher;
@@ -30,24 +32,24 @@ class NodeFunction implements Function<Node, TreeViewItem> {
                 .run(treeViewItem -> {
                     switch (node.type) {
                         case FOLDER:
-                            treeViewItem.icon(folder())
+                            treeViewItem
+                                    .icon(folder())
                                     .expandedIcon(folderOpen())
                                     .addItems(new ReadChildren(dispatcher));
                             break;
                         case SINGLETON_PARENT:
-                            treeViewItem.icon(listUl())
+                            treeViewItem
+                                    .icon(listUl())
                                     .addItems(node.children,
                                             grandChild -> treeViewItem(id(grandChild))
                                                     .text(grandChild.name)
-                                                    .store(NODE, grandChild)
                                                     .icon(fileAlt())
+                                                    .store(NODE, grandChild)
                                                     .addItems(new ReadChildren(dispatcher)));
                             break;
-                        case SINGLETON_RESOURCE:
-                            treeViewItem.addItems(new ReadChildren(dispatcher));
-                            break;
                         case RESOURCE:
-                            treeViewItem.icon(fileAlt())
+                            treeViewItem
+                                    .icon(fileAlt())
                                     .addItems(new ReadChildren(dispatcher));
                             break;
                     }

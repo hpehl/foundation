@@ -22,17 +22,20 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.component.tree.TreeView;
-import org.patternfly.layout.grid.GridItem;
+import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.hal.ui.modelbrowser.DetailPane.detailPane;
 import static org.jboss.hal.ui.modelbrowser.Node.readNodes;
 import static org.patternfly.component.tree.TreeView.treeView;
 import static org.patternfly.component.tree.TreeViewType.selectableItems;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
+import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Variable.componentVar;
 
 public class ModelBrowser implements IsElement<HTMLElement> {
 
@@ -46,15 +49,19 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     static final String NODE = "node";
     private final TreeView treeView;
-    private final GridItem detail;
-    private final HTMLElement rootElement;
+    private final DetailPane detailPane;
+    private final HTMLElement root;
 
     public ModelBrowser(Dispatcher dispatcher, AddressTemplate address) {
-        this.rootElement = grid()
+        root = grid().span(12).gutter()
                 .addItem(gridItem().span(4)
+                        .css("hal-model-browser-tree")
                         .add(treeView = treeView(selectableItems).guides()))
-                .addItem(detail = gridItem().span(8))
+                .addItem(gridItem().span(8)
+                        .add(detailPane = detailPane()))
                 .element();
+        componentVar(component(Classes.treeView), "PaddingTop").applyTo(treeView).set(0);
+        treeView.onSelect((event, treeViewItem, selected) -> detailPane.show(treeViewItem));
 
         Operation operation = new Operation.Builder(address.resolve(), READ_CHILDREN_TYPES_OPERATION)
                 .param(INCLUDE_SINGLETONS, true)
@@ -63,11 +70,10 @@ public class ModelBrowser implements IsElement<HTMLElement> {
             List<Node> nodes = readNodes(address, result);
             treeView.addItems(nodes, new NodeFunction(dispatcher));
         });
-
     }
 
     @Override
     public HTMLElement element() {
-        return rootElement;
+        return root;
     }
 }
