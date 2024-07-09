@@ -94,7 +94,7 @@ class DataInput {
                 ((long) (longBytes[4] & 255) << 24) +
                 ((longBytes[5] & 255) << 16) +
                 ((longBytes[6] & 255) << 8) +
-                ((longBytes[7] & 255) << 0));
+                ((longBytes[7] & 255)));
 
     }
 

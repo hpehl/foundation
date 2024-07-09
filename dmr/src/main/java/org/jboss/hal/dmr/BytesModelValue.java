@@ -101,6 +101,7 @@ class BytesModelValue extends ModelValue {
     @Override
     byte[] asBytes() {
         byte[] clone = new byte[bytes.length];
+        //noinspection ManualArrayCopy
         for (int i = 0; i < bytes.length; i++) {
             clone[i] = bytes[i];
         }

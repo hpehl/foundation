@@ -20,7 +20,7 @@ import org.jboss.hal.env.Environment;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
-import static org.jboss.hal.ui.form.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardBody.cardBody;
 import static org.patternfly.component.card.CardFooter.cardFooter;

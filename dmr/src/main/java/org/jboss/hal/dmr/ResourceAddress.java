@@ -123,7 +123,7 @@ public class ResourceAddress extends ModelNode {
             builder.append("/");
             for (Iterator<Property> iterator = asPropertyList().iterator(); iterator.hasNext();) {
                 Property segment = iterator.next();
-                builder.append(segment.getName()).append("=").append(segment.getValue().asString());
+                builder.append(segment.getName()).append("=").append(ValueEncoder.encode(segment.getValue().asString()));
                 if (iterator.hasNext()) {
                     builder.append("/");
                 }

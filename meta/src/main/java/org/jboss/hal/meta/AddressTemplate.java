@@ -15,15 +15,17 @@
  */
 package org.jboss.hal.meta;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
+import org.jboss.hal.dmr.ValueEncoder;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -59,7 +61,6 @@ public final class AddressTemplate implements Iterable<Segment> {
         return new AddressTemplate(emptyList());
     }
 
-
     /** Creates a new address template from an encoded string template. */
     public static AddressTemplate of(String template) {
         return new AddressTemplate(parse(template));
@@ -85,11 +86,6 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ instance
 
-    private static final String[][] SPECIAL_CHARACTERS = new String[][]{
-            new String[]{"/", "\\/"},
-            new String[]{":", "\\:"},
-            new String[]{"=", "\\="},
-    };
     public final String template;
     private final LinkedList<Segment> segments;
 
@@ -127,11 +123,15 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ append / sub and parent
 
+    public AddressTemplate append(String key, String value) {
+        return append(key + "=" + ValueEncoder.encode(value));
+    }
+
     /**
-     * Appends the specified encoded template to this template and returns a new template. If the specified template does not
-     * start with a slash, '/' is automatically appended.
+     * Appends the specified <strong>encoded</strong> template to this template and returns a new template. If the specified
+     * template does not start with a slash, '/' is automatically appended.
      *
-     * @param template the encoded template to append (makes no difference whether it starts with '/' or not)
+     * @param template the <strong>encoded</strong> template to append (makes no difference whether it starts with '/' or not)
      * @return a new template
      */
     public AddressTemplate append(String template) {
@@ -154,7 +154,7 @@ public final class AddressTemplate implements Iterable<Segment> {
      */
     public AddressTemplate subTemplate(int fromIndex, int toIndex) {
         LinkedList<Segment> subSegments = new LinkedList<>(this.segments.subList(fromIndex, toIndex));
-        return AddressTemplate.of(join(subSegments));
+        return new AddressTemplate(subSegments);
     }
 
     /** @return the parent address template or the root template */
@@ -194,6 +194,10 @@ public final class AddressTemplate implements Iterable<Segment> {
         return segments.size();
     }
 
+    public List<Segment> segments() {
+        return unmodifiableList(segments);
+    }
+
     @Override
     public Iterator<Segment> iterator() {
         return segments.iterator();
@@ -226,7 +230,8 @@ public final class AddressTemplate implements Iterable<Segment> {
                 if (segment.containsPlaceholder()) {
                     throw new ResolveException("Unable to resolve segment '" + segment + "' in template '" + this + "'");
                 }
-                model.add(segment.key, decodeValue(segment.value));
+                // Do *not* encode values: the model node will be encoded as DMR!
+                model.add(segment.key, segment.value);
             }
             return new ResourceAddress(model);
         }
@@ -244,16 +249,48 @@ public final class AddressTemplate implements Iterable<Segment> {
                 return segments;
             }
 
-            StringTokenizer tok = new StringTokenizer(withSlash);
-            while (tok.hasMoreTokens()) {
-                String nextToken = tok.nextToken();
-                int index = nextToken.indexOf('=');
-                if (index != -1 && !escaped(nextToken, index)) {
-                    String key = nextToken.substring(0, index);
-                    String value = nextToken.substring(index + 1);
-                    segments.add(new Segment(key, value));
+            // split template by '/'
+            int current = 0;
+            boolean backslash = false;
+            List<String> unparsedSegments = new ArrayList<>();
+            String withoutSlash = withSlash.substring(1);
+            for (int i = 0; i < withoutSlash.length(); i++) {
+                char c = withoutSlash.charAt(i);
+                if (c == '\\') {
+                    backslash = true;
+                } else if (c == '/') {
+                    if (!backslash) {
+                        unparsedSegments.add(withoutSlash.substring(current, i));
+                        current = i + 1;
+                    }
+                    backslash = false;
                 } else {
-                    segments.add(new Segment(nextToken));
+                    backslash = false;
+                }
+            }
+            unparsedSegments.add(withoutSlash.substring(current));
+
+            // split segments by '='
+            for (String unparsedSegment : unparsedSegments) {
+                String key = null;
+                String value = null;
+                for (int i = 0; i < unparsedSegment.length(); i++) {
+                    char c = unparsedSegment.charAt(i);
+                    if (c == '\\') {
+                        backslash = true;
+                    } else if (c == '=') {
+                        if (!backslash) {
+                            key = unparsedSegment.substring(0, i);
+                            value = unparsedSegment.substring(i + 1);
+                            segments.add(new Segment(key, ValueEncoder.decode(value)));
+                        }
+                        backslash = false;
+                    } else {
+                        backslash = false;
+                    }
+                }
+                if (key == null) {
+                    segments.add(new Segment(unparsedSegment));
                 }
             }
         }
@@ -262,103 +299,5 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     private static String join(List<Segment> segments) {
         return segments.stream().map(Segment::toString).collect(joining("/"));
-    }
-
-    static String encodeValue(String value) {
-        boolean encode = false;
-        if (value != null) {
-            for (String[] specialCharacter : SPECIAL_CHARACTERS) {
-                if (value.contains(specialCharacter[0])) {
-                    encode = true;
-                    break;
-                }
-            }
-            if (encode) {
-                String localValue = value;
-                for (String[] special : SPECIAL_CHARACTERS) {
-                    localValue = localValue.replace(special[0], special[1]);
-                }
-                return localValue;
-            }
-        }
-        return value;
-    }
-
-    private static String decodeValue(String value) {
-        boolean decode = false;
-        if (value != null) {
-            for (String[] specialCharacter : SPECIAL_CHARACTERS) {
-                if (value.contains(specialCharacter[1])) {
-                    decode = true;
-                    break;
-                }
-            }
-            if (decode) {
-                String localValue = value;
-                for (String[] special : SPECIAL_CHARACTERS) {
-                    localValue = localValue.replace(special[1], special[0]);
-                }
-                return localValue;
-            }
-        }
-        return value;
-    }
-
-    private static boolean escaped(String string, int index) {
-        if (index > 0 && index < string.length()) {
-            return string.charAt(index - 1) == '\\';
-        }
-        return false;
-    }
-
-    private static class StringTokenizer {
-
-        private final String delim;
-        private final String s;
-        private final int len;
-
-        private int pos;
-        private String next;
-
-        StringTokenizer(String s) {
-            this.s = s;
-            this.delim = "/";
-            len = s.length();
-        }
-
-        String nextToken() {
-            if (!hasMoreTokens()) {
-                throw new NoSuchElementException();
-            }
-            String result = next;
-            next = null;
-            return result;
-        }
-
-        boolean hasMoreTokens() {
-            if (next != null) {
-                return true;
-            }
-            // skip leading delimiters
-            while (pos < len) {
-                char ch = s.charAt(pos);
-                if (delim.indexOf(ch) == -1) {break;}
-                pos++;
-            }
-
-            if (pos >= len) {
-                return false;
-            }
-
-            int index = pos++;
-            while (pos < len) {
-                char ch = s.charAt(pos);
-                if (delim.indexOf(ch) != -1) {break;}
-                pos++;
-            }
-
-            next = s.substring(index, pos++);
-            return true;
-        }
     }
 }

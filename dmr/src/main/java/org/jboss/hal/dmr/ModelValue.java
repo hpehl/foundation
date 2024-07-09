@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-abstract class ModelValue implements Cloneable {
+abstract class ModelValue {
 
     private static final String TAB_SIZE = "  ";
 

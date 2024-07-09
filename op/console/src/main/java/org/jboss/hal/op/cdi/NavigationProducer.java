@@ -37,6 +37,7 @@ public class NavigationProducer {
                 .addItem(navigationItem("/", "Dashboard", placeManager.href("/")))
                 .addItem(navigationItem("/deployments", "Deployments", placeManager.href("/deployments")))
                 .addItem(navigationItem("/configuration", "Configuration", placeManager.href("/configuration")))
-                .addItem(navigationItem("/runtime", "Runtime", placeManager.href("/runtime")));
+                .addItem(navigationItem("/runtime", "Runtime", placeManager.href("/runtime")))
+                .addItem(navigationItem("/model-browser", "Model browser", placeManager.href("/model-browser")));
     }
 }

@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.meta;
 
+import org.jboss.hal.dmr.ValueEncoder;
+
 public class Segment {
 
     public final String key;
@@ -26,7 +28,7 @@ public class Segment {
 
     public Segment(String key, String value) {
         this.key = key;
-        this.value = AddressTemplate.encodeValue(value);
+        this.value = value;
     }
 
     public boolean hasKey() {
@@ -44,6 +46,6 @@ public class Segment {
 
     @Override
     public String toString() {
-        return hasKey() ? key + "=" + value : value;
+        return hasKey() ? key + "=" + ValueEncoder.encode(value) : value;
     }
 }

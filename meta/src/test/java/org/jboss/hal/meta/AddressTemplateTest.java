@@ -134,8 +134,41 @@ class AddressTemplateTest {
 
     @Test
     void encode() {
-        AddressTemplate template = AddressTemplate.of("a=b=c");
-        assertEquals("a", template.first().key);
-        assertEquals("b\\=c", template.first().value);
+        AddressTemplate template = AddressTemplate.of(
+                "a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/");
+
+        assertEquals(8, template.size());
+        assertEquals("a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
+        assertEquals("b", template.segments().get(0).value);
+        assertEquals("/", template.segments().get(1).value);
+        assertEquals(":", template.segments().get(2).value);
+        assertEquals("=", template.segments().get(3).value);
+        assertEquals("d", template.segments().get(4).value);
+        assertEquals("{f}", template.segments().get(5).value);
+        assertEquals(":=/", template.segments().get(6).value);
+        assertEquals("/", template.segments().get(7).value);
+    }
+
+    @Test
+    void encodeAppend() {
+        AddressTemplate template = AddressTemplate.of("a=b");
+        template = template.append("slash", "/");
+        template = template.append("colon=\\:");
+        template = template.append("equals", "=");
+        template = template.append("c", "d");
+        template = template.append("e", "{f}");
+        template = template.append("multiple", ":=/");
+        template = template.append("end=\\/");
+
+        assertEquals(8, template.size());
+        assertEquals("a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
+        assertEquals("b", template.segments().get(0).value);
+        assertEquals("/", template.segments().get(1).value);
+        assertEquals(":", template.segments().get(2).value);
+        assertEquals("=", template.segments().get(3).value);
+        assertEquals("d", template.segments().get(4).value);
+        assertEquals("{f}", template.segments().get(5).value);
+        assertEquals(":=/", template.segments().get(6).value);
+        assertEquals("/", template.segments().get(7).value);
     }
 }
