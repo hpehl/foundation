@@ -20,6 +20,10 @@ import java.util.Iterator;
 /**
  * Represents a fully qualified DMR address ready to be put into a DMR operation. The address consists of 0-n segments with a
  * name and a value for each segment.
+ * <p>
+ * <strong>Encoding</strong><br/>
+ * Special characters in resource addresses are <strong>not</strong> encoded. Only the
+ * {@linkplain #toString() string representation} of a resource address is encoded.
  */
 public class ResourceAddress extends ModelNode {
 
@@ -79,9 +83,8 @@ public class ResourceAddress extends ModelNode {
     /**
      * Adds the specified segment to this address.
      *
-     * @param propertyName the property name
+     * @param propertyName  the property name
      * @param propertyValue the property value
-     *
      * @return this address with the specified segment added
      */
     public ResourceAddress add(String propertyName, String propertyValue) {
@@ -93,7 +96,6 @@ public class ResourceAddress extends ModelNode {
      * Adds the specified address to this address.
      *
      * @param address The address to add.
-     *
      * @return this address with the specified address added
      */
     public ResourceAddress add(ResourceAddress address) {
@@ -115,13 +117,13 @@ public class ResourceAddress extends ModelNode {
         return size() == 0;
     }
 
-    /** @return the address as string */
+    /** @return the address as string. Special characters are encoded. */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         if (isDefined()) {
             builder.append("/");
-            for (Iterator<Property> iterator = asPropertyList().iterator(); iterator.hasNext();) {
+            for (Iterator<Property> iterator = asPropertyList().iterator(); iterator.hasNext(); ) {
                 Property segment = iterator.next();
                 builder.append(segment.getName()).append("=").append(ValueEncoder.encode(segment.getValue().asString()));
                 if (iterator.hasNext()) {

@@ -50,18 +50,37 @@ import static java.util.stream.Collectors.joining;
  * subsystem=logging/logger={selection}
  * </pre>
  * <p>
- * To get a fully qualified address from an address template use the method {@link #resolve(StatementContext)}.
+ * <strong>Resolving</strong><br/>
+ * To get a fully qualified {@link ResourceAddress} from an address template use one of the <code>resolve()</code> methods and a
+ * {@link TemplateResolver}.
+ * In general, you prefer address templates over {@linkplain ResourceAddress resource addresses}.
+ * <p>
+ * <strong>Encoding</strong><br/>
+ * Some characters in values must be encoded using the backslash character:
+ * <ul>
+ *     <li><code>/</code> → <code>\/</code></li>
+ *     <li><code>=</code> → <code>\=</code></li>
+ *     <li><code>:</code> → <code>\:</code></li>
+ * </ul>
+ * When creating a template from a {@linkplain AddressTemplate#of(String) string},
+ * or {@link AddressTemplate#append(String) appending} a string, you must take care of the encoding.
+ * If you create a template from {@linkplain AddressTemplate#of(List) segments}, the encoding is done for you.
  */
 public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ factory
 
-    /** Creates a new address template from an encoded string template. */
+    /**
+     * Creates a new root address template, which represents the empty address.
+     */
     public static AddressTemplate root() {
         return new AddressTemplate(emptyList());
     }
 
-    /** Creates a new address template from an encoded string template. */
+    /**
+     * Creates a new address template from an <strong>encoded</strong> string template. Special characters in the template must
+     * be encoded.
+     */
     public static AddressTemplate of(String template) {
         return new AddressTemplate(parse(template));
     }
@@ -75,7 +94,9 @@ public final class AddressTemplate implements Iterable<Segment> {
         }
     }
 
-    /** Creates a new address template from a list of segments. */
+    /**
+     * Creates a new address template from a list of segments. Special characters in segment values must not be encoded.
+     */
     public static AddressTemplate of(List<Segment> segments) {
         if (segments != null) {
             return new AddressTemplate(segments);
@@ -86,6 +107,7 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ instance
 
+    /** The string representation of this address template. If the template contains special characters, they're encoded. */
     public final String template;
     private final LinkedList<Segment> segments;
 
@@ -115,7 +137,9 @@ public final class AddressTemplate implements Iterable<Segment> {
         return result;
     }
 
-    /** @return the string representation of this address template */
+    /**
+     * @return the string representation of this address template. If the template contains special characters, they're encoded.
+     */
     @Override
     public String toString() {
         return template.isEmpty() ? "/" : template;
@@ -123,13 +147,21 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ append / sub and parent
 
+    /**
+     * Appends the specified <strong>encoded</strong> template to this template and returns a new template. Special characters
+     * in the value must not be be encoded.
+     *
+     * @param key   the key to append to the template
+     * @param value the value to append to the template
+     * @return a new template
+     */
     public AddressTemplate append(String key, String value) {
         return append(key + "=" + ValueEncoder.encode(value));
     }
 
     /**
-     * Appends the specified <strong>encoded</strong> template to this template and returns a new template. If the specified
-     * template does not start with a slash, '/' is automatically appended.
+     * Appends the specified <strong>encoded</strong> template to this template and returns a new template. Special characters
+     * in the template must be encoded. If the specified template does not start with a slash, '/' is automatically appended.
      *
      * @param template the <strong>encoded</strong> template to append (makes no difference whether it starts with '/' or not)
      * @return a new template
@@ -139,6 +171,11 @@ public final class AddressTemplate implements Iterable<Segment> {
         return AddressTemplate.of(this.template + slashTemplate);
     }
 
+    /**
+     * Appends the specified template to this template and returns a new template.
+     *
+     * @return a new template
+     */
     public AddressTemplate append(AddressTemplate template) {
         return append(template.toString());
     }
@@ -220,6 +257,13 @@ public final class AddressTemplate implements Iterable<Segment> {
         return resolve(new StatementContextResolver(context));
     }
 
+    /**
+     * Resolves the given template using the provided resolver.
+     *
+     * @param resolver the resolver used to resolve the template
+     * @return the resolved ResourceAddress
+     * @throws ResolveException if there are still placeholders in the template after resolving it
+     */
     public ResourceAddress resolve(TemplateResolver resolver) {
         if (isEmpty()) {
             return ResourceAddress.root();
@@ -273,7 +317,8 @@ public final class AddressTemplate implements Iterable<Segment> {
             // split segments by '='
             for (String unparsedSegment : unparsedSegments) {
                 String key = null;
-                String value = null;
+                String value;
+                backslash = false;
                 for (int i = 0; i < unparsedSegment.length(); i++) {
                     char c = unparsedSegment.charAt(i);
                     if (c == '\\') {

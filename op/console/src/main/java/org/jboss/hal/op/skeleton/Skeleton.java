@@ -25,7 +25,6 @@ import org.patternfly.component.navigation.Navigation;
 import org.patternfly.component.page.Page;
 import org.patternfly.component.page.PageMain;
 import org.patternfly.component.toolbar.ToolbarItem;
-import org.patternfly.layout.flex.FlexWrap;
 import org.patternfly.style.Variable;
 
 import elemental2.dom.HTMLElement;

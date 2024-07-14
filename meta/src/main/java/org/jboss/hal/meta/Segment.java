@@ -17,6 +17,19 @@ package org.jboss.hal.meta;
 
 import org.jboss.hal.dmr.ValueEncoder;
 
+/**
+ * Represents a segment in an address template, which can have a key and a value. The key is optional. If the value contains
+ * special characters, it is encoded when calling {@link #toString()}.
+ * <p>
+ * Examples for valid segments in an address template are
+ * <pre>
+ * /
+ * subsystem=io
+ * {selected.server}
+ * {selected.server}/deployment=foo
+ * subsystem=logging/logger={selection}
+ * </pre>
+ */
 public class Segment {
 
     public final String key;

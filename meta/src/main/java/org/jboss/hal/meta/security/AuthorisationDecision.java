@@ -52,19 +52,19 @@ public class AuthorisationDecision {
         this.securityContext = securityContext;
     }
 
-    public boolean isAllowed(Constraints constraints) {
+    public boolean allowed(Constraints constraints) {
         if (environment.accessControlProvider() == AccessControlProvider.SIMPLE || constraints.isEmpty()) {
             return true;
         }
 
         int size = constraints.size();
         if (size == 1) {
-            return isAllowed(constraints.iterator().next());
+            return allowed(constraints.iterator().next());
         } else {
             int index = 0;
             BitSet bits = new BitSet(size);
             for (Constraint constraint : constraints) {
-                bits.set(index, isAllowed(constraint));
+                bits.set(index, allowed(constraint));
                 index++;
             }
             int cardinality = bits.cardinality();
@@ -72,7 +72,7 @@ public class AuthorisationDecision {
         }
     }
 
-    public boolean isAllowed(Constraint constraint) {
+    public boolean allowed(Constraint constraint) {
         if (environment.accessControlProvider() == AccessControlProvider.SIMPLE) {
             return true;
         }
@@ -81,7 +81,7 @@ public class AuthorisationDecision {
         if (constraint.target == Target.OPERATION) {
             switch (constraint.permission) {
                 case EXECUTABLE:
-                    allowed = securityContext.isExecutable(constraint.name);
+                    allowed = securityContext.executable(constraint.name);
                     break;
                 case READABLE:
                 case WRITABLE:
@@ -95,10 +95,10 @@ public class AuthorisationDecision {
         } else if (constraint.target == Target.ATTRIBUTE) {
             switch (constraint.permission) {
                 case READABLE:
-                    allowed = securityContext.isReadable(constraint.name);
+                    allowed = securityContext.readable(constraint.name);
                     break;
                 case WRITABLE:
-                    allowed = securityContext.isWritable(constraint.name);
+                    allowed = securityContext.writable(constraint.name);
                     break;
                 case EXECUTABLE:
                     logger.error("Unsupported permission in constraint %s. Only (%s|%s) are allowed for target %s.",

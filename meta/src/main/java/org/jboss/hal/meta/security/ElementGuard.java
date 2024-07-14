@@ -88,7 +88,7 @@ public class ElementGuard {
             String data = String.valueOf(element.dataset.get(constraint));
             if (data != null) {
                 Constraints constraints = Constraints.parse(data);
-                Elements.toggle(element, rbacHidden, !authorisationDecision.isAllowed(constraints));
+                Elements.toggle(element, rbacHidden, !authorisationDecision.allowed(constraints));
             }
         }
     }

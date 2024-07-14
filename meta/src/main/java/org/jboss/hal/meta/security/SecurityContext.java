@@ -29,27 +29,27 @@ public class SecurityContext extends ModelNode {
     /** A security context with hardcoded permissions to read resources, write and execute operations are not allowed. */
     public static final SecurityContext READ_ONLY = new SecurityContext(new ModelNode(), false) {
         @Override
-        public boolean isReadable() {
+        public boolean readable() {
             return true;
         }
 
         @Override
-        public boolean isWritable() {
+        public boolean writable() {
             return false;
         }
 
         @Override
-        public boolean isReadable(String attribute) {
+        public boolean readable(String attribute) {
             return true;
         }
 
         @Override
-        public boolean isWritable(String attribute) {
+        public boolean writable(String attribute) {
             return false;
         }
 
         @Override
-        public boolean isExecutable(String operation) {
+        public boolean executable(String operation) {
             return false;
         }
     };
@@ -57,27 +57,27 @@ public class SecurityContext extends ModelNode {
     /** A security context with hardcoded permissions to read, write and execute any resource. */
     public static final SecurityContext RWX = new SecurityContext(new ModelNode(), false) {
         @Override
-        public boolean isReadable() {
+        public boolean readable() {
             return true;
         }
 
         @Override
-        public boolean isWritable() {
+        public boolean writable() {
             return true;
         }
 
         @Override
-        public boolean isReadable(String attribute) {
+        public boolean readable(String attribute) {
             return true;
         }
 
         @Override
-        public boolean isWritable(String attribute) {
+        public boolean writable(String attribute) {
             return true;
         }
 
         @Override
-        public boolean isExecutable(String operation) {
+        public boolean executable(String operation) {
             return true;
         }
     };
@@ -90,12 +90,12 @@ public class SecurityContext extends ModelNode {
     }
 
     /** @return whether the security context is readable */
-    public boolean isReadable() {
+    public boolean readable() {
         return get(READ).asBoolean();
     }
 
     /** @return whether the security context is writable */
-    public boolean isWritable() {
+    public boolean writable() {
         return get(WRITE).asBoolean();
     }
 
@@ -103,7 +103,7 @@ public class SecurityContext extends ModelNode {
      * @param attribute The attribute to check.
      * @return whether the attribute is readable
      */
-    public boolean isReadable(String attribute) {
+    public boolean readable(String attribute) {
         return hasDefined(ATTRIBUTES) &&
                 get(ATTRIBUTES).hasDefined(attribute) &&
                 get(ATTRIBUTES).get(attribute).get(READ).asBoolean();
@@ -113,7 +113,7 @@ public class SecurityContext extends ModelNode {
      * @param attribute The attribute to check.
      * @return whether the attribute is writable
      */
-    public boolean isWritable(String attribute) {
+    public boolean writable(String attribute) {
         return hasDefined(ATTRIBUTES) &&
                 get(ATTRIBUTES).hasDefined(attribute) &&
                 get(ATTRIBUTES).get(attribute).get(WRITE).asBoolean();
@@ -123,7 +123,7 @@ public class SecurityContext extends ModelNode {
      * @param operation The operation to check.
      * @return whether the operation is executable
      */
-    public boolean isExecutable(String operation) {
+    public boolean executable(String operation) {
         return hasDefined(OPERATIONS) &&
                 get(OPERATIONS).hasDefined(operation) &&
                 get(OPERATIONS).get(operation).get(EXECUTE).asBoolean();
