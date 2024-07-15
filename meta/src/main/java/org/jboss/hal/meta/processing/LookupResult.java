@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.MissingMetadataException;
 
 class LookupResult {
 
@@ -48,12 +47,8 @@ class LookupResult {
     }
 
     void markMetadataPresent(AddressTemplate template, int flag) {
-        int combined = failFastGet(template) | flag;
+        int combined = templates.getOrDefault(template, NOTHING_PRESENT) | flag;
         templates.put(template, combined);
-    }
-
-    int missingMetadata(AddressTemplate template) {
-        return failFastGet(template);
     }
 
     boolean allPresent() {
@@ -63,13 +58,6 @@ class LookupResult {
             }
         }
         return true;
-    }
-
-    private int failFastGet(AddressTemplate template) {
-        if (!templates.containsKey(template)) {
-            throw new MissingMetadataException(template);
-        }
-        return templates.get(template);
     }
 
     @Override

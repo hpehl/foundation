@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import org.jboss.elemento.flow.Flow;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
@@ -29,6 +32,7 @@ import org.jboss.hal.meta.security.SecurityContextRegistry;
 
 import elemental2.promise.Promise;
 
+@ApplicationScoped
 public class MetadataProcessor {
 
     private static final Logger logger = Logger.getLogger(MetadataProcessor.class.getName());
@@ -36,6 +40,7 @@ public class MetadataProcessor {
     private final ResourceDescriptionRegistry resourceDescriptionRegistry;
     private final SecurityContextRegistry securityContextRegistry;
 
+    @Inject
     public MetadataProcessor(Dispatcher dispatcher,
             ResourceDescriptionRegistry resourceDescriptionRegistry,
             SecurityContextRegistry securityContextRegistry) {
@@ -46,7 +51,7 @@ public class MetadataProcessor {
 
     public Promise<Void> process(Set<AddressTemplate> templates, boolean recursive) {
         logger.debug("Process metadata for %s (%s)", templates, recursive ? "recursive" : "non-recursive");
-        LookupRegistryTask lookupRegistries = new LookupRegistryTask(resourceDescriptionRegistry, securityContextRegistry);
+        LookupTask lookupRegistries = new LookupTask(resourceDescriptionRegistry, securityContextRegistry);
         if (lookupRegistries.allPresent(templates, recursive)) {
             logger.debug("All metadata have been already processed -> done");
             return Promise.resolve((Void) null);

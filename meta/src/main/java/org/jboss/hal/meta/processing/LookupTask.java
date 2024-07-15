@@ -32,13 +32,13 @@ import static org.jboss.hal.meta.processing.LookupResult.RESOURCE_DESCRIPTION_PR
 import static org.jboss.hal.meta.processing.LookupResult.SECURITY_CONTEXT_PRESENT;
 
 /** Task which checks whether metadata is present in the registries. */
-final class LookupRegistryTask implements Task<LookupContext> {
+class LookupTask implements Task<LookupContext> {
 
     private static final Logger logger = Logger.getLogger(MetadataProcessor.class.getName());
     private final ResourceDescriptionRegistry resourceDescriptionRegistry;
     private final SecurityContextRegistry securityContextRegistry;
 
-    LookupRegistryTask(ResourceDescriptionRegistry resourceDescriptionRegistry,
+    LookupTask(ResourceDescriptionRegistry resourceDescriptionRegistry,
             SecurityContextRegistry securityContextRegistry) {
         this.resourceDescriptionRegistry = resourceDescriptionRegistry;
         this.securityContextRegistry = securityContextRegistry;

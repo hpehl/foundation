@@ -26,6 +26,8 @@ import org.jboss.hal.meta.security.SecurityContextRegistry;
 
 import elemental2.promise.Promise;
 
+import static java.util.Collections.singleton;
+
 /** Registry for {@linkplain Metadata meta-data} */
 @ApplicationScoped
 public class MetadataRegistry {
@@ -64,7 +66,9 @@ public class MetadataRegistry {
             return Promise.resolve(
                     new Metadata(resourceDescriptionRegistry.get(template), securityContextRegistry.get(template)));
         } else {
-            return null;
+            return metadataProcessor.process(singleton(template), false).then(__ ->
+                    Promise.resolve(
+                            new Metadata(resourceDescriptionRegistry.get(template), securityContextRegistry.get(template))));
         }
     }
 }
