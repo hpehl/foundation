@@ -20,22 +20,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-class Cache<K, V> {
+public class Cache<K, V> {
 
     private final int capacity;
     private final BiConsumer<K, V> removalHandler;
     private final DoublyLinkedList<K, V> cacheList;
     private final HashMap<K, Node<K, V>> cacheMap;
 
-    Cache(int capacity) {
+    public Cache(int capacity) {
         this(capacity, null);
     }
 
-    Cache(int capacity, BiConsumer<K, V> removalHandler) {
+    public Cache(int capacity, BiConsumer<K, V> removalHandler) {
         this.capacity = capacity;
         this.removalHandler = removalHandler;
         this.cacheList = new DoublyLinkedList<>();
         this.cacheMap = new HashMap<>();
+    }
+
+    // ------------------------------------------------------ api
+
+    public boolean contains(K key) {
+        return cacheMap.containsKey(key);
     }
 
     public V get(K key) {
@@ -73,6 +79,8 @@ class Cache<K, V> {
         }
         return null;
     }
+
+    // ------------------------------------------------------ internal
 
     // for testing purposes
     K[] lruKeys() {

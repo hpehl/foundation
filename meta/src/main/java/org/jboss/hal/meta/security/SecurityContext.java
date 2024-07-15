@@ -27,7 +27,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE;
 public class SecurityContext extends ModelNode {
 
     /** A security context with hardcoded permissions to read resources, write and execute operations are not allowed. */
-    public static final SecurityContext READ_ONLY = new SecurityContext(new ModelNode(), false) {
+    public static final SecurityContext READ_ONLY = new SecurityContext(new ModelNode()) {
         @Override
         public boolean readable() {
             return true;
@@ -55,7 +55,7 @@ public class SecurityContext extends ModelNode {
     };
 
     /** A security context with hardcoded permissions to read, write and execute any resource. */
-    public static final SecurityContext RWX = new SecurityContext(new ModelNode(), false) {
+    public static final SecurityContext RWX = new SecurityContext(new ModelNode()) {
         @Override
         public boolean readable() {
             return true;
@@ -82,10 +82,7 @@ public class SecurityContext extends ModelNode {
         }
     };
 
-    public final boolean recursive;
-
-    public SecurityContext(ModelNode payload, boolean recursive) {
-        this.recursive = recursive;
+    public SecurityContext(ModelNode payload) {
         set(payload);
     }
 

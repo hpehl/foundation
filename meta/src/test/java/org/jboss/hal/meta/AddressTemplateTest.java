@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SuppressWarnings("DataFlowIssue")
+@SuppressWarnings({"DataFlowIssue", "SpellCheckingInspection"})
 class AddressTemplateTest {
 
     @Test
@@ -151,14 +151,15 @@ class AddressTemplateTest {
 
     @Test
     void encodeAppend() {
-        AddressTemplate template = AddressTemplate.of("a=b");
-        template = template.append("slash", "/");
-        template = template.append("colon=\\:");
-        template = template.append("equals", "=");
-        template = template.append("c", "d");
-        template = template.append("e", "{f}");
-        template = template.append("multiple", ":=/");
-        template = template.append("end=\\/");
+        AddressTemplate template = AddressTemplate.root()
+                .append("a=b")
+                .append("slash", "/")
+                .append("colon=\\:")
+                .append("equals", "=")
+                .append("c", "d")
+                .append("e", "{f}")
+                .append("multiple", ":=/")
+                .append("end=\\/");
 
         assertEquals(8, template.size());
         assertEquals("a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
@@ -170,5 +171,47 @@ class AddressTemplateTest {
         assertEquals("{f}", template.segments().get(5).value);
         assertEquals(":=/", template.segments().get(6).value);
         assertEquals("/", template.segments().get(7).value);
+    }
+
+    @Test
+    void special() {
+        String dataSourceConstraint = "core-service=management/access=authorization/constraint=application-classification/type=datasources/classification=data-source/applies-to=\\/deployment\\=*\\/subdeployment\\=*\\/subsystem\\=datasources\\/data-source\\=*";
+        AddressTemplate template = AddressTemplate.of(dataSourceConstraint);
+        assertEquals(6, template.size());
+        assertEquals(dataSourceConstraint, template.template);
+        assertEquals("core-service", template.segments().get(0).key);
+        assertEquals("management", template.segments().get(0).value);
+        assertEquals("access", template.segments().get(1).key);
+        assertEquals("authorization", template.segments().get(1).value);
+        assertEquals("constraint", template.segments().get(2).key);
+        assertEquals("application-classification", template.segments().get(2).value);
+        assertEquals("type", template.segments().get(3).key);
+        assertEquals("datasources", template.segments().get(3).value);
+        assertEquals("classification", template.segments().get(4).key);
+        assertEquals("data-source", template.segments().get(4).value);
+        assertEquals("applies-to", template.segments().get(5).key);
+        assertEquals("/deployment=*/subdeployment=*/subsystem=datasources/data-source=*", template.segments().get(5).value);
+
+        template = AddressTemplate.root()
+                .append("core-service", "management")
+                .append("access", "authorization")
+                .append("constraint", "application-classification")
+                .append("type", "datasources")
+                .append("classification", "data-source")
+                .append("applies-to", "/deployment=*/subdeployment=*/subsystem=datasources/data-source=*");
+        assertEquals(6, template.size());
+        assertEquals(dataSourceConstraint, template.template);
+        assertEquals("core-service", template.segments().get(0).key);
+        assertEquals("management", template.segments().get(0).value);
+        assertEquals("access", template.segments().get(1).key);
+        assertEquals("authorization", template.segments().get(1).value);
+        assertEquals("constraint", template.segments().get(2).key);
+        assertEquals("application-classification", template.segments().get(2).value);
+        assertEquals("type", template.segments().get(3).key);
+        assertEquals("datasources", template.segments().get(3).value);
+        assertEquals("classification", template.segments().get(4).key);
+        assertEquals("data-source", template.segments().get(4).value);
+        assertEquals("applies-to", template.segments().get(5).key);
+        assertEquals("/deployment=*/subdeployment=*/subsystem=datasources/data-source=*", template.segments().get(5).value);
     }
 }

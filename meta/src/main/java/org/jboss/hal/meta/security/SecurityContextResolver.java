@@ -20,10 +20,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Placeholder;
 import org.jboss.hal.meta.Segment;
+import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.meta.StatementContextResolver;
 import org.jboss.hal.meta.TemplateResolver;
 
 import static org.jboss.hal.meta.Placeholder.DOMAIN_CONTROLLER;
@@ -32,19 +33,9 @@ import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER;
 import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER_GROUP;
 
 /**
- * A segment resolver that resolves all placeholders, but {@link Placeholder#DOMAIN_CONTROLLER},
- * {@link Placeholder#SELECTED_HOST}, {@link Placeholder#SELECTED_SERVER_GROUP} and {@link Placeholder#SELECTED_SERVER} with
- * wildcards ({@code *}).
- * <pre>
- * / → /
- * /subsystem=io → subsystem=io
- * {selected.host} → {selected.host}
- * {selected.server}/deployment=bar → {selected.server}/deployment=bar
- * subsystem=logging/logger={selection} → subsystem=logging/logger=*
- * {selected.profile}/subsystem=logging/logger={selection} → profile=*&#47;subsystem=logging/logger=*
- * </pre>
+ * Template resolver for the {@link SecurityContextRegistry}.
  */
-class SecurityContextResolver implements TemplateResolver {
+public class SecurityContextResolver implements TemplateResolver {
 
     private static final Set<Placeholder> PRESERVE = new HashSet<>();
 
@@ -55,10 +46,12 @@ class SecurityContextResolver implements TemplateResolver {
         PRESERVE.add(SELECTED_SERVER_GROUP);
     }
 
-    private final Environment environment;
+    private final StatementContext statementContext;
+    private final StatementContextResolver statementContextResolver;
 
-    SecurityContextResolver(Environment environment) {
-        this.environment = environment;
+    SecurityContextResolver(StatementContext statementContext) {
+        this.statementContext = statementContext;
+        this.statementContextResolver = new StatementContextResolver(statementContext);
     }
 
     @Override
@@ -69,7 +62,7 @@ class SecurityContextResolver implements TemplateResolver {
                 if (segment.hasKey()) {
                     resolved.add(new Segment(segment.key, "*"));
                 } else {
-                    if (!environment.standalone()) {
+                    if (!statementContext.standalone()) {
                         Placeholder placeholder = segment.placeholder();
                         if (!PRESERVE.contains(placeholder)) {
                             resolved.add(new Segment(segment.key, "*"));

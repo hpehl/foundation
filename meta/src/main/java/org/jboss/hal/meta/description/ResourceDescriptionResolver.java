@@ -16,55 +16,78 @@
 package org.jboss.hal.meta.description;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.Placeholder;
 import org.jboss.hal.meta.Segment;
+import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.meta.StatementContextResolver;
 import org.jboss.hal.meta.TemplateResolver;
 
-import static org.jboss.hal.meta.Placeholder.DOMAIN_CONTROLLER;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.HOST;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.PROFILE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
 
 /**
- * A segment resolver that resolves all placeholders and the value of the last segment with wildcards ({@code *}).
- * <pre>
- * / → /
- * /subsystem=io → subsystem=io
- * {selected.server} → server=*
- * {selected.server}/deployment=foo → server=*&#47;deployment=*
- * subsystem=logging/logger={selection} → subsystem=logging/logger=*
- * </pre>
+ * Template resolver for the {@link ResourceDescriptionRegistry}.
  */
 class ResourceDescriptionResolver implements TemplateResolver {
 
+    private final StatementContext statementContext;
+    private final StatementContextResolver statementContextResolver;
+
+    ResourceDescriptionResolver(StatementContext statementContext) {
+        this.statementContext = statementContext;
+        this.statementContextResolver = new StatementContextResolver(statementContext);
+    }
+
     @Override
     public AddressTemplate resolve(AddressTemplate template) {
-        List<Segment> resolved = new ArrayList<>();
-        for (Iterator<Segment> iterator = template.iterator(); iterator.hasNext(); ) {
-            Segment segment = iterator.next();
-            // use wildcards where possible
-            if (segment.containsPlaceholder()) {
-                Placeholder placeholder = segment.placeholder();
-                if (SELECTED_RESOURCE.equals(placeholder) ||
-                        (template.size() == 1 &&
-                                DOMAIN_CONTROLLER.equals(segment.placeholder()) ||
-                                SELECTED_RESOURCE.equals(placeholder))) {
-                    resolved.add(new Segment(segment.key, "*"));
+        if (!template.isEmpty()) {
+            int index = 0;
+            int length = template.size();
+            List<Segment> segments = new ArrayList<>();
+            AddressTemplate resolved = statementContextResolver.resolve(template);
+
+            for (Segment segment : resolved) {
+                String key = segment.key;
+                String value = segment.value;
+                if (segment.containsPlaceholder() && SELECTED_RESOURCE.equals(segment.placeholder())) {
+                    value = "*";
+                } else if (!statementContext.standalone()) {
+                    switch (key) {
+                        case HOST:
+                            if (length > 1 && index == 0) {
+                                value = "*";
+                            }
+                            break;
+
+                        case PROFILE:
+                        case SERVER_GROUP:
+                            if (index == 0) {
+                                value = "*";
+                            }
+                            break;
+
+                        case SERVER:
+                        case SERVER_CONFIG:
+                            if (index == 1) {
+                                value = "*";
+                            }
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
-                if (segment.hasKey()) {
-                    resolved.add(new Segment(segment.key, "*"));
-                } else {
-                    placeholder = segment.placeholder();
-                    resolved.add(new Segment(placeholder.resource, "*"));
-                }
-            } else if (!iterator.hasNext() && !"*".equals(segment.value)) {
-                resolved.add(new Segment(segment.key, "*"));
-            } else {
-                resolved.add(segment);
+                segments.add(new Segment(key, value));
+                index++;
             }
+            return AddressTemplate.of(segments);
         }
-        return AddressTemplate.of(resolved);
+        return template;
     }
 }

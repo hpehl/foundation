@@ -52,8 +52,7 @@ import static java.util.stream.Collectors.joining;
  * <p>
  * <strong>Resolving</strong><br/>
  * To get a fully qualified {@link ResourceAddress} from an address template use one of the <code>resolve()</code> methods and a
- * {@link TemplateResolver}.
- * In general, you prefer address templates over {@linkplain ResourceAddress resource addresses}.
+ * {@link TemplateResolver}. In general, you prefer address templates over {@linkplain ResourceAddress resource addresses}.
  * <p>
  * <strong>Encoding</strong><br/>
  * Some characters in values must be encoded using the backslash character:
@@ -262,7 +261,6 @@ public final class AddressTemplate implements Iterable<Segment> {
      *
      * @param resolver the resolver used to resolve the template
      * @return the resolved ResourceAddress
-     * @throws ResolveException if there are still placeholders in the template after resolving it
      */
     public ResourceAddress resolve(TemplateResolver resolver) {
         if (isEmpty()) {
@@ -271,9 +269,6 @@ public final class AddressTemplate implements Iterable<Segment> {
             ModelNode model = new ModelNode();
             AddressTemplate resolved = resolver.resolve(this);
             for (Segment segment : resolved) {
-                if (segment.containsPlaceholder()) {
-                    throw new ResolveException("Unable to resolve segment '" + segment + "' in template '" + this + "'");
-                }
                 // Do *not* encode values: the model node will be encoded as DMR!
                 model.add(segment.key, segment.value);
             }

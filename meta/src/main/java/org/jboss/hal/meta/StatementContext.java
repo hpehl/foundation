@@ -37,6 +37,10 @@ public class StatementContext {
         this.placeholders = new HashMap<>();
     }
 
+    public boolean standalone() {
+        return environment.standalone();
+    }
+
     public void assign(String placeholder, String value) {
         assign(new Placeholder(placeholder, null, false), value);
     }
