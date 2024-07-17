@@ -32,6 +32,7 @@ import static java.util.stream.Collectors.joining;
 @ApplicationScoped
 public class Settings {
 
+    public static final boolean DEFAULT_COLLECT_USER_DATA = true;
     public static final String DEFAULT_LOCALE = "en";
     public static final int DEFAULT_PAGE_SIZE = 10;
     // keep in sync with the poll-time attribute of settings.dmr
@@ -76,7 +77,7 @@ public class Settings {
     public String toString() {
         return values.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
-                .collect(joining("."));
+                .collect(joining(", "));
     }
 
     private String cookieName(Key key) {

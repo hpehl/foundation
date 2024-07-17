@@ -31,7 +31,7 @@ public class StatementContext {
     private final Map<String, Placeholder> placeholders;
 
     @Inject
-    StatementContext(Environment environment) {
+    public StatementContext(Environment environment) {
         this.environment = environment;
         this.values = new HashMap<>();
         this.placeholders = new HashMap<>();

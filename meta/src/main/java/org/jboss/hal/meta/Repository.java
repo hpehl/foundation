@@ -13,33 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.description;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+package org.jboss.hal.meta;
 
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
-import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.Cache;
-import org.jboss.hal.meta.StatementContext;
-import org.jboss.hal.meta.TemplateResolver;
 
-@ApplicationScoped
-public class ResourceDescriptionRegistry {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.HAL_RECURSIVE;
 
-    private static final int CAPACITY = 500;
-    private static final Logger logger = Logger.getLogger(ResourceDescriptionRegistry.class.getName());
+public abstract class Repository<T extends ModelNode> {
 
+    private static final Logger logger = Logger.getLogger(Repository.class.getName());
+    private final String type;
     private final TemplateResolver resolver;
-    private final Cache<String, ResourceDescription> cache;
+    private final Cache<String, T> cache;
     // TODO PouchDB 2nd level cache
 
-    @Inject
-    public ResourceDescriptionRegistry(StatementContext statementContext) {
-        resolver = new ResourceDescriptionResolver(statementContext);
-        cache = new Cache<>(CAPACITY, (resourceAddress, __) -> {
-            logger.debug("Remove %s from cache", resourceAddress);
+
+    protected Repository(int capacity, String type, TemplateResolver resolver) {
+        this.type = type;
+        this.resolver = resolver;
+        this.cache = new Cache<>(capacity, (resourceAddress, __) -> {
+            logger.debug("Remove %s %s from cache", type, resourceAddress);
             // TODO Add to PouchDB 2nd level cache, if not already there
         });
     }
@@ -51,28 +46,34 @@ public class ResourceDescriptionRegistry {
         return internalContains(address);
     }
 
-    public ResourceDescription get(AddressTemplate template) {
+    public T get(AddressTemplate template) {
         String address = resolveTemplate(template);
-        ResourceDescription resourceDescription = cache.get(address);
-        if (resourceDescription != null) {
-            logger.debug("Get resource description for %s as %s from cache", template, address);
-            return resourceDescription;
+        T entry = cache.get(address);
+        if (entry != null) {
+            logger.debug("Get %s for %s as %s from cache", type, template, address);
+            return entry;
         } else {
-            logger.warn("No resource description found for %s", template);
+            logger.warn("No %s found for %s", type, template);
             return null;
         }
     }
 
-    public void add(ResourceAddress resourceAddress, ResourceDescription description) {
-        // don't update existing resource descriptions!
+    public boolean add(ResourceAddress resourceAddress, T entry, boolean recursive) {
         String address = resolveTemplate(AddressTemplate.of(resourceAddress.toString()));
-        if (!internalContains(address)) {
-            logger.debug("Add resource description for %s as %s", resourceAddress, address);
-            internalAdd(address, description);
+        if (!internalContains(address) || updateExisting()) {
+            logger.debug("Add %s for %s as %s (%s)", type, resourceAddress, address, recursive ? "recursive" : "non-recursive");
+            entry.get(HAL_RECURSIVE).set(recursive);
+            internalAdd(address, entry);
+            return true;
         }
+        return false;
     }
 
     // ------------------------------------------------------ internal
+
+    protected boolean updateExisting() {
+        return false;
+    }
 
     private String resolveTemplate(AddressTemplate template) {
         return resolver.resolve(template).template;
@@ -83,7 +84,7 @@ public class ResourceDescriptionRegistry {
         // TODO Check PouchDB 2nd level cache and add it to the cache if needed
     }
 
-    private void internalAdd(String address, ResourceDescription description) {
+    private void internalAdd(String address, T description) {
         cache.put(address, description);
     }
 }

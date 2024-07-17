@@ -33,7 +33,7 @@ import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER;
 import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER_GROUP;
 
 /**
- * Template resolver for the {@link SecurityContextRegistry}.
+ * Template resolver for the {@link SecurityContextRepository}.
  */
 public class SecurityContextResolver implements TemplateResolver {
 
@@ -56,23 +56,24 @@ public class SecurityContextResolver implements TemplateResolver {
 
     @Override
     public AddressTemplate resolve(AddressTemplate template) {
-        List<Segment> resolved = new ArrayList<>();
+        List<Segment> segments = new ArrayList<>();
         for (Segment segment : template) {
             if (segment.containsPlaceholder()) {
                 if (segment.hasKey()) {
-                    resolved.add(new Segment(segment.key, "*"));
+                    segments.add(new Segment(segment.key, "*"));
                 } else {
                     if (!statementContext.standalone()) {
                         Placeholder placeholder = segment.placeholder();
                         if (!PRESERVE.contains(placeholder)) {
-                            resolved.add(new Segment(segment.key, "*"));
+                            segments.add(new Segment(segment.key, "*"));
                         }
                     }
                 }
             } else {
-                resolved.add(segment);
+                segments.add(segment);
             }
         }
-        return AddressTemplate.of(resolved);
+        AddressTemplate resolved = AddressTemplate.of(segments);
+        return statementContextResolver.resolve(resolved);
     }
 }

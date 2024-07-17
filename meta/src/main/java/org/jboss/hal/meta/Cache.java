@@ -80,6 +80,11 @@ public class Cache<K, V> {
         return null;
     }
 
+    public void clear() {
+        cacheMap.clear();
+        cacheList.clear();
+    }
+
     // ------------------------------------------------------ internal
 
     // for testing purposes
@@ -174,6 +179,11 @@ public class Cache<K, V> {
                 current = current.next;
             }
             return size;
+        }
+
+        private void clear() {
+            head = null;
+            tail = null;
         }
     }
 }

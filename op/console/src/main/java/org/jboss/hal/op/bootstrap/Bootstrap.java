@@ -23,6 +23,7 @@ import org.jboss.elemento.flow.Subscription;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Endpoints;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.model.user.Current;
 import org.jboss.hal.model.user.User;
@@ -38,6 +39,7 @@ public class Bootstrap {
     @Inject Environment environment;
     @Inject StatementContext statementContext;
     @Inject @Current User user;
+    @Inject Settings settings;
 
     public Subscription<FlowContext> run() {
         return sequential(new FlowContext(), asList(
@@ -47,7 +49,8 @@ public class Bootstrap {
                 new ReadEnvironment(dispatcher, environment, user),
                 new ReadHostNames(dispatcher, environment),
                 new FindDomainController(dispatcher, environment, statementContext),
-                new ReadStability(dispatcher, environment, statementContext)
+                new ReadStability(dispatcher, environment, statementContext),
+                new LoadSettings(settings)
         )).failFast(true);
     }
 }

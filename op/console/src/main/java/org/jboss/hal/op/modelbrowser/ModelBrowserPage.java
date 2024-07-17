@@ -23,8 +23,8 @@ import org.jboss.elemento.router.Page;
 import org.jboss.elemento.router.Parameter;
 import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.Route;
-import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.ui.UIContext;
 
 import elemental2.dom.HTMLElement;
 
@@ -37,18 +37,18 @@ import static org.patternfly.style.Brightness.light;
 @Route("/model-browser")
 public class ModelBrowserPage implements Page {
 
-    private final Dispatcher dispatcher;
+    private final UIContext uic;
 
     @Inject
-    public ModelBrowserPage(Dispatcher dispatcher) {
-        this.dispatcher = dispatcher;
+    public ModelBrowserPage(UIContext uic) {
+        this.uic = uic;
     }
 
     @Override
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return singletonList(
                 pageMainSection().background(light)
-                        .add(modelBrowser(dispatcher, AddressTemplate.root()))
+                        .add(modelBrowser(uic, AddressTemplate.root()))
                         .element());
     }
 }

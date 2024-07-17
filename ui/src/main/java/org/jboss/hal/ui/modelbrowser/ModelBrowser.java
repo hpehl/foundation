@@ -18,9 +18,10 @@ package org.jboss.hal.ui.modelbrowser;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.Operation;
-import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.tree.TreeView;
 import org.patternfly.style.Classes;
 
@@ -41,35 +42,46 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static ModelBrowser modelBrowser(Dispatcher dispatcher, AddressTemplate address) {
-        return new ModelBrowser(dispatcher, address);
+    public static ModelBrowser modelBrowser(UIContext uic, AddressTemplate template) {
+        return new ModelBrowser(uic, template);
     }
 
     // ------------------------------------------------------ instance
 
+    private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
     static final String NODE = "node";
     private final TreeView treeView;
     private final DetailPane detailPane;
     private final HTMLElement root;
 
-    public ModelBrowser(Dispatcher dispatcher, AddressTemplate address) {
+    public ModelBrowser(UIContext uic, AddressTemplate address) {
         root = grid().span(12).gutter()
                 .addItem(gridItem().span(4)
                         .css("hal-model-browser-tree")
                         .add(treeView = treeView(selectableItems).guides()))
                 .addItem(gridItem().span(8)
-                        .add(detailPane = detailPane()))
+                        .add(detailPane = detailPane(uic)))
                 .element();
         componentVar(component(Classes.treeView), "PaddingTop").applyTo(treeView).set(0);
-        treeView.onSelect((event, treeViewItem, selected) -> detailPane.show(treeViewItem));
-
-        Operation operation = new Operation.Builder(address.resolve(), READ_CHILDREN_TYPES_OPERATION)
-                .param(INCLUDE_SINGLETONS, true)
-                .build();
-        dispatcher.execute(operation, result -> {
-            List<Node> nodes = readNodes(address, result);
-            treeView.addItems(nodes, new NodeFunction(dispatcher));
+        treeView.onSelect((event, treeViewItem, selected) -> {
+            Node node = treeViewItem.get(NODE);
+            if (node != null) {
+                detailPane.show(node);
+            }
         });
+
+        if (address.endsWith("*")) {
+            logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", address);
+        } else {
+            Operation operation = new Operation.Builder(address.resolve(), READ_CHILDREN_TYPES_OPERATION)
+                    .param(INCLUDE_SINGLETONS, true)
+                    .build();
+            uic.dispatcher.execute(operation, result -> {
+                List<Node> nodes = readNodes(address, operation.getName(), result);
+                treeView.addItems(nodes, new NodeFunction(uic.dispatcher));
+                detailPane.show(new Node(address, null, NodeType.RESOURCE));
+            });
+        }
     }
 
     @Override

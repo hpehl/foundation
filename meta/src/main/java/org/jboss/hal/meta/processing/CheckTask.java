@@ -21,60 +21,59 @@ import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.meta.description.ResourceDescriptionRegistry;
+import org.jboss.hal.meta.description.ResourceDescriptionRepository;
 import org.jboss.hal.meta.security.SecurityContext;
-import org.jboss.hal.meta.security.SecurityContextRegistry;
+import org.jboss.hal.meta.security.SecurityContextRepository;
 
 import elemental2.promise.Promise;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.HAL_RECURSIVE;
-import static org.jboss.hal.meta.processing.LookupResult.RESOURCE_DESCRIPTION_PRESENT;
-import static org.jboss.hal.meta.processing.LookupResult.SECURITY_CONTEXT_PRESENT;
+import static org.jboss.hal.meta.processing.RepositoryStatus.RESOURCE_DESCRIPTION_PRESENT;
+import static org.jboss.hal.meta.processing.RepositoryStatus.SECURITY_CONTEXT_PRESENT;
 
-/** Task which checks whether metadata is present in the registries. */
-class LookupTask implements Task<LookupContext> {
+/** Task which checks whether metadata is already present in the repositories. */
+class CheckTask implements Task<ProcessingContext> {
 
-    private static final Logger logger = Logger.getLogger(MetadataProcessor.class.getName());
-    private final ResourceDescriptionRegistry resourceDescriptionRegistry;
-    private final SecurityContextRegistry securityContextRegistry;
+    private static final Logger logger = Logger.getLogger(CheckTask.class.getName());
+    private final ResourceDescriptionRepository resourceDescriptionRepository;
+    private final SecurityContextRepository securityContextRepository;
 
-    LookupTask(ResourceDescriptionRegistry resourceDescriptionRegistry,
-            SecurityContextRegistry securityContextRegistry) {
-        this.resourceDescriptionRegistry = resourceDescriptionRegistry;
-        this.securityContextRegistry = securityContextRegistry;
+    CheckTask(ResourceDescriptionRepository resourceDescriptionRepository,
+            SecurityContextRepository securityContextRepository) {
+        this.resourceDescriptionRepository = resourceDescriptionRepository;
+        this.securityContextRepository = securityContextRepository;
     }
 
     @Override
-    public Promise<LookupContext> apply(final LookupContext context) {
-        check(context.lookupResult, context.recursive);
-        logger.debug("Registry lookup: %s", context.lookupResult);
+    public Promise<ProcessingContext> apply(final ProcessingContext context) {
+        check(context.repositoryStatus, context.recursive);
+        logger.debug("%s", context.repositoryStatus);
         return Promise.resolve(context);
     }
 
     boolean allPresent(Set<AddressTemplate> templates, boolean recursive) {
-        LookupResult lookupResult = new LookupResult(templates);
+        RepositoryStatus lookupResult = new RepositoryStatus(templates);
         check(lookupResult, recursive);
         return lookupResult.allPresent();
     }
 
-    private void check(LookupResult lookupResult, boolean recursive) {
+    private void check(RepositoryStatus lookupResult, boolean recursive) {
         for (AddressTemplate template : lookupResult.templates()) {
-            if (resourceDescriptionRegistry.contains(template)) {
+            if (resourceDescriptionRepository.contains(template)) {
                 if (!recursive) {
                     lookupResult.markMetadataPresent(template, RESOURCE_DESCRIPTION_PRESENT);
                 } else {
-                    ResourceDescription resourceDescription = resourceDescriptionRegistry.get(template);
+                    ResourceDescription resourceDescription = resourceDescriptionRepository.get(template);
                     if (resourceDescription.get(HAL_RECURSIVE).asBoolean(false)) {
                         lookupResult.markMetadataPresent(template, RESOURCE_DESCRIPTION_PRESENT);
                     }
                 }
             }
-
-            if (securityContextRegistry.contains(template)) {
+            if (securityContextRepository.contains(template)) {
                 if (!recursive) {
                     lookupResult.markMetadataPresent(template, SECURITY_CONTEXT_PRESENT);
                 } else {
-                    SecurityContext securityContext = securityContextRegistry.get(template);
+                    SecurityContext securityContext = securityContextRepository.get(template);
                     if (securityContext.get(HAL_RECURSIVE).asBoolean(false)) {
                         lookupResult.markMetadataPresent(template, SECURITY_CONTEXT_PRESENT);
                     }

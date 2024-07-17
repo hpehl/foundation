@@ -13,14 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.resources;
+package org.jboss.hal.meta.security;
 
-/**
- * Common names and technical terms which are not meant to be translated.
- */
-public interface Names {
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-    String BROWSER_DEFAULT_TITLE = "%n | Management Console";
-    String BROWSER_FALLBACK_TITLE = "HAL Management Console";
-    String STANDALONE_SERVER = "Standalone Server";
+import org.jboss.hal.meta.Repository;
+import org.jboss.hal.meta.StatementContext;
+
+@ApplicationScoped
+public class SecurityContextRepository extends Repository<SecurityContext> {
+
+    private static final int CAPACITY = 500;
+
+    @Inject
+    public SecurityContextRepository(StatementContext statementContext) {
+        super(CAPACITY, "security context", new SecurityContextResolver(statementContext));
+    }
 }

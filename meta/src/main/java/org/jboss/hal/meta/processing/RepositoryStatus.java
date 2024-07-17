@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.jboss.hal.meta.AddressTemplate;
 
-class LookupResult {
+class RepositoryStatus {
 
     /**
      * Bit mask for missing / present metadata. 0 means metadata missing, 1 means metadata present. First bit stands for
@@ -35,7 +35,7 @@ class LookupResult {
 
     private final Map<AddressTemplate, Integer> templates;
 
-    LookupResult(Set<AddressTemplate> templates) {
+    RepositoryStatus(Set<AddressTemplate> templates) {
         this.templates = new HashMap<>();
         for (AddressTemplate template : templates) {
             this.templates.put(template, NOTHING_PRESENT);
@@ -47,7 +47,7 @@ class LookupResult {
     }
 
     void markMetadataPresent(AddressTemplate template, int flag) {
-        int combined = templates.getOrDefault(template, NOTHING_PRESENT) | flag;
+        int combined = failFastGet(template) | flag;
         templates.put(template, combined);
     }
 
@@ -60,10 +60,18 @@ class LookupResult {
         return true;
     }
 
+    int missingMetadata(AddressTemplate template) {
+        return failFastGet(template);
+    }
+
+    private int failFastGet(AddressTemplate template) {
+        return templates.getOrDefault(template, NOTHING_PRESENT);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("LookupResult(");
+        builder.append("RepositoryStatus (");
         for (Iterator<Map.Entry<AddressTemplate, Integer>> iterator = templates.entrySet().iterator(); iterator.hasNext(); ) {
             Map.Entry<AddressTemplate, Integer> entry = iterator.next();
             builder.append(entry.getKey()).append(" -> ");

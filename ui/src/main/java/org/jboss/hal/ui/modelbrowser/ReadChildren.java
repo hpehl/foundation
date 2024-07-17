@@ -37,7 +37,7 @@ import static org.jboss.hal.ui.modelbrowser.Node.readNodes;
 
 /**
  * Function that returns a promise that reads the child resources of the selected tree view item.
- * Uses {@link Node#readNodes(AddressTemplate, ModelNode)} and {@link NodeFunction}.
+ * Uses {@link Node#readNodes(AddressTemplate, String, ModelNode)} and {@link NodeFunction}.
  */
 class ReadChildren implements Function<TreeViewItem, Promise<Iterable<TreeViewItem>>> {
 
@@ -64,8 +64,9 @@ class ReadChildren implements Function<TreeViewItem, Promise<Iterable<TreeViewIt
                         .build();
             }
             if (operation != null) {
+                String operationName = operation.getName();
                 return dispatcher.execute(operation)
-                        .then(result -> Promise.resolve(readNodes(node.address, result).stream()
+                        .then(result -> Promise.resolve(readNodes(node.address, operationName, result).stream()
                                 .map(new NodeFunction(dispatcher))
                                 .collect(toList())));
             } else {

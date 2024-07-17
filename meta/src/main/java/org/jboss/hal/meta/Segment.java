@@ -32,6 +32,8 @@ import org.jboss.hal.dmr.ValueEncoder;
  */
 public class Segment {
 
+    public final static Segment EMPTY = new Segment(null, null);
+
     public final String key;
     public final String value;
 
@@ -53,8 +55,11 @@ public class Segment {
     }
 
     public Placeholder placeholder() {
-        String name = value.substring(1, value.length() - 1);
-        return Placeholder.WELL_KNOWN_NAMES.getOrDefault(name, new Placeholder(name, null, false));
+        if (value != null) {
+            String name = value.substring(1, value.length() - 1);
+            return Placeholder.WELL_KNOWN_NAMES.getOrDefault(name, new Placeholder(name, null, false));
+        }
+        return null;
     }
 
     @Override

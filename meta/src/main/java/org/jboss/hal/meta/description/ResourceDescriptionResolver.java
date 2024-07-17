@@ -32,7 +32,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
 
 /**
- * Template resolver for the {@link ResourceDescriptionRegistry}.
+ * Template resolver for the {@link ResourceDescriptionRepository}.
  */
 class ResourceDescriptionResolver implements TemplateResolver {
 

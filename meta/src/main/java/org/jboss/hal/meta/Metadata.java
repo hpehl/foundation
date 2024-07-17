@@ -15,10 +15,15 @@
  */
 package org.jboss.hal.meta;
 
+import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
 public class Metadata {
+
+    public static Metadata empty() {
+        return new Metadata(new ResourceDescription(new ModelNode()), new SecurityContext(new ModelNode()));
+    }
 
     public final ResourceDescription resourceDescription;
     public final SecurityContext securityContext;

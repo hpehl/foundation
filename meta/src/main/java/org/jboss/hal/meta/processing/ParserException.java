@@ -13,14 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.resources;
+package org.jboss.hal.meta.processing;
 
-/**
- * Common names and technical terms which are not meant to be translated.
- */
-public interface Names {
+class ParserException extends RuntimeException {
 
-    String BROWSER_DEFAULT_TITLE = "%n | Management Console";
-    String BROWSER_FALLBACK_TITLE = "HAL Management Console";
-    String STANDALONE_SERVER = "Standalone Server";
+    ParserException(String message) {
+        super(message);
+    }
 }

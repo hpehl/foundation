@@ -9,7 +9,7 @@
     "src/web/index.html"
   ],
   "scripts": {
-    "watch-j2cl": "browser-sync start --proxy http://localhost:1234 --reload-debounce 500 --files ../../target/gwt3BuildCache --no-open",
+    "watch-j2cl": "browser-sync start --proxy http://localhost:1234 --reload-debounce 200 --reload-delay 4000 --files ../../target/gwt3BuildCache --no-open",
     "watch-parcel": "parcel serve src/web/dev.html --dist-dir target/console --open",
     "watch": "concurrently --kill-others 'npm run watch-j2cl' 'npm run watch-parcel'",
     "dev": "parcel build src/web/dev.html --dist-dir target/console --no-optimize",

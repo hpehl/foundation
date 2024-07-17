@@ -20,38 +20,40 @@ import java.util.function.Consumer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.jboss.hal.meta.description.ResourceDescriptionRegistry;
+import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.meta.description.ResourceDescriptionRepository;
 import org.jboss.hal.meta.processing.MetadataProcessor;
-import org.jboss.hal.meta.security.SecurityContextRegistry;
+import org.jboss.hal.meta.security.SecurityContext;
+import org.jboss.hal.meta.security.SecurityContextRepository;
 
 import elemental2.promise.Promise;
 
 import static java.util.Collections.singleton;
 
-/** Registry for {@linkplain Metadata meta-data} */
+/** Class to read {@linkplain Metadata meta-data} */
 @ApplicationScoped
-public class MetadataRegistry {
+public class MetadataLookup {
 
-    private final ResourceDescriptionRegistry resourceDescriptionRegistry;
-    private final SecurityContextRegistry securityContextRegistry;
+    private final ResourceDescriptionRepository resourceDescriptionRepository;
+    private final SecurityContextRepository securityContextRepository;
     private final MetadataProcessor metadataProcessor;
 
     @Inject
-    public MetadataRegistry(ResourceDescriptionRegistry resourceDescriptionRegistry,
-            SecurityContextRegistry securityContextRegistry,
+    public MetadataLookup(ResourceDescriptionRepository resourceDescriptionRepository,
+            SecurityContextRepository securityContextRepository,
             MetadataProcessor metadataProcessor) {
-        this.resourceDescriptionRegistry = resourceDescriptionRegistry;
-        this.securityContextRegistry = securityContextRegistry;
+        this.resourceDescriptionRepository = resourceDescriptionRepository;
+        this.securityContextRepository = securityContextRepository;
         this.metadataProcessor = metadataProcessor;
     }
 
     // ------------------------------------------------------ api
 
     public Metadata get(AddressTemplate template) throws MissingMetadataException {
-        if (!resourceDescriptionRegistry.contains(template) || !securityContextRegistry.contains(template)) {
+        if (!resourceDescriptionRepository.contains(template) || !securityContextRepository.contains(template)) {
             throw new MissingMetadataException(template);
         }
-        return new Metadata(resourceDescriptionRegistry.get(template), securityContextRegistry.get(template));
+        return new Metadata(resourceDescriptionRepository.get(template), securityContextRepository.get(template));
     }
 
     public void lookup(AddressTemplate template, Consumer<Metadata> callback) {
@@ -62,13 +64,12 @@ public class MetadataRegistry {
     }
 
     public Promise<Metadata> lookup(AddressTemplate template) {
-        if (resourceDescriptionRegistry.contains(template) && securityContextRegistry.contains(template)) {
-            return Promise.resolve(
-                    new Metadata(resourceDescriptionRegistry.get(template), securityContextRegistry.get(template)));
+        if (resourceDescriptionRepository.contains(template) && securityContextRepository.contains(template)) {
+            ResourceDescription resourceDescription = resourceDescriptionRepository.get(template);
+            SecurityContext securityContext = securityContextRepository.get(template);
+            return Promise.resolve(new Metadata(resourceDescription, securityContext));
         } else {
-            return metadataProcessor.process(singleton(template), false).then(__ ->
-                    Promise.resolve(
-                            new Metadata(resourceDescriptionRegistry.get(template), securityContextRegistry.get(template))));
+            return metadataProcessor.process(singleton(template), false);
         }
     }
 }

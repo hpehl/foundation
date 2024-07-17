@@ -22,14 +22,16 @@ import org.junit.jupiter.api.Test;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SuppressWarnings({"DataFlowIssue", "SpellCheckingInspection"})
+@SuppressWarnings("SpellCheckingInspection")
 class AddressTemplateTest {
 
     @Test
     void root() {
         assertTrue(AddressTemplate.root().template.isEmpty());
+        assertEquals("", AddressTemplate.root().template);
     }
 
     @Test
@@ -68,7 +70,7 @@ class AddressTemplateTest {
 
     @Test
     void first() {
-        assertNull(AddressTemplate.root().first());
+        assertSame(Segment.EMPTY, AddressTemplate.root().first());
         assertEquals("a", AddressTemplate.of("a=b").first().key);
         assertEquals("b", AddressTemplate.of("a=b").first().value);
 
@@ -81,7 +83,7 @@ class AddressTemplateTest {
 
     @Test
     void last() {
-        assertNull(AddressTemplate.root().last());
+        assertSame(Segment.EMPTY, AddressTemplate.root().last());
         assertEquals("a", AddressTemplate.of("a=b").last().key);
         assertEquals("b", AddressTemplate.of("a=b").last().value);
 

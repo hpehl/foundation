@@ -19,14 +19,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.ValueEncoder;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * Template for a DMR address which can contain variable parts.
@@ -62,7 +65,7 @@ import static java.util.stream.Collectors.joining;
  *     <li><code>:</code> → <code>\:</code></li>
  * </ul>
  * When creating a template from a {@linkplain AddressTemplate#of(String) string},
- * or {@link AddressTemplate#append(String) appending} a string, you must take care of the encoding.
+ * or {@linkplain AddressTemplate#append(String) appending} a string, you must take care of the encoding.
  * If you create a template from {@linkplain AddressTemplate#of(List) segments}, the encoding is done for you.
  */
 public final class AddressTemplate implements Iterable<Segment> {
@@ -93,6 +96,10 @@ public final class AddressTemplate implements Iterable<Segment> {
         }
     }
 
+    public static AddressTemplate of(Segment segment) {
+        return of(singletonList(segment));
+    }
+
     /**
      * Creates a new address template from a list of segments. Special characters in segment values must not be encoded.
      */
@@ -111,7 +118,9 @@ public final class AddressTemplate implements Iterable<Segment> {
     private final LinkedList<Segment> segments;
 
     private AddressTemplate(List<Segment> segments) {
-        this.segments = new LinkedList<>(segments);
+        this.segments = segments.stream()
+                .filter(Predicate.not(segment -> segment == Segment.EMPTY))
+                .collect(toCollection(LinkedList::new));
         this.template = join(this.segments);
     }
 
@@ -204,20 +213,24 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     // ------------------------------------------------------ properties
 
-    /** @return the first segment or null if this address template is empty. */
+    /** @return the first segment or {@link Segment#EMPTY} if this address template is empty. */
     public Segment first() {
         if (!segments.isEmpty()) {
             return segments.getFirst();
         }
-        return null;
+        return Segment.EMPTY;
     }
 
-    /** @return the last segment or null if this address template is empty. */
+    /** @return the last segment or {@link Segment#EMPTY} if this address template is empty. */
     public Segment last() {
         if (!segments.isEmpty()) {
             return segments.getLast();
         }
-        return null;
+        return Segment.EMPTY;
+    }
+
+    public boolean endsWith(String suffix) {
+        return !isEmpty() && suffix.equals(last().value);
     }
 
     /** @return true if this template contains no tokens, false otherwise */
