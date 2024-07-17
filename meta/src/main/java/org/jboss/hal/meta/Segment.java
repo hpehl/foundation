@@ -32,7 +32,7 @@ import org.jboss.hal.dmr.ValueEncoder;
  */
 public class Segment {
 
-    public final static Segment EMPTY = new Segment(null, null);
+    public static final Segment EMPTY = new Segment(null, null);
 
     public final String key;
     public final String value;
