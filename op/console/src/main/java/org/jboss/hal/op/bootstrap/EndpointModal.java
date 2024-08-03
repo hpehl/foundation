@@ -76,7 +76,7 @@ class EndpointModal {
                 .onSelect((e, tr, selected) -> {
                     ok.disabled(!selected);
                     if (selected) {
-                        endpoint = storage.get(tr.key);
+                        endpoint = storage.get(tr.identifier());
                     }
                 });
 

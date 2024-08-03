@@ -55,9 +55,7 @@ class FindDomainController implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(final FlowContext context) {
-        if (environment.standalone()) {
-            return Promise.resolve(context);
-        } else {
+        if (environment.domain()) {
             List<String> hosts = context.get(HOST_NAMES);
             if (hosts == null) {
                 return Promise.resolve(context);
@@ -86,6 +84,8 @@ class FindDomainController implements Task<FlowContext> {
                         .collect(toList());
                 return Flow.sequential(context, hostTasks).promise();
             }
+        } else {
+            return Promise.resolve(context);
         }
     }
 }

@@ -28,15 +28,13 @@ import org.jboss.hal.meta.security.SecurityContextRepository;
 
 import elemental2.promise.Promise;
 
-import static java.util.stream.Collectors.joining;
+class GetMetadataTask implements Task<ProcessingContext> {
 
-class MetadataTask implements Task<ProcessingContext> {
-
-    private static final Logger logger = Logger.getLogger(MetadataTask.class.getName());
+    private static final Logger logger = Logger.getLogger(GetMetadataTask.class.getName());
     private final ResourceDescriptionRepository resourceDescriptionRepository;
     private final SecurityContextRepository securityContextRepository;
 
-    MetadataTask(ResourceDescriptionRepository resourceDescriptionRepository,
+    GetMetadataTask(ResourceDescriptionRepository resourceDescriptionRepository,
             SecurityContextRepository securityContextRepository) {
         this.resourceDescriptionRepository = resourceDescriptionRepository;
         this.securityContextRepository = securityContextRepository;
@@ -55,7 +53,7 @@ class MetadataTask implements Task<ProcessingContext> {
         Metadata metadata = null;
         if (templates.size() == 1) {
             AddressTemplate template = templates.iterator().next();
-            if (!template.endsWith("*")) {
+            if (template.fullyQualified()) {
                 ResourceDescription resourceDescription = resourceDescriptionRepository.get(template);
                 SecurityContext securityContext = securityContextRepository.get(template);
                 metadata = new Metadata(resourceDescription, securityContext);
@@ -63,8 +61,8 @@ class MetadataTask implements Task<ProcessingContext> {
         }
 
         if (metadata == null) {
-            String values = templates.stream().map(AddressTemplate::toString).collect(joining(", "));
-            logger.warn("Metadata lookup for %s resulted in multiple results. Returning an empty metadata.", values);
+            logger.debug("Metadata lookup for %s resulted in multiple results. Returning an empty metadata.",
+                    templates);
         }
         return metadata;
     }

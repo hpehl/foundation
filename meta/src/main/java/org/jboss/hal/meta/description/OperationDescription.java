@@ -21,24 +21,29 @@ import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUEST_PROPERTIES;
 
-public class Operation extends NamedNode {
+public class OperationDescription extends NamedNode {
 
-    private final Operations operations;
+    private final OperationDescriptions operations;
 
-    public Operation(Operations operations, Property property) {
+    public OperationDescription(OperationDescriptions operations, Property property) {
         super(property);
         this.operations = operations;
     }
 
-    public Operation(Operations operations, String name, ModelNode node) {
+    public OperationDescription(OperationDescriptions operations, String name, ModelNode node) {
         super(name, node);
         this.operations = operations;
     }
 
-    public Attributes requestProperties() {
-        return new Attributes(get(REQUEST_PROPERTIES));
+    public String description() {
+        return get(DESCRIPTION).asString();
+    }
+
+    public AttributeDescriptions requestProperties() {
+        return new AttributeDescriptions(get(REQUEST_PROPERTIES));
     }
 
     public boolean deprecated() {

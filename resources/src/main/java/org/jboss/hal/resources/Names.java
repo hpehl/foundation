@@ -22,5 +22,6 @@ public interface Names {
 
     String BROWSER_DEFAULT_TITLE = "%n | Management Console";
     String BROWSER_FALLBACK_TITLE = "HAL Management Console";
+    String NOT_AVAILABLE = "n/a";
     String STANDALONE_SERVER = "Standalone Server";
 }

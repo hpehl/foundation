@@ -24,7 +24,6 @@ import org.patternfly.component.table.Table;
 import org.patternfly.component.table.Tr;
 import org.patternfly.handler.SelectHandler;
 import org.patternfly.icon.IconSets;
-import org.patternfly.style.Size;
 
 import elemental2.dom.HTMLElement;
 
@@ -43,6 +42,7 @@ import static org.patternfly.component.table.Wrap.fitContent;
 import static org.patternfly.icon.IconSets.fas.pencilAlt;
 import static org.patternfly.icon.IconSets.fas.trash;
 import static org.patternfly.layout.bullseye.Bullseye.bullseye;
+import static org.patternfly.style.Size.sm;
 
 class EndpointTable implements IsElement<HTMLElement> {
 
@@ -52,10 +52,10 @@ class EndpointTable implements IsElement<HTMLElement> {
     private final Consumer<Endpoint> delete;
 
     EndpointTable(Callback create, Consumer<Endpoint> update, Consumer<Endpoint> delete) {
-        emptyRow = tr()
-                .addData(td().colSpan(4)
+        emptyRow = tr("endpoint-empty")
+                .addItem(td().colSpan(4)
                         .add(bullseye()
-                                .add(emptyState().size(Size.sm)
+                                .add(emptyState().size(sm)
                                         .addHeader(emptyStateHeader(2)
                                                 .icon(IconSets.fas.ban())
                                                 .text("No management interfaces found"))
@@ -66,11 +66,11 @@ class EndpointTable implements IsElement<HTMLElement> {
         this.delete = delete;
         table = table()
                 .addHead(thead()
-                        .addRow(tr()
-                                .addHeader(th().textContent("Name"))
-                                .addHeader(th().textContent("URL"))
-                                .addHeader(th().screenReader("Edit"))
-                                .addHeader(th().screenReader("Remove"))))
+                        .addRow(tr("endpoint-head")
+                                .addItem(th().textContent("Name"))
+                                .addItem(th().textContent("URL"))
+                                .addItem(th().screenReader("Edit"))
+                                .addItem(th().screenReader("Remove"))))
                 .addBody(tbody());
     }
 
@@ -90,19 +90,19 @@ class EndpointTable implements IsElement<HTMLElement> {
 
     void show(List<Endpoint> endpoints) {
         if (endpoints.isEmpty()) {
-            table.tbody().removeRows();
+            table.tbody().clear();
             table.tbody().addRow(emptyRow);
         } else {
-            table.tbody().removeRows();
+            table.tbody().clear();
             table.tbody().addRows(endpoints, endpoint -> tr(endpoint.id)
                     .clickable()
-                    .addData(td("Name").textContent(endpoint.name))
-                    .addData(td("URL").textContent(endpoint.url))
-                    .addData(td("Edit").wrap(fitContent)
+                    .addItem(td("Name").textContent(endpoint.name))
+                    .addItem(td("URL").textContent(endpoint.url))
+                    .addItem(td("Edit").wrap(fitContent)
                             .add(tableText()
                                     .add(button().plain().icon(pencilAlt())
                                             .onClick((event, component) -> update.accept(endpoint)))))
-                    .addData(td("Remove").wrap(fitContent)
+                    .addItem(td("Remove").wrap(fitContent)
                             .add(tableText()
                                     .add(button().plain().icon(trash())
                                             .onClick((event, component) -> delete.accept(endpoint))))));

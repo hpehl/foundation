@@ -13,11 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta;
+package org.jboss.hal.ui.form;
 
-public class MissingMetadataException extends RuntimeException {
+import org.jboss.hal.dmr.ModelNode;
 
-    public MissingMetadataException(AddressTemplate address) {
-        super("Missing metadata for " + address);
-    }
+@FunctionalInterface
+interface UpdateValueFn {
+
+    void update(ModelNode value);
 }

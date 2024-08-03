@@ -17,34 +17,35 @@ package org.jboss.hal.meta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.Objects;
 
-public class Cache<K, V> {
+class LRUCache<K, V> {
 
     private final int capacity;
-    private final BiConsumer<K, V> removalHandler;
-    private final DoublyLinkedList<K, V> cacheList;
+    private final LinkedList<Node<K, V>> cacheList;
     private final HashMap<K, Node<K, V>> cacheMap;
+    private final List<RemovalHandler<K, V>> removalHandlers;
 
-    public Cache(int capacity) {
-        this(capacity, null);
-    }
-
-    public Cache(int capacity, BiConsumer<K, V> removalHandler) {
+    LRUCache(int capacity) {
         this.capacity = capacity;
-        this.removalHandler = removalHandler;
-        this.cacheList = new DoublyLinkedList<>();
+        this.cacheList = new LinkedList<>();
         this.cacheMap = new HashMap<>();
+        this.removalHandlers = new ArrayList<>();
     }
 
     // ------------------------------------------------------ api
 
-    public boolean contains(K key) {
+    boolean contains(K key) {
         return cacheMap.containsKey(key);
     }
 
-    public V get(K key) {
+    int size() {
+        return cacheMap.size();
+    }
+
+    V get(K key) {
         Node<K, V> node = cacheMap.get(key);
         if (node == null) {
             return null;
@@ -54,7 +55,7 @@ public class Cache<K, V> {
         return node.value;
     }
 
-    public void put(K key, V value) {
+    void put(K key, V value) {
         Node<K, V> existingNode = cacheMap.get(key);
         if (existingNode != null) {
             existingNode.value = value;
@@ -71,7 +72,7 @@ public class Cache<K, V> {
         }
     }
 
-    public V remove(K key) {
+    V remove(K key) {
         Node<K, V> existingNode = cacheMap.remove(key);
         if (existingNode != null) {
             cacheList.remove(existingNode);
@@ -80,23 +81,16 @@ public class Cache<K, V> {
         return null;
     }
 
-    public void clear() {
-        cacheMap.clear();
-        cacheList.clear();
+    void addRemovalHandler(RemovalHandler<K, V> handler) {
+        removalHandlers.add(handler);
     }
 
     // ------------------------------------------------------ internal
 
     // for testing purposes
-    K[] lruKeys() {
-        List<K> keys = new ArrayList<>();
-        Node<K, V> current = cacheList.head;
-        while (current != null) {
-            keys.add(current.key);
-            current = current.next;
-        }
+    K[] keys() {
         //noinspection unchecked
-        return (K[]) keys.toArray();
+        return (K[]) cacheList.stream().map(n -> n.key).toArray();
     }
 
     private void moveToHead(Node<K, V> node) {
@@ -107,8 +101,8 @@ public class Cache<K, V> {
     private void removeLeastRecentlyUsed() {
         Node<K, V> tail = cacheList.removeLast();
         cacheMap.remove(tail.key);
-        if (removalHandler != null) {
-            removalHandler.accept(tail.key, tail.value);
+        for (RemovalHandler<K, V> removalHandler : removalHandlers) {
+            removalHandler.onRemoval(tail.key, tail.value);
         }
     }
 
@@ -118,72 +112,25 @@ public class Cache<K, V> {
 
         private final K key;
         private V value;
-        private Node<K, V> prev;
-        private Node<K, V> next;
 
         private Node(K key, V value) {
             this.key = key;
             this.value = value;
         }
-    }
 
-    private static class DoublyLinkedList<K, V> {
-
-        private Node<K, V> head;
-        private Node<K, V> tail;
-
-        private void addFirst(Node<K, V> node) {
-            if (isEmpty()) {
-                head = tail = node;
-            } else {
-                node.next = head;
-                head.prev = node;
-                head = node;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {return true;}
+            if (o == null || getClass() != o.getClass()) {
+                return false;
             }
+            Node<?, ?> node = (Node<?, ?>) o;
+            return Objects.equals(key, node.key);
         }
 
-        private void remove(Node<K, V> node) {
-            if (node == head) {
-                head = head.next;
-            } else if (node == tail) {
-                tail = tail.prev;
-            }
-
-            if (node.prev != null) {
-                node.prev.next = node.next;
-            }
-            if (node.next != null) {
-                node.next.prev = node.prev;
-            }
-        }
-
-        private Node<K, V> removeLast() {
-            if (isEmpty()) {
-                throw new IllegalStateException("List is empty");
-            }
-
-            Node<K, V> last = tail;
-            remove(last);
-            return last;
-        }
-
-        private boolean isEmpty() {
-            return head == null;
-        }
-
-        private int size() {
-            int size = 0;
-            Node<K, V> current = head;
-            while (current != null) {
-                size++;
-                current = current.next;
-            }
-            return size;
-        }
-
-        private void clear() {
-            head = null;
-            tail = null;
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(key);
         }
     }
 }

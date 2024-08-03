@@ -15,77 +15,72 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
-import java.util.List;
-
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.Operation;
+import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.tree.TreeView;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
-import static org.jboss.hal.ui.modelbrowser.DetailPane.detailPane;
-import static org.jboss.hal.ui.modelbrowser.Node.readNodes;
-import static org.patternfly.component.tree.TreeView.treeView;
-import static org.patternfly.component.tree.TreeViewType.selectableItems;
+import static org.jboss.hal.resources.HalClasses.halComponent;
+import static org.jboss.hal.resources.HalClasses.modelBrowser;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
-import static org.patternfly.style.Classes.component;
-import static org.patternfly.style.Variable.componentVar;
 
 public class ModelBrowser implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static ModelBrowser modelBrowser(UIContext uic, AddressTemplate template) {
-        return new ModelBrowser(uic, template);
+    public static ModelBrowser modelBrowser(UIContext uic) {
+        return new ModelBrowser(uic);
     }
 
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
-    static final String NODE = "node";
-    private final TreeView treeView;
-    private final DetailPane detailPane;
+    private final UIContext uic;
     private final HTMLElement root;
+    private final ModelBrowserTree tree;
+    private final ModelBrowserDetail detail;
 
-    public ModelBrowser(UIContext uic, AddressTemplate address) {
-        root = grid().span(12).gutter()
-                .addItem(gridItem().span(4)
-                        .css("hal-model-browser-tree")
-                        .add(treeView = treeView(selectableItems).guides()))
-                .addItem(gridItem().span(8)
-                        .add(detailPane = detailPane(uic)))
+    public ModelBrowser(UIContext uic) {
+        this.uic = uic;
+        this.tree = new ModelBrowserTree(uic);
+        this.detail = new ModelBrowserDetail(uic);
+        this.root = grid().span(12)
+                .css(halComponent(modelBrowser))
+                .addItem(gridItem().span(4).add(tree))
+                .addItem(gridItem().span(8).add(detail))
                 .element();
-        componentVar(component(Classes.treeView), "PaddingTop").applyTo(treeView).set(0);
-        treeView.onSelect((event, treeViewItem, selected) -> {
-            Node node = treeViewItem.get(NODE);
-            if (node != null) {
-                detailPane.show(node);
-            }
-        });
-
-        if (address.endsWith("*")) {
-            logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", address);
-        } else {
-            Operation operation = new Operation.Builder(address.resolve(), READ_CHILDREN_TYPES_OPERATION)
-                    .param(INCLUDE_SINGLETONS, true)
-                    .build();
-            uic.dispatcher.execute(operation, result -> {
-                List<Node> nodes = readNodes(address, operation.getName(), result);
-                treeView.addItems(nodes, new NodeFunction(uic.dispatcher));
-                detailPane.show(new Node(address, null, NodeType.RESOURCE));
-            });
-        }
+        tree.detail = detail;
+        detail.tree = tree;
     }
 
     @Override
     public HTMLElement element() {
         return root;
+    }
+
+    // ------------------------------------------------------ api
+
+    public void show(AddressTemplate template) {
+        if (template.fullyQualified()) {
+            ResourceAddress address = template.resolve(uic.statementContext);
+            Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
+                    .param(INCLUDE_SINGLETONS, true)
+                    .build();
+            uic.dispatcher.execute(operation, result -> {
+                tree.show(parseChildren(template, operation.getName(), result));
+                detail.show(new ModelBrowserNode(template, "Management Model", RESOURCE));
+            });
+        } else {
+            logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);
+        }
     }
 }

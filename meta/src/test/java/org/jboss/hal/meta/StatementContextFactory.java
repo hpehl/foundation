@@ -31,24 +31,6 @@ import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER_GROUP;
 
 public class StatementContextFactory {
 
-    public static StatementContext statementContext(String... pairs) {
-        StatementContext statementContext = new StatementContext(environment(false));
-        for (int i = 0; i < pairs.length; i += 2) {
-            String placeholder = pairs[i];
-            String value = pairs[i + 1];
-            statementContext.assign(placeholder, value);
-        }
-        return statementContext;
-    }
-
-    public static StatementContext statementContext(boolean domain, Placeholder[] placeholders, String[] values) {
-        StatementContext statementContext = new StatementContext(environment(domain));
-        for (int i = 0; i < placeholders.length; i++) {
-            statementContext.assign(placeholders[i], values[i]);
-        }
-        return statementContext;
-    }
-
     public static StatementContext domainStatementContext() {
         return statementContext(true,
                 new Placeholder[]{
@@ -67,6 +49,24 @@ public class StatementContextFactory {
         return statementContext(false,
                 new Placeholder[]{SELECTED_DEPLOYMENT, SELECTED_RESOURCE},
                 new String[]{"hello-world", "bar"});
+    }
+
+    public static StatementContext statementContext(boolean domain, Placeholder[] placeholders, String[] values) {
+        StatementContext statementContext = new StatementContext(environment(domain));
+        for (int i = 0; i < placeholders.length; i++) {
+            statementContext.assign(placeholders[i], values[i]);
+        }
+        return statementContext;
+    }
+
+    public static StatementContext statementContext(String... pairs) {
+        StatementContext statementContext = new StatementContext(environment(false));
+        for (int i = 0; i < pairs.length; i += 2) {
+            String placeholder = pairs[i];
+            String value = pairs[i + 1];
+            statementContext.assign(placeholder, value);
+        }
+        return statementContext;
     }
 
     private static Environment environment(boolean domain) {

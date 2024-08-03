@@ -104,11 +104,7 @@ public final class AddressTemplate implements Iterable<Segment> {
      * Creates a new address template from a list of segments. Special characters in segment values must not be encoded.
      */
     public static AddressTemplate of(List<Segment> segments) {
-        if (segments != null) {
-            return new AddressTemplate(segments);
-        } else {
-            return new AddressTemplate(emptyList());
-        }
+        return segments != null ? new AddressTemplate(segments) : new AddressTemplate(emptyList());
     }
 
     // ------------------------------------------------------ instance
@@ -135,7 +131,6 @@ public final class AddressTemplate implements Iterable<Segment> {
 
         AddressTemplate that = (AddressTemplate) o;
         return template.equals(that.template);
-
     }
 
     @Override
@@ -157,7 +152,7 @@ public final class AddressTemplate implements Iterable<Segment> {
 
     /**
      * Appends the specified <strong>encoded</strong> template to this template and returns a new template. Special characters
-     * in the value must not be be encoded.
+     * in the value must not be encoded.
      *
      * @param key   the key to append to the template
      * @param value the value to append to the template
@@ -229,8 +224,19 @@ public final class AddressTemplate implements Iterable<Segment> {
         return Segment.EMPTY;
     }
 
-    public boolean endsWith(String suffix) {
-        return !isEmpty() && suffix.equals(last().value);
+    /**
+     * Checks if the address template is fully qualified. An address template is considered fully qualified if none of its
+     * segments contain a placeholder or if none of its segments have a value of "*".
+     *
+     * @return true if the address template is fully qualified, false otherwise.
+     */
+    public boolean fullyQualified() {
+        for (Segment segment : this) {
+            if (segment.containsPlaceholder() || "*".equals(segment.value)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** @return true if this template contains no tokens, false otherwise */

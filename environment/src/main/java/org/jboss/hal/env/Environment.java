@@ -211,6 +211,10 @@ public class Environment {
         return operationMode == OperationMode.STANDALONE;
     }
 
+    public boolean domain() {
+        return operationMode == OperationMode.DOMAIN;
+    }
+
     public AccessControlProvider accessControlProvider() {
         return accessControlProvider;
     }

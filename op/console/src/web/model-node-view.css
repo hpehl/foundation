@@ -13,13 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-.hal-inline-help {
-    cursor: help;
-    text-decoration-line: underline;
-    text-decoration-color: var(--pf-v5-global--Color--200);
+.hal-c-model-node-view__unit {
+    margin-left: var(--pf-v5-global--spacer--sm);
+    color: var(--pf-v5-global--Color--200);
+    font-size: var(--pf-v5-global--FontSize--sm);
 }
 
-.hal-model-browser-tree {
-    max-height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
-    overflow: scroll;
+.hal-c-model-node-view__undefined {
+    color: var(--pf-v5-global--disabled-color--100);
 }

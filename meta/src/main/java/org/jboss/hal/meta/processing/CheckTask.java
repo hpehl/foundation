@@ -52,9 +52,9 @@ class CheckTask implements Task<ProcessingContext> {
     }
 
     boolean allPresent(Set<AddressTemplate> templates, boolean recursive) {
-        RepositoryStatus lookupResult = new RepositoryStatus(templates);
-        check(lookupResult, recursive);
-        return lookupResult.allPresent();
+        RepositoryStatus repositoryStatus = new RepositoryStatus(templates);
+        check(repositoryStatus, recursive);
+        return repositoryStatus.allPresent();
     }
 
     private void check(RepositoryStatus lookupResult, boolean recursive) {

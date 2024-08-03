@@ -34,6 +34,31 @@ import static org.jboss.hal.meta.Placeholder.SELECTED_SERVER_GROUP;
 
 /**
  * Template resolver for the {@link SecurityContextRepository}.
+ * <p>
+ * This resolver
+ * <ol>
+ *     <li>
+ *         replaces the values of the segments with "*" depending on the operation mode and
+ *         whether the segment contains a certain placeholder:
+ *         <table>
+ *             <thead><tr><td>Segment</td><td>Replacement</td><td>Condition</td></tr></thead>
+ *             <tbody>
+ *                 <tr><td>{domain.controller}</td><td>no replacement</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.host}</td><td>no replacement</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.profile}</td><td>profile=*</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.server-group}</td><td>no replacement</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.server-config}</td><td>server-config=*</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.server}</td><td>no replacement</td><td>domain mode</td></tr>
+ *                 <tr><td>{selected.deployment}</td><td>deployment=*</td><td>always</td></tr>
+ *                 <tr><td>foo={selected.resource}</td><td>foo=*</td><td>always</td></tr>
+ *                 <tr><td>&lt;anything else&gt;</td><td>no replacement</td><td>always</td></tr>
+ *             </tbody>
+ *         </table>
+ *     </li>
+ *     <li>
+ *         resolves the template against the {@link StatementContext}
+ *     </li>
+ * </ol>
  */
 public class SecurityContextResolver implements TemplateResolver {
 
@@ -59,14 +84,15 @@ public class SecurityContextResolver implements TemplateResolver {
         List<Segment> segments = new ArrayList<>();
         for (Segment segment : template) {
             if (segment.containsPlaceholder()) {
+                Placeholder placeholder = segment.placeholder();
                 if (segment.hasKey()) {
                     segments.add(new Segment(segment.key, "*"));
                 } else {
-                    if (!statementContext.standalone()) {
-                        Placeholder placeholder = segment.placeholder();
-                        if (!PRESERVE.contains(placeholder)) {
-                            segments.add(new Segment(segment.key, "*"));
-                        }
+                    boolean matchingOperationMode = !placeholder.domainOnly || !statementContext.standalone();
+                    if (matchingOperationMode && !PRESERVE.contains(placeholder)) {
+                        segments.add(new Segment(segment.key, "*"));
+                    } else {
+                        segments.add(segment);
                     }
                 }
             } else {

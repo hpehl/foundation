@@ -24,24 +24,24 @@ import org.jboss.hal.dmr.NamedNode;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
-/** Wrapper around the operations of a {@link ResourceDescription} */
-public class Operations implements Iterable<Operation> {
+/** Wrapper around the attributes of a {@link ResourceDescription} */
+public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
-    private final LinkedHashMap<String, Operation> operations;
+    private final LinkedHashMap<String, AttributeDescription> attributes;
 
-    public Operations(ModelNode modelNode) {
-        this.operations = modelNode.asPropertyList()
+    public AttributeDescriptions(ModelNode modelNode) {
+        this.attributes = modelNode.asPropertyList()
                 .stream()
-                .map(property -> new Operation(this, property))
+                .map(property -> new AttributeDescription(this, property))
                 .collect(toMap(NamedNode::name, identity(), (existing, replacement) -> replacement, LinkedHashMap::new));
     }
 
     @Override
-    public Iterator<Operation> iterator() {
-        return operations.values().iterator();
+    public Iterator<AttributeDescription> iterator() {
+        return attributes.values().iterator();
     }
 
-    public Operation get(String name) {
-        return operations.get(name);
+    public AttributeDescription get(String name) {
+        return attributes.get(name);
     }
 }

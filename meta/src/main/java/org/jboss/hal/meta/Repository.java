@@ -16,25 +16,23 @@
 package org.jboss.hal.meta;
 
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.HAL_RECURSIVE;
-
-public abstract class Repository<T extends ModelNode> {
+public abstract class Repository<T> {
 
     private static final Logger logger = Logger.getLogger(Repository.class.getName());
     private final String type;
     private final TemplateResolver resolver;
-    private final Cache<String, T> cache;
+    private final LRUCache<String, T> cache;
     // TODO PouchDB 2nd level cache
 
 
-    protected Repository(int capacity, String type, TemplateResolver resolver) {
+    protected Repository(String type, int capacity, TemplateResolver resolver) {
         this.type = type;
         this.resolver = resolver;
-        this.cache = new Cache<>(capacity, (resourceAddress, __) -> {
-            logger.debug("Remove %s %s from cache", type, resourceAddress);
+        this.cache = new LRUCache<>(capacity);
+        this.cache.addRemovalHandler((address, __) -> {
+            logger.debug("Remove %s %s from cache", type, address);
             // TODO Add to PouchDB 2nd level cache, if not already there
         });
     }
@@ -62,7 +60,7 @@ public abstract class Repository<T extends ModelNode> {
         String address = resolveTemplate(AddressTemplate.of(resourceAddress.toString()));
         if (!internalContains(address) || updateExisting()) {
             logger.debug("Add %s for %s as %s (%s)", type, resourceAddress, address, recursive ? "recursive" : "non-recursive");
-            entry.get(HAL_RECURSIVE).set(recursive);
+            // entry.get(HAL_RECURSIVE).set(recursive);
             internalAdd(address, entry);
             return true;
         }

@@ -16,10 +16,14 @@
 package org.jboss.hal.meta.description;
 
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelNodeHelper;
+import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.OPERATIONS;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.STABILITY;
 
 /** Wrapper around the result of the read-resource-description operation. */
 public class ResourceDescription extends ModelNode {
@@ -33,11 +37,19 @@ public class ResourceDescription extends ModelNode {
         return get(DESCRIPTION).asString();
     }
 
-    public Attributes attributes() {
-        return new Attributes(get(ATTRIBUTES));
+    public boolean deprecated() {
+        return hasDefined(DEPRECATED) && get(DEPRECATED).asBoolean();
     }
 
-    public Operations operations() {
-        return new Operations(get(OPERATIONS));
+    public Stability stability() {
+        return ModelNodeHelper.asEnumValue(this, STABILITY, Stability::valueOf, Stability.DEFAULT);
+    }
+
+    public AttributeDescriptions attributes() {
+        return new AttributeDescriptions(get(ATTRIBUTES));
+    }
+
+    public OperationDescriptions operations() {
+        return new OperationDescriptions(get(OPERATIONS));
     }
 }

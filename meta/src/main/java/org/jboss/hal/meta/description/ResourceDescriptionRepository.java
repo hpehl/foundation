@@ -28,6 +28,6 @@ public class ResourceDescriptionRepository extends Repository<ResourceDescriptio
 
     @Inject
     public ResourceDescriptionRepository(StatementContext statementContext) {
-        super(CAPACITY, "resource description", new ResourceDescriptionResolver(statementContext));
+        super("resource description", CAPACITY, new ResourceDescriptionResolver(statementContext));
     }
 }

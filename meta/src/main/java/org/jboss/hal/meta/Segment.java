@@ -27,7 +27,7 @@ import org.jboss.hal.dmr.ValueEncoder;
  * subsystem=io
  * {selected.server}
  * {selected.server}/deployment=foo
- * subsystem=logging/logger={selection}
+ * subsystem=logging/logger={selected.resource}
  * </pre>
  */
 public class Segment {

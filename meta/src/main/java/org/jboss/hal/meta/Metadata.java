@@ -25,11 +25,13 @@ public class Metadata {
         return new Metadata(new ResourceDescription(new ModelNode()), new SecurityContext(new ModelNode()));
     }
 
+    public final boolean empty;
     public final ResourceDescription resourceDescription;
     public final SecurityContext securityContext;
 
     public Metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
-        this.resourceDescription = resourceDescription;
-        this.securityContext = securityContext;
+        this.resourceDescription = resourceDescription == null ? new ResourceDescription(new ModelNode()) : resourceDescription;
+        this.securityContext = securityContext == null ? new SecurityContext(new ModelNode()) : securityContext;
+        this.empty = !this.resourceDescription.isDefined() || !this.securityContext.isDefined();
     }
 }

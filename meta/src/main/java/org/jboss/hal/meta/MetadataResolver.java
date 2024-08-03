@@ -1,29 +1,9 @@
-/*
- *  Copyright 2024 Red Hat
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-package org.jboss.hal.meta.description;
+package org.jboss.hal.meta;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.Segment;
-import org.jboss.hal.meta.StatementContext;
-import org.jboss.hal.meta.StatementContextResolver;
-import org.jboss.hal.meta.TemplateResolver;
-
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.HOST;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.PROFILE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER;
@@ -32,7 +12,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
 
 /**
- * Template resolver for the {@link ResourceDescriptionRepository}.
+ * Template resolver for the {@link MetadataRepository}.
  * <p>
  * This resolver
  * <ol>
@@ -43,26 +23,32 @@ import static org.jboss.hal.meta.Placeholder.SELECTED_RESOURCE;
  *         replaces the values of the segments with "*" depending on the operation mode,
  *         the key of the segment, the index of the segment, and the length of the template:
  *         <table>
- *             <thead><tr><td>Segment</td><td>Replacement</td><td>Condition</td></tr></thead>
+ *             <colgroup>
+ *                 <col style="width: 30%;">
+ *                 <col style="width: 30%;">
+ *                 <col style="width: 40%;">
+ *             </colgroup>
+ *             <thead><tr><th>Segment</th><th>Replacement</th><th>Condition</th></tr></thead>
  *             <tbody>
- *                 <tr><td>foo={selected.resource}</td><td>foo=*</td><td>always</td></tr>
  *                 <tr><td>host=foo</td><td>host=*</td><td>domain mode && index == 0 && length > 1</td></tr>
+ *                 <tr><td>server-group=foo</td><td>server-group=*</td><td>domain mode && index == 0 && length > 1</td></tr>
  *                 <tr><td>profile=foo</td><td>profile=*</td><td>domain mode && index == 0</td></tr>
- *                 <tr><td>server-group=foo</td><td>server-group=*</td><td>domain mode && index == 0</td></tr>
  *                 <tr><td>server=foo</td><td>server=*</td><td>domain mode && index == 1</td></tr>
  *                 <tr><td>server-config=foo</td><td>server-config=*</td><td>domain mode && index == 1</td></tr>
+ *                 <tr><td>deployment=foo</td><td>deployment=*</td><td>(standalone mode && index == 0 && length > 1) || (domain mode && index == 1 && length > 2)</td></tr>
+ *                 <tr><td>foo={selected.resource}</td><td>foo=*</td><td>always</td></tr>
  *                 <tr><td>&lt;anything else&gt;</td><td>no replacement</td><td>always</td></tr>
  *             </tbody>
  *         </table>
  *     </li>
  * </ol>
  */
-class ResourceDescriptionResolver implements TemplateResolver {
+class MetadataResolver implements TemplateResolver {
 
     private final StatementContext statementContext;
     private final StatementContextResolver statementContextResolver;
 
-    ResourceDescriptionResolver(StatementContext statementContext) {
+    MetadataResolver(StatementContext statementContext) {
         this.statementContext = statementContext;
         this.statementContextResolver = new StatementContextResolver(statementContext);
     }
@@ -80,30 +66,42 @@ class ResourceDescriptionResolver implements TemplateResolver {
                 String value = segment.value;
                 if (segment.containsPlaceholder() && SELECTED_RESOURCE.equals(segment.placeholder())) {
                     value = "*";
-                } else if (!statementContext.standalone()) {
-                    switch (key) {
-                        case HOST:
-                            if (length > 1 && index == 0) {
-                                value = "*";
-                            }
-                            break;
+                } else {
+                    if (statementContext.standalone()) {
+                        if (DEPLOYMENT.equals(key) && index == 0 && length > 1) {
+                            value = "*";
+                        }
+                    } else {
+                        switch (key) {
+                            case HOST:
+                            case SERVER_GROUP:
+                                if (length > 1 && index == 0) {
+                                    value = "*";
+                                }
+                                break;
 
-                        case PROFILE:
-                        case SERVER_GROUP:
-                            if (index == 0) {
-                                value = "*";
-                            }
-                            break;
+                            case PROFILE:
+                                if (index == 0) {
+                                    value = "*";
+                                }
+                                break;
 
-                        case SERVER:
-                        case SERVER_CONFIG:
-                            if (index == 1) {
-                                value = "*";
-                            }
-                            break;
+                            case SERVER:
+                            case SERVER_CONFIG:
+                                if (index == 1) {
+                                    value = "*";
+                                }
+                                break;
 
-                        default:
-                            break;
+                            case DEPLOYMENT:
+                                if (index == 1 && length > 2) {
+                                    value = "*";
+                                }
+                                break;
+
+                            default:
+                                break;
+                        }
                     }
                 }
                 segments.add(new Segment(key, value));

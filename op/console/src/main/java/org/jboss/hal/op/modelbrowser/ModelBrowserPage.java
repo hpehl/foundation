@@ -25,6 +25,7 @@ import org.jboss.elemento.router.Place;
 import org.jboss.elemento.router.Route;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.modelbrowser.ModelBrowser;
 
 import elemental2.dom.HTMLElement;
 
@@ -34,21 +35,26 @@ import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.style.Brightness.light;
 
 @Dependent
-@Route("/model-browser")
+@Route("/management-model")
 public class ModelBrowserPage implements Page {
 
-    private final UIContext uic;
+    private final ModelBrowser modelBrowser;
 
     @Inject
     public ModelBrowserPage(UIContext uic) {
-        this.uic = uic;
+        this.modelBrowser = modelBrowser(uic);
     }
 
     @Override
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return singletonList(
                 pageMainSection().background(light)
-                        .add(modelBrowser(uic, AddressTemplate.root()))
+                        .add(modelBrowser)
                         .element());
+    }
+
+    @Override
+    public void attach() {
+        modelBrowser.show(AddressTemplate.root());
     }
 }

@@ -41,6 +41,10 @@ public class StatementContext {
         return environment.standalone();
     }
 
+    public boolean domain() {
+        return environment.domain();
+    }
+
     public void assign(String placeholder, String value) {
         assign(new Placeholder(placeholder, null, false), value);
     }

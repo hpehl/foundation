@@ -17,6 +17,7 @@ package org.jboss.hal.op.dashboard;
 
 import java.util.List;
 
+import org.jboss.elemento.Id;
 import org.jboss.hal.env.Environment;
 import org.patternfly.layout.flex.AlignItems;
 import org.patternfly.layout.flex.AlignSelf;
@@ -72,16 +73,17 @@ class DocumentationCard implements DashboardCard {
                                         .addHeader(cardHeader().addTitle(cardTitle().textContent("General Resources")))
                                         .addBody(cardBody()
                                                 .add(list().plain()
-                                                        .addItems(GENERAL_RESOURCES, tuple -> listItem()
-                                                                .add(a(replaceVersion(tuple[1]), "_blank")
-                                                                        .textContent(tuple[0])))))))
+                                                        .addItems(GENERAL_RESOURCES,
+                                                                tuple -> listItem(Id.build("general-resources", tuple[0]))
+                                                                        .add(a(replaceVersion(tuple[1]), "_blank")
+                                                                                .textContent(tuple[0])))))))
                         .add(divider(hr).orientation(breakpoints(md, vertical)))
                         .addItem(flexItem().flex(_1)
                                 .add(card().fullHeight().plain()
                                         .addHeader(cardHeader().addTitle(cardTitle().textContent("Get Help")))
                                         .addBody(cardBody()
                                                 .add(list().plain()
-                                                        .addItems(GET_HELP, tuple -> listItem()
+                                                        .addItems(GET_HELP, tuple -> listItem(Id.build("get-help", tuple[0]))
                                                                 .add(a(replaceVersion(tuple[1]), "_blank")
                                                                         .textContent(tuple[0]))))))))
                 .element();

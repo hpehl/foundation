@@ -44,21 +44,21 @@ public class MetadataProcessor {
     private static final int BATCH_SIZE = 3;
     private static final Logger logger = Logger.getLogger(MetadataProcessor.class.getName());
 
+    private final Settings settings;
     private final Dispatcher dispatcher;
     private final StatementContext statementContext;
-    private final Settings settings;
     private final ResourceDescriptionRepository resourceDescriptionRepository;
     private final SecurityContextRepository securityContextRepository;
 
     @Inject
-    public MetadataProcessor(Dispatcher dispatcher,
+    public MetadataProcessor(Settings settings,
+            Dispatcher dispatcher,
             StatementContext statementContext,
-            Settings settings,
             ResourceDescriptionRepository resourceDescriptionRepository,
             SecurityContextRepository securityContextRepository) {
+        this.settings = settings;
         this.dispatcher = dispatcher;
         this.statementContext = statementContext;
-        this.settings = settings;
         this.resourceDescriptionRepository = resourceDescriptionRepository;
         this.securityContextRepository = securityContextRepository;
     }
@@ -66,26 +66,26 @@ public class MetadataProcessor {
     public Promise<Metadata> process(Set<AddressTemplate> templates, boolean recursive) {
         logger.debug("Process metadata for %s (%s)", templates, recursive ? "recursive" : "non-recursive");
         CheckTask checkTask = new CheckTask(resourceDescriptionRepository, securityContextRepository);
-        MetadataTask metadataTask = new MetadataTask(resourceDescriptionRepository, securityContextRepository);
+        GetMetadataTask getMetadataTask = new GetMetadataTask(resourceDescriptionRepository, securityContextRepository);
+
         if (checkTask.allPresent(templates, recursive)) {
-            logger.debug("All metadata have been already processed -> done");
-            Metadata metadata = metadataTask.metadata(templates);
-            if (metadata == null) {
-                metadata = Metadata.empty();
-            }
-            return Promise.resolve(metadata);
+            logger.debug("All metadata for %s have been already processed -> done", templates);
+            return Promise.resolve(getMetadataTask.metadata(templates));
 
         } else {
+            String handle = logger.timeInfo("Metadata processing");
             List<Task<ProcessingContext>> tasks = new ArrayList<>();
             tasks.add(checkTask);
             tasks.add(new RrdTask(dispatcher, statementContext, settings, BATCH_SIZE, RRD_DEPTH));
             tasks.add(new UpdateTask(resourceDescriptionRepository, securityContextRepository));
-            tasks.add(metadataTask);
-            return Flow.sequential(new ProcessingContext(templates, recursive), tasks).then(context -> {
-                logger.info("Successfully processed metadata for %s (%s)", templates,
-                        recursive ? "recursive" : "non-recursive");
-                return Promise.resolve(context.metadata);
-            });
+            tasks.add(getMetadataTask);
+            return Flow.sequential(new ProcessingContext(templates, recursive), tasks)
+                    .then(context -> {
+                        logger.info("Successfully processed metadata for %s (%s)", templates,
+                                recursive ? "recursive" : "non-recursive");
+                        return Promise.resolve(context.metadata);
+                    })
+                    .finally_(() -> logger.timeInfoEnd(handle));
         }
     }
 }

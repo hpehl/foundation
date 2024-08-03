@@ -17,37 +17,17 @@ package org.jboss.hal.op.bootstrap;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
-import org.jboss.elemento.logger.Level;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.env.Query;
 
 import elemental2.promise.Promise;
 
-import static org.jboss.elemento.logger.Level.INFO;
+import static elemental2.dom.DomGlobal.location;
 
 class SetLogLevel implements Task<FlowContext> {
 
-    private static final Logger logger = Logger.getLogger(SetLogLevel.class.getName());
-    private static final String LOG_LEVEL_PARAMETER = "log-level";
-
     @Override
     public Promise<FlowContext> apply(FlowContext context) {
-        if (Query.getParameter(LOG_LEVEL_PARAMETER) != null) {
-            String logLevel = Query.getParameter(LOG_LEVEL_PARAMETER);
-            if (logLevel != null) {
-                try {
-                    Level level = Level.valueOf(logLevel.toUpperCase());
-                    Logger.setLevel(level);
-                } catch (IllegalArgumentException e) {
-                    logger.error("Unknown log level '%s'", logLevel);
-                    Logger.setLevel(INFO);
-                }
-            } else {
-                Logger.setLevel(INFO);
-            }
-        } else {
-            Logger.setLevel(INFO);
-        }
+        Logger.initFrom(location);
         return context.resolve();
     }
 }

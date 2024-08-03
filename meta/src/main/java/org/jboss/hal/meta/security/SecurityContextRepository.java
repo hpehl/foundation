@@ -28,6 +28,6 @@ public class SecurityContextRepository extends Repository<SecurityContext> {
 
     @Inject
     public SecurityContextRepository(StatementContext statementContext) {
-        super(CAPACITY, "security context", new SecurityContextResolver(statementContext));
+        super("security context", CAPACITY, new SecurityContextResolver(statementContext));
     }
 }

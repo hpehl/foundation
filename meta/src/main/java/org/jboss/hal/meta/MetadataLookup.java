@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.description.ResourceDescriptionRepository;
 import org.jboss.hal.meta.processing.MetadataProcessor;
@@ -34,14 +35,18 @@ import static java.util.Collections.singleton;
 @ApplicationScoped
 public class MetadataLookup {
 
+    private static final Logger logger = Logger.getLogger(MetadataLookup.class.getName());
+    private final MetadataRepository metadataRepository;
     private final ResourceDescriptionRepository resourceDescriptionRepository;
     private final SecurityContextRepository securityContextRepository;
     private final MetadataProcessor metadataProcessor;
 
     @Inject
-    public MetadataLookup(ResourceDescriptionRepository resourceDescriptionRepository,
+    public MetadataLookup(MetadataRepository metadataRepository,
+            ResourceDescriptionRepository resourceDescriptionRepository,
             SecurityContextRepository securityContextRepository,
             MetadataProcessor metadataProcessor) {
+        this.metadataRepository = metadataRepository;
         this.resourceDescriptionRepository = resourceDescriptionRepository;
         this.securityContextRepository = securityContextRepository;
         this.metadataProcessor = metadataProcessor;
@@ -49,13 +54,26 @@ public class MetadataLookup {
 
     // ------------------------------------------------------ api
 
-    public Metadata get(AddressTemplate template) throws MissingMetadataException {
-        if (!resourceDescriptionRepository.contains(template) || !securityContextRepository.contains(template)) {
-            throw new MissingMetadataException(template);
+    /**
+     * Retrieves metadata for the given address template.
+     *
+     * @param template the address template to retrieve metadata for
+     * @return the metadata associated with the address template, or empty metadata if not found
+     */
+    public Metadata get(AddressTemplate template) {
+        if (!metadataRepository.contains(template)) {
+            logger.error("Missing metadata for %s" + template.toString());
+            return Metadata.empty();
         }
-        return new Metadata(resourceDescriptionRepository.get(template), securityContextRepository.get(template));
+        return metadataRepository.get(template);
     }
 
+    /**
+     * Performs a lookup for metadata based on the given address template.
+     *
+     * @param template the address template to perform the lookup for
+     * @param callback the consumer to accept the retrieved metadata
+     */
     public void lookup(AddressTemplate template, Consumer<Metadata> callback) {
         lookup(template).then(metadata -> {
             callback.accept(metadata);
@@ -63,6 +81,12 @@ public class MetadataLookup {
         });
     }
 
+    /**
+     * Performs a lookup for metadata based on the given address template.
+     *
+     * @param template the address template to perform the lookup for
+     * @return a Promise representing the lookup result, containing the metadata associated with the address template
+     */
     public Promise<Metadata> lookup(AddressTemplate template) {
         if (resourceDescriptionRepository.contains(template) && securityContextRepository.contains(template)) {
             ResourceDescription resourceDescription = resourceDescriptionRepository.get(template);

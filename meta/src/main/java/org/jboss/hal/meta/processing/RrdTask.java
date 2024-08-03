@@ -93,10 +93,10 @@ class RrdTask implements Task<ProcessingContext> {
     }
 
     private List<Operation> createRrd(ProcessingContext context) {
-        RepositoryStatus lookupResult = context.repositoryStatus;
+        RepositoryStatus repositoryStatus = context.repositoryStatus;
         List<Operation> operations = new ArrayList<>();
-        for (AddressTemplate template : lookupResult.templates()) {
-            int missingMetadata = lookupResult.missingMetadata(template);
+        for (AddressTemplate template : repositoryStatus.templates()) {
+            int missingMetadata = repositoryStatus.missingMetadata(template);
             if (missingMetadata != ALL_PRESENT) {
 
                 ResourceAddress address = template.resolve(new StatementContextResolver(statementContext));

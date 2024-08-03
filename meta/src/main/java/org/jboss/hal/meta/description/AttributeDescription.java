@@ -26,26 +26,31 @@ import org.jboss.hal.dmr.Property;
 import static java.util.Collections.emptyList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
 
-public class Attribute extends NamedNode {
+public class AttributeDescription extends NamedNode {
 
-    private final Attributes attributes;
+    private final AttributeDescriptions attributes;
 
-    public Attribute(Attributes attributes, Property property) {
+    public AttributeDescription(AttributeDescriptions attributes, Property property) {
         super(property);
         this.attributes = attributes;
     }
 
-    public Attribute(Attributes attributes, String name, ModelNode node) {
+    public AttributeDescription(AttributeDescriptions attributes, String name, ModelNode node) {
         super(name, node);
         this.attributes = attributes;
+    }
+
+    public String description() {
+        return get(DESCRIPTION).asString();
     }
 
     /**
      * @return the alternatives of this attribute or an empty list if this attribute has no alternatives
      */
-    public List<Attribute> alternatives() {
+    public List<AttributeDescription> alternatives() {
         return find(ALTERNATIVES);
     }
 
@@ -57,7 +62,7 @@ public class Attribute extends NamedNode {
      * @return the attributes which require {@code} or an empty list if no attributes require {@code name} or if there's no
      * attribute {@code name}
      */
-    public List<Attribute> requires(String path, String name) {
+    public List<AttributeDescription> requires(String path, String name) {
         return find(REQUIRES);
     }
 
@@ -72,9 +77,9 @@ public class Attribute extends NamedNode {
         return null;
     }
 
-    private List<Attribute> find(String name) {
+    private List<AttributeDescription> find(String name) {
         if (hasDefined(name)) {
-            List<Attribute> found = new ArrayList<>();
+            List<AttributeDescription> found = new ArrayList<>();
             get(name).asList().stream()
                     .map(ModelNode::asString)
                     .forEach(attribute -> found.add(attributes.get(attribute)));

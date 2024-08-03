@@ -28,11 +28,13 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.p;
 import static org.jboss.elemento.Elements.small;
 import static org.jboss.elemento.Elements.span;
+import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.expandable.ExpandableSection.expandableSection;
 import static org.patternfly.component.expandable.ExpandableSectionContent.expandableSectionContent;
 import static org.patternfly.component.expandable.ExpandableSectionToggle.expandableSectionToggle;
 import static org.patternfly.component.popover.Popover.popover;
+import static org.patternfly.style.Classes.helpText;
 import static org.patternfly.style.Classes.util;
 
 class EndpointDescription implements IsElement<HTMLElement> {
@@ -44,7 +46,7 @@ class EndpointDescription implements IsElement<HTMLElement> {
         this.root = div()
                 .add(p()
                         .add("HAL runs in standalone mode. To continue, you must connect to the management interface of a WildFly server. This management interface must have an ")
-                        .add(span().css("hal-inline-help")
+                        .add(span().css(halModifier(helpText))
                                 .id(allowedOriginId)
                                 .textContent("allowed origin"))
                         .add(" for ")
@@ -53,9 +55,10 @@ class EndpointDescription implements IsElement<HTMLElement> {
                 .add(popover()
                         .trigger(By.id(allowedOriginId))
                         .addHeader("Allowed origin")
-                        .addBody("An allowed origin is a trusted origin for sending Cross-Origin Resource Sharing (CORS) requests on the management API once the user is authenticated."))
+                        .addBody(
+                                "An allowed origin is a trusted origin for sending Cross-Origin Resource Sharing (CORS) requests on the management API once the user is authenticated."))
                 .add(expandableSection()
-                        .addToggle(expandableSectionToggle("Show more"))
+                        .addToggle(expandableSectionToggle("Show more", "Show less"))
                         .addContent(expandableSectionContent()
                                 .add(p().css(util("mb-sm"))
                                         .add("Use the following CLI commands to add an allowed origin for ")

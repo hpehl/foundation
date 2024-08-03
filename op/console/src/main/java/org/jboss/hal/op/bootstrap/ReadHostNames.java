@@ -47,9 +47,7 @@ class ReadHostNames implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(final FlowContext context) {
-        if (environment.standalone()) {
-            return Promise.resolve(context);
-        } else {
+        if (environment.domain()) {
             Operation operation = new Operation.Builder(ResourceAddress.root(), READ_CHILDREN_NAMES_OPERATION)
                     .param(CHILD_TYPE, HOST)
                     .build();
@@ -61,6 +59,8 @@ class ReadHostNames implements Task<FlowContext> {
                         context.set(HOST_NAMES, hosts);
                         return Promise.resolve(context);
                     });
+        } else {
+            return Promise.resolve(context);
         }
     }
 }

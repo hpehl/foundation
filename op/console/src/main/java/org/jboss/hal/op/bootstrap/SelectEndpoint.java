@@ -19,11 +19,12 @@ import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.env.Endpoints;
-import org.jboss.hal.env.Query;
 
 import elemental2.core.TypeError;
+import elemental2.dom.URLSearchParams;
 import elemental2.promise.Promise;
 
+import static elemental2.dom.DomGlobal.location;
 import static org.jboss.hal.op.bootstrap.BootstrapError.fail;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NETWORK_ERROR;
 import static org.jboss.hal.op.bootstrap.BootstrapError.Failure.NOT_AN_ENDPOINT;
@@ -45,21 +46,26 @@ class SelectEndpoint implements Task<FlowContext> {
 
     @Override
     public Promise<FlowContext> apply(FlowContext context) {
-        if (Query.hasParameter(CONNECT_PARAMETER)) {
-            String connect = Query.getParameter(CONNECT_PARAMETER);
-            if (connect != null) {
-                if (connect.contains("://")) {
-                    return connect(context, connect, true);
-                } else {
-                    Endpoint endpoint = endpointStorage.findByName(connect);
-                    if (endpoint != null) {
-                        return connect(context, endpoint.url, true);
+        if (!location.search.isEmpty()) {
+            URLSearchParams query = new URLSearchParams(location.search);
+            if (query.has(CONNECT_PARAMETER)) {
+                String connect = query.get(CONNECT_PARAMETER);
+                if (connect != null) {
+                    if (connect.contains("://")) {
+                        return connect(context, connect, true);
                     } else {
-                        return fail(context, NO_ENDPOINT_FOUND, connect);
+                        Endpoint endpoint = endpointStorage.findByName(connect);
+                        if (endpoint != null) {
+                            return connect(context, endpoint.url, true);
+                        } else {
+                            return fail(context, NO_ENDPOINT_FOUND, connect);
+                        }
                     }
+                } else {
+                    return fail(context, NO_ENDPOINT_SPECIFIED, CONNECT_PARAMETER);
                 }
             } else {
-                return fail(context, NO_ENDPOINT_SPECIFIED, CONNECT_PARAMETER);
+                return connect(context, "", false);
             }
         } else {
             return connect(context, "", false);
