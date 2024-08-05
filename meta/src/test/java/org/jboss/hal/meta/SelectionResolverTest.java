@@ -30,10 +30,10 @@ class SelectionResolverTest {
     @Test
     void resolve() {
         SelectionResolver resolver = new SelectionResolver(() -> "foo");
-        assertEquals("a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
-        assertEquals("a={b}", resolver.resolve(AddressTemplate.of("a={b}")).template);
-        assertEquals("{a}=b", resolver.resolve(AddressTemplate.of("{a}=b")).template);
-        assertEquals("a=foo", resolver.resolve(AddressTemplate.of("a={selected.resource}")).template);
-        assertEquals("{selected.resource}=b", resolver.resolve(AddressTemplate.of("{selected.resource}=b")).template);
+        assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
+        assertEquals("/a={b}", resolver.resolve(AddressTemplate.of("a={b}")).template);
+        assertEquals("/{a}=b", resolver.resolve(AddressTemplate.of("{a}=b")).template);
+        assertEquals("/a=foo", resolver.resolve(AddressTemplate.of("a={selected.resource}")).template);
+        assertEquals("/{selected.resource}=b", resolver.resolve(AddressTemplate.of("{selected.resource}=b")).template);
     }
 }

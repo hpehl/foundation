@@ -50,26 +50,26 @@ class TemplateResolverTest {
         TemplateResolver cab = c.andThen(a).andThen(b);
         TemplateResolver cba = c.andThen(b).andThen(a);
 
-        assertEquals("a=a/{b}/{c}", aa.resolve(template).template);
-        assertEquals("a=a/{b}/{c}", aaa.resolve(template).template);
+        assertEquals("/a=a/{b}/{c}", aa.resolve(template).template);
+        assertEquals("/a=a/{b}/{c}", aaa.resolve(template).template);
 
-        assertEquals("a=a/{b}/{c}", a.resolve(template).template);
-        assertEquals("a=a/b=b/{c}", ab.resolve(template).template);
-        assertEquals("a=a/{b}/c=c", ac.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", abc.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", acb.resolve(template).template);
+        assertEquals("/a=a/{b}/{c}", a.resolve(template).template);
+        assertEquals("/a=a/b=b/{c}", ab.resolve(template).template);
+        assertEquals("/a=a/{b}/c=c", ac.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", abc.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", acb.resolve(template).template);
 
-        assertEquals("{a}/b=b/{c}", b.resolve(template).template);
-        assertEquals("a=a/b=b/{c}", ba.resolve(template).template);
-        assertEquals("{a}/b=b/c=c", bc.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", bac.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", bca.resolve(template).template);
+        assertEquals("/{a}/b=b/{c}", b.resolve(template).template);
+        assertEquals("/a=a/b=b/{c}", ba.resolve(template).template);
+        assertEquals("/{a}/b=b/c=c", bc.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", bac.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", bca.resolve(template).template);
 
-        assertEquals("{a}/{b}/c=c", c.resolve(template).template);
-        assertEquals("a=a/{b}/c=c", ca.resolve(template).template);
-        assertEquals("{a}/b=b/c=c", cb.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", cab.resolve(template).template);
-        assertEquals("a=a/b=b/c=c", cba.resolve(template).template);
+        assertEquals("/{a}/{b}/c=c", c.resolve(template).template);
+        assertEquals("/a=a/{b}/c=c", ca.resolve(template).template);
+        assertEquals("/{a}/b=b/c=c", cb.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", cab.resolve(template).template);
+        assertEquals("/a=a/b=b/c=c", cba.resolve(template).template);
     }
 
     private TemplateResolver resolver(String character) {
