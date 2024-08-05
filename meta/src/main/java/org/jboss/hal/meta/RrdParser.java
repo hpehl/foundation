@@ -13,8 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
+import java.util.HashSet;
 import java.util.List;
 
 import org.jboss.elemento.logger.Logger;
@@ -39,7 +40,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.RESULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STEPS;
 
-public class RrdParser {
+class RrdParser {
 
     private static final Logger logger = Logger.getLogger(RrdParser.class.getName());
 
@@ -68,8 +69,8 @@ public class RrdParser {
 
             } else {
                 // a single rrd result
-                ResourceAddress address = operationAddress(composite, index);
-                parseSingle(address, stepResult, rrdResult);
+                ResourceAddress operationAddress = operationAddress(composite, index);
+                parseSingle(operationAddress, stepResult, rrdResult);
             }
             index++;
         }
@@ -90,9 +91,9 @@ public class RrdParser {
         List<Property> operationSegments = operationAddress.asPropertyList();
         List<Property> resultSegments = resultAddress.asPropertyList();
 
-        // For rrd operations against running servers using wildcards like /host=primary/server=server-one/interface=*
-        // the result does *not* contain absolute addresses. Since we need them in the registries,
-        // this method fixes this corner case.
+        // For rrd-operations against running servers w/ wildcards e.g., /host=primary/server=server-one/interface=*
+        // the result does *not* contain absolute addresses.
+        // Since we need them in the metadata repository, this method fixes this corner case.
         if (operationSegments.size() > 2 &&
                 operationSegments.size() == resultSegments.size() + 2 &&
                 HOST.equals(operationSegments.get(0).getName()) &&
@@ -101,38 +102,46 @@ public class RrdParser {
                     .add(HOST, operationSegments.get(0).getValue().asString())
                     .add(SERVER, operationSegments.get(1).getValue().asString())
                     .add(resultAddress);
-            logger.debug("Adjust result address '{}' -> '{}'", resultAddress, resolved);
+            logger.debug("Adjust result address %s → %s", resultAddress, resolved);
         }
         return resolved;
     }
 
     // ------------------------------------------------------ single
 
-    private static void parseSingle(ResourceAddress address, ModelNode modelNode, RrdResult rrdResult) {
+    static void parseSingle(ResourceAddress operationAddress, ModelNode modelNode, RrdResult rrdResult) {
         if (modelNode.getType() == ModelType.LIST) {
             for (ModelNode nestedNode : modelNode.asList()) {
                 ResourceAddress nestedAddress = new ResourceAddress(nestedNode.get(ADDRESS));
                 ModelNode nestedResult = nestedNode.get(RESULT);
-                parseSingleNode(nestedAddress, nestedResult, rrdResult);
+                parseSingleNode(operationAddress, nestedAddress, nestedResult, rrdResult);
             }
         } else {
-            parseSingleNode(address, modelNode, rrdResult);
+            parseSingleNode(operationAddress, operationAddress, modelNode, rrdResult);
         }
     }
 
-    private static void parseSingleNode(ResourceAddress address, ModelNode modelNode, RrdResult rrdResult) {
+    private static void parseSingleNode(ResourceAddress operationAddress, ResourceAddress currentAddress,
+            ModelNode modelNode, RrdResult rrdResult) {
+        String oas = operationAddress.toString();
+        String cas = currentAddress.toString();
+        if (!oas.equals(cas)) {
+            logger.debug("Parse %s → %s", operationAddress, currentAddress);
+            rrdResult.processedAddresses.computeIfAbsent(oas, key -> new HashSet<>()).add(cas);
+        }
+
         // resource description
         // to reduce the payload, we only use the flat model node w/o children
         ModelNode childrenNode = modelNode.hasDefined(CHILDREN) ? modelNode.remove(CHILDREN) : new ModelNode();
-        if (!rrdResult.containsResourceDescription(address) && modelNode.hasDefined(DESCRIPTION)) {
-            rrdResult.addResourceDescription(address, new ResourceDescription(modelNode));
+        if (rrdResult.noResourceDescription(currentAddress) && modelNode.hasDefined(DESCRIPTION)) {
+            rrdResult.addResourceDescription(currentAddress, new ResourceDescription(modelNode));
         }
 
         // security context
         ModelNode accessControl = modelNode.get(ACCESS_CONTROL);
         if (accessControl.isDefined()) {
-            if (!rrdResult.containsSecurityContext(address) && accessControl.hasDefined(DEFAULT)) {
-                rrdResult.addSecurityContext(address, new SecurityContext(accessControl.get(DEFAULT)));
+            if (rrdResult.noSecurityContext(currentAddress) && accessControl.hasDefined(DEFAULT)) {
+                rrdResult.addSecurityContext(currentAddress, new SecurityContext(accessControl.get(DEFAULT)));
             }
 
             // exceptions
@@ -141,7 +150,7 @@ public class RrdParser {
                 for (Property property : exceptions) {
                     ModelNode exception = property.getValue();
                     ResourceAddress exceptionAddress = new ResourceAddress(exception.get(ADDRESS));
-                    if (!rrdResult.containsSecurityContext(exceptionAddress)) {
+                    if (rrdResult.noSecurityContext(exceptionAddress)) {
                         rrdResult.addSecurityContext(exceptionAddress, new SecurityContext(exception));
                     }
                 }
@@ -158,8 +167,8 @@ public class RrdParser {
                     for (Property modelDescription : modelDescriptions) {
                         String addressValue = modelDescription.getName();
                         ModelNode childNode = modelDescription.getValue();
-                        ResourceAddress childAddress = new ResourceAddress(address).add(addressKey, addressValue);
-                        parseSingleNode(childAddress, childNode, rrdResult);
+                        ResourceAddress childAddress = new ResourceAddress(currentAddress).add(addressKey, addressValue);
+                        parseSingleNode(operationAddress, childAddress, childNode, rrdResult);
                     }
                 }
             }

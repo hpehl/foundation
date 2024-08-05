@@ -30,42 +30,42 @@ class AddressTemplateTest {
 
     @Test
     void root() {
-        assertTrue(AddressTemplate.root().template.isEmpty());
-        assertEquals("", AddressTemplate.root().template);
+        assertTrue(AddressTemplate.root().isEmpty());
+        assertEquals("/", AddressTemplate.root().template);
     }
 
     @Test
     void empty() {
-        assertTrue(AddressTemplate.of("").template.isEmpty());
-        assertTrue(AddressTemplate.of("   ").template.isEmpty());
-        assertTrue(AddressTemplate.of("/").template.isEmpty());
-        assertTrue(AddressTemplate.of(" /").template.isEmpty());
-        assertTrue(AddressTemplate.of("/ ").template.isEmpty());
-        assertTrue(AddressTemplate.of(" / ").template.isEmpty());
-        assertTrue(AddressTemplate.of(emptyList()).template.isEmpty());
+        assertTrue(AddressTemplate.of("").isEmpty());
+        assertTrue(AddressTemplate.of("   ").isEmpty());
+        assertTrue(AddressTemplate.of("/").isEmpty());
+        assertTrue(AddressTemplate.of(" /").isEmpty());
+        assertTrue(AddressTemplate.of("/ ").isEmpty());
+        assertTrue(AddressTemplate.of(" / ").isEmpty());
+        assertTrue(AddressTemplate.of(emptyList()).isEmpty());
     }
 
     @Test
     void nil() {
-        assertTrue(AddressTemplate.of((String) null).template.isEmpty());
-        assertTrue(AddressTemplate.of((Placeholder) null).template.isEmpty());
-        assertTrue(AddressTemplate.of((List<Segment>) null).template.isEmpty());
+        assertTrue(AddressTemplate.of((String) null).isEmpty());
+        assertTrue(AddressTemplate.of((Placeholder) null).isEmpty());
+        assertTrue(AddressTemplate.of((List<Segment>) null).isEmpty());
     }
 
     @Test
     void absolute() {
-        assertEquals("a=b/c=d", AddressTemplate.of("/a=b/c=d").template);
+        assertEquals("/a=b/c=d", AddressTemplate.of("/a=b/c=d").template);
     }
 
     @Test
     void relative() {
-        assertEquals("a=b/c=d", AddressTemplate.of("a=b/c=d").template);
+        assertEquals("/a=b/c=d", AddressTemplate.of("a=b/c=d").template);
     }
 
     @Test
     void placeholder() {
-        assertEquals("{a}/b=c", AddressTemplate.of("{a}/b=c").template);
-        assertEquals("a=b/b={c}", AddressTemplate.of("a=b/b={c}").template);
+        assertEquals("/{a}/b=c", AddressTemplate.of("{a}/b=c").template);
+        assertEquals("/a=b/b={c}", AddressTemplate.of("a=b/b={c}").template);
     }
 
     @Test
@@ -97,10 +97,10 @@ class AddressTemplateTest {
     @Test
     void append() {
         AddressTemplate template = AddressTemplate.of("a=b");
-        assertEquals("a=b/c=d", template.append("c=d").template);
-        assertEquals("a=b/c=d", template.append("/c=d").template);
-        assertEquals("a=b/{c}", template.append("{c}").template);
-        assertEquals("a=b/c={d}", template.append("c={d}").template);
+        assertEquals("/a=b/c=d", template.append("c=d").template);
+        assertEquals("/a=b/c=d", template.append("/c=d").template);
+        assertEquals("/a=b/{c}", template.append("{c}").template);
+        assertEquals("/a=b/c={d}", template.append("c={d}").template);
     }
 
     @Test
@@ -127,10 +127,10 @@ class AddressTemplateTest {
     void subTemplate() {
         AddressTemplate template = AddressTemplate.of("{a}/b=c/{d}=e/f=g"); // 4 tokens
 
-        assertEquals("", template.subTemplate(0, 0).template);
-        assertEquals("", template.subTemplate(2, 2).template);
-        assertEquals("b=c", template.subTemplate(1, 2).template);
-        assertEquals("{d}=e/f=g", template.subTemplate(2, 4).template);
+        assertEquals("/", template.subTemplate(0, 0).template);
+        assertEquals("/", template.subTemplate(2, 2).template);
+        assertEquals("/b=c", template.subTemplate(1, 2).template);
+        assertEquals("/{d}=e/f=g", template.subTemplate(2, 4).template);
         assertEquals(template, template.subTemplate(0, 4));
     }
 
@@ -140,7 +140,7 @@ class AddressTemplateTest {
                 "a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/");
 
         assertEquals(8, template.size());
-        assertEquals("a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
+        assertEquals("/a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
         assertEquals("b", template.segments().get(0).value);
         assertEquals("/", template.segments().get(1).value);
         assertEquals(":", template.segments().get(2).value);
@@ -164,7 +164,7 @@ class AddressTemplateTest {
                 .append("end=\\/");
 
         assertEquals(8, template.size());
-        assertEquals("a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
+        assertEquals("/a=b/slash=\\//colon=\\:/equals=\\=/c=d/e={f}/multiple=\\:\\=\\//end=\\/", template.template);
         assertEquals("b", template.segments().get(0).value);
         assertEquals("/", template.segments().get(1).value);
         assertEquals(":", template.segments().get(2).value);
@@ -177,7 +177,7 @@ class AddressTemplateTest {
 
     @Test
     void special() {
-        String dataSourceConstraint = "core-service=management/access=authorization/constraint=application-classification/type=datasources/classification=data-source/applies-to=\\/deployment\\=*\\/subdeployment\\=*\\/subsystem\\=datasources\\/data-source\\=*";
+        String dataSourceConstraint = "/core-service=management/access=authorization/constraint=application-classification/type=datasources/classification=data-source/applies-to=\\/deployment\\=*\\/subdeployment\\=*\\/subsystem\\=datasources\\/data-source\\=*";
         AddressTemplate template = AddressTemplate.of(dataSourceConstraint);
         assertEquals(6, template.size());
         assertEquals(dataSourceConstraint, template.template);

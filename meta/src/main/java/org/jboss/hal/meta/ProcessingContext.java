@@ -13,26 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
 import java.util.Set;
 
 import org.jboss.elemento.flow.FlowContext;
-import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.Metadata;
 
 class ProcessingContext extends FlowContext {
 
-    final Set<AddressTemplate> templates;
-    final boolean recursive;
-    final RepositoryStatus repositoryStatus;
+    final Set<String> addresses;
     final RrdResult rrdResult;
     Metadata metadata;
 
-    ProcessingContext(Set<AddressTemplate> templates, boolean recursive) {
-        this.templates = templates;
-        this.recursive = recursive;
-        this.repositoryStatus = new RepositoryStatus(templates);
+    ProcessingContext(Set<String> addresses) {
+        this.addresses = addresses;
         this.rrdResult = new RrdResult();
         this.metadata = Metadata.empty();
     }

@@ -30,6 +30,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toCollection;
+import static org.jboss.hal.dmr.ValueEncoder.ENCODED_SLASH;
 
 /**
  * Template for a DMR address which can contain variable parts.
@@ -117,7 +118,9 @@ public final class AddressTemplate implements Iterable<Segment> {
         this.segments = segments.stream()
                 .filter(Predicate.not(segment -> segment == Segment.EMPTY))
                 .collect(toCollection(LinkedList::new));
-        this.template = join(this.segments);
+        this.template = "/" + this.segments.stream()
+                .map(Segment::toString)
+                .collect(joining("/"));
     }
 
     @Override
@@ -145,7 +148,7 @@ public final class AddressTemplate implements Iterable<Segment> {
      */
     @Override
     public String toString() {
-        return template.isEmpty() ? "/" : template;
+        return template;
     }
 
     // ------------------------------------------------------ append / sub and parent
@@ -170,8 +173,19 @@ public final class AddressTemplate implements Iterable<Segment> {
      * @return a new template
      */
     public AddressTemplate append(String template) {
-        String slashTemplate = template.startsWith("/") ? template : "/" + template;
-        return AddressTemplate.of(this.template + slashTemplate);
+        String first;
+        String second;
+        if (isEmpty()) {
+            first = "";
+        } else {
+            first = this.template.substring(1);
+        }
+        if (template != null && template.startsWith("/") && !template.startsWith(ENCODED_SLASH)) {
+            second = template.substring(1);
+        } else {
+            second = template;
+        }
+        return AddressTemplate.of(first + "/" + second);
     }
 
     /**
@@ -302,61 +316,61 @@ public final class AddressTemplate implements Iterable<Segment> {
 
         if (template != null && !template.trim().isEmpty()) {
             String trimmed = template.trim();
-            String withSlash = trimmed.startsWith("/") ? trimmed : "/" + trimmed;
-            if (withSlash.equals("/")) {
-                return segments;
-            }
+            if (!trimmed.equals("/")) {
+                trimmed = trimmed.startsWith("/") && !trimmed.startsWith(ENCODED_SLASH)
+                        ? trimmed.substring(1)
+                        : trimmed;
+                trimmed = trimmed.endsWith("/") && !trimmed.endsWith(ENCODED_SLASH)
+                        ? trimmed.substring(0, trimmed.length() - 1)
+                        : trimmed;
 
-            // split template by '/'
-            int current = 0;
-            boolean backslash = false;
-            List<String> unparsedSegments = new ArrayList<>();
-            String withoutSlash = withSlash.substring(1);
-            for (int i = 0; i < withoutSlash.length(); i++) {
-                char c = withoutSlash.charAt(i);
-                if (c == '\\') {
-                    backslash = true;
-                } else if (c == '/') {
-                    if (!backslash) {
-                        unparsedSegments.add(withoutSlash.substring(current, i));
-                        current = i + 1;
-                    }
-                    backslash = false;
-                } else {
-                    backslash = false;
-                }
-            }
-            unparsedSegments.add(withoutSlash.substring(current));
-
-            // split segments by '='
-            for (String unparsedSegment : unparsedSegments) {
-                String key = null;
-                String value;
-                backslash = false;
-                for (int i = 0; i < unparsedSegment.length(); i++) {
-                    char c = unparsedSegment.charAt(i);
+                // split template by '/'
+                int current = 0;
+                boolean backslash = false;
+                List<String> unparsedSegments = new ArrayList<>();
+                for (int i = 0; i < trimmed.length(); i++) {
+                    char c = trimmed.charAt(i);
                     if (c == '\\') {
                         backslash = true;
-                    } else if (c == '=') {
+                    } else if (c == '/') {
                         if (!backslash) {
-                            key = unparsedSegment.substring(0, i);
-                            value = unparsedSegment.substring(i + 1);
-                            segments.add(new Segment(key, ValueEncoder.decode(value)));
+                            unparsedSegments.add(trimmed.substring(current, i));
+                            current = i + 1;
                         }
                         backslash = false;
                     } else {
                         backslash = false;
                     }
                 }
-                if (key == null) {
-                    segments.add(new Segment(unparsedSegment));
+                unparsedSegments.add(trimmed.substring(current));
+
+                // split segments by '='
+                for (String unparsedSegment : unparsedSegments) {
+                    String key = null;
+                    String value;
+                    backslash = false;
+                    for (int i = 0; i < unparsedSegment.length(); i++) {
+                        char c = unparsedSegment.charAt(i);
+                        if (c == '\\') {
+                            backslash = true;
+                        } else if (c == '=') {
+                            if (!backslash) {
+                                key = unparsedSegment.substring(0, i);
+                                value = unparsedSegment.substring(i + 1);
+                                segments.add(new Segment(key, ValueEncoder.decode(value)));
+                            }
+                            backslash = false;
+                        } else {
+                            backslash = false;
+                        }
+                    }
+                    if (key == null) {
+                        segments.add(new Segment(unparsedSegment));
+                    }
                 }
             }
         }
         return segments;
     }
 
-    private static String join(List<Segment> segments) {
-        return segments.stream().map(Segment::toString).collect(joining("/"));
-    }
 }

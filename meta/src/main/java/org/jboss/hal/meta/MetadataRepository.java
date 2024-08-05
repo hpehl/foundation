@@ -1,30 +1,66 @@
+/*
+ *  Copyright 2024 Red Hat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.jboss.hal.meta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.flow.Flow;
+import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ResourceAddress;
+import org.jboss.hal.dmr.dispatch.Dispatcher;
+import org.jboss.hal.env.Settings;
+import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.meta.security.SecurityContext;
+
+import elemental2.promise.Promise;
+
+import static java.util.Collections.singleton;
 
 /**
- * Repository for metadata. Contains a first (based on {@link LRUCache}) and second (based on PouchDB) level cache and a mapping
- * of processed address templates.
+ * Repository for metadata. Contains a first and second-level cache for metadata.
+ * <p>
+ * Metadata can be obtained synchronously via {@link #get(AddressTemplate)} or asynchronously via
+ * {@link #lookup(AddressTemplate, Consumer)} and {@link #lookup(AddressTemplate)}.
  */
 @ApplicationScoped
 public class MetadataRepository {
 
-    private static final int CAPACITY = 500;
+    // TODO: Add support for 2nd level cache!
+
+    private static final int FIRST_LEVEL_CACHE_SIZE = 500;
     private static final Logger logger = Logger.getLogger(MetadataRepository.class.getName());
 
+    private final Settings settings;
+    private final Dispatcher dispatcher;
+
     /**
-     * The template resolver is used to
+     * Template resolver used by this metadata repository. The template resolver is applied
      * <ol>
-     *     <li>check if a metadata is in the cache and</li>
-     *     <li>to add a resource address from the rrd-payload to the cache</li>
+     *     <li>to address templates in {@link #get(AddressTemplate)} and {@link #lookup(AddressTemplate)} to check if a metadata is in the cache and</li>
+     *     <li>to resource addresses from the rrd-payload in {@link #add(AddressTemplate, ResourceAddress, ResourceDescription, SecurityContext)} when adding meta to cache</li>
      * </ol>
      */
     private final TemplateResolver resolver;
@@ -35,64 +71,122 @@ public class MetadataRepository {
     private final LRUCache<String, Metadata> cache;
 
     /**
-     * Contains the mapping between the requested address template and the resource addresses from the rrd-payload. Both
-     * addresses are resolved using {@link #resolver} before they're added to the map.
+     * Contains the mapping between the requested address template and the processed resource addresses from the rrd-payload.
+     * Keys and values are resolved using the {@link #resolver} before they're added to the map.
      * <p>
      * This mapping is necessary for address templates like {@code core-service=*} or {@code subsystem=*} which result in
      * multiple rrd-results.
      * <p>
      * For simple address templates like {@code interface=*} or {@code core-service=management} no mapping is necessary.
      */
-    private final Map<String, List<String>> processedAddresses;
+    private final Map<String, Set<String>> processedAddresses;
 
     @Inject
-    public MetadataRepository(StatementContext statementContext) {
+    public MetadataRepository(Settings settings,
+            Dispatcher dispatcher,
+            StatementContext statementContext) {
+        this.settings = settings;
+        this.dispatcher = dispatcher;
         this.resolver = new MetadataResolver(statementContext);
-        this.cache = new LRUCache<>(CAPACITY);
-        this.cache.addRemovalHandler((address, __) -> {
-            logger.debug("Remove metadata %s from cache", address);
-            // TODO Adjust processedTemplates
-            //  Add to PouchDB 2nd level cache, if not already there
-        });
+        this.cache = new LRUCache<>(FIRST_LEVEL_CACHE_SIZE);
         this.processedAddresses = new HashMap<>();
+
+        cache.addRemovalHandler((address, __) -> {
+            logger.debug("LRU metadata for %s has been removed", address);
+        });
     }
 
     // ------------------------------------------------------ api
 
-    public boolean contains(AddressTemplate template) {
-        String address = resolveTemplate(template);
-        if (inCache(address)) {
-            return true;
-        } else {
-            return processedInCache(address);
-        }
-    }
-
     public Metadata get(AddressTemplate template) {
         String address = resolveTemplate(template);
-        Metadata metadata = cache.get(address);
+        Metadata metadata = internalGet(address);
         if (metadata != null) {
-            logger.debug("Get metadata for %s as %s from cache", template, address);
+            logger.debug("Get metadata for %s → %s from cache", template, address);
             return metadata;
         } else {
-            logger.warn("No metadata found for %s as %s. Returning empty metadata", template, address);
+            if (processedInCache(address)) {
+                logger.debug("Metadata for %s → %s has been processed, but resulted in multiple metadata. " +
+                        "Returning an empty metadata", template, address);
+            } else {
+                logger.error("No metadata found for %s → %s. Returning an empty metadata", template, address);
+            }
             return Metadata.empty();
         }
     }
 
-    public boolean add(ResourceAddress resourceAddress, Metadata metadata, boolean recursive) {
-        String address = resolveTemplate(AddressTemplate.of(resourceAddress.toString()));
-        if (!inCache(address)) {
-            logger.debug("Add metadata for %s as %s (%s)",
-                    resourceAddress, address, recursive ? "recursive" : "non-recursive");
-            // entry.get(HAL_RECURSIVE).set(recursive);
-            cache.put(address, metadata);
+    /**
+     * Performs a lookup for metadata based on the given address template.
+     *
+     * @param template the address template to perform the lookup for
+     * @param callback the consumer to accept the retrieved metadata
+     */
+    public void lookup(AddressTemplate template, Consumer<Metadata> callback) {
+        lookup(template).then(metadata -> {
+            callback.accept(metadata);
+            return null;
+        });
+    }
+
+    /**
+     * Performs a lookup for metadata based on the given address template.
+     *
+     * @param template the address template to perform the lookup for
+     * @return a Promise representing the lookup result, containing the metadata associated with the address template
+     */
+    public Promise<Metadata> lookup(AddressTemplate template) {
+        String address = resolveTemplate(template);
+        Metadata metadata = internalGet(address);
+        if (metadata != null) {
+            logger.debug("Lookup metadata for %s → %s from cache", template, address);
+            return Promise.resolve(metadata);
+        } else {
+            if (processedInCache(address)) {
+                logger.debug("Metadata for %s → %s has been processed, but resulted in multiple metadata. " +
+                        "Returning an empty metadata", template, address);
+                return Promise.resolve(Metadata.empty());
+            } else {
+                logger.debug("Process metadata for %s → %s", template, address);
+                return process(singleton(address));
+            }
+        }
+    }
+
+    // ------------------------------------------------------ internal
+
+    void addMetadata(ResourceAddress resourceAddress, Metadata metadata) {
+        String address = resourceAddress.toString();
+        logger.debug("Add metadata for %s", address);
+        cache.put(address, metadata);
+    }
+
+    void addProcessedAddresses(String address, Set<String> processedAddresses) {
+        logger.debug("Add processed addresses %s → %s", address, processedAddresses);
+        this.processedAddresses.computeIfAbsent(address, k -> new HashSet<>()).addAll(processedAddresses);
+    }
+
+    private boolean processedInCache(String address) {
+        if (processedAddresses.containsKey(address)) {
+            Set<String> addresses = processedAddresses.get(address);
+            for (String a : addresses) {
+                if (!inCache(a)) {
+                    return false;
+                }
+            }
             return true;
         }
         return false;
     }
 
-    // ------------------------------------------------------ internal
+    private Promise<Metadata> process(Set<String> addresses) {
+        String handle = logger.timeInfo("Metadata processing for " + addresses);
+        List<Task<ProcessingContext>> tasks = new ArrayList<>();
+        tasks.add(new RrdTask(settings, dispatcher));
+        tasks.add(new UpdateTask(this));
+        return Flow.sequential(new ProcessingContext(addresses), tasks)
+                .then(context -> Promise.resolve(context.metadata))
+                .finally_(() -> logger.timeInfoEnd(handle));
+    }
 
     private String resolveTemplate(AddressTemplate template) {
         return resolver.resolve(template).template;
@@ -100,19 +194,9 @@ public class MetadataRepository {
 
     private boolean inCache(String address) {
         return cache.contains(address);
-        // TODO Check PouchDB 2nd level cache and add it to the cache if needed
     }
 
-    private boolean processedInCache(String address) {
-        if (processedAddresses.containsKey(address)) {
-            List<String> pas = processedAddresses.get(address);
-            for (String pa : pas) {
-                if (!inCache(pa)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+    private Metadata internalGet(String address) {
+        return cache.get(address);
     }
 }

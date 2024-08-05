@@ -13,10 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.description.ResourceDescription;
@@ -26,33 +27,35 @@ class RrdResult {
 
     final Map<ResourceAddress, ResourceDescription> resourceDescriptions;
     final Map<ResourceAddress, SecurityContext> securityContexts;
+    final Map<String, Set<String>> processedAddresses;
 
     RrdResult() {
         resourceDescriptions = new HashMap<>();
         securityContexts = new HashMap<>();
+        processedAddresses = new HashMap<>();
     }
 
-    boolean containsResourceDescription(ResourceAddress address) {
-        return resourceDescriptions.containsKey(address);
+    boolean noResourceDescription(ResourceAddress address) {
+        return !resourceDescriptions.containsKey(address);
     }
 
     void addResourceDescription(ResourceAddress address, ResourceDescription resourceDescription) {
-        if (!containsResourceDescription(address)) {
+        if (noResourceDescription(address)) {
             resourceDescriptions.put(address, resourceDescription);
         }
     }
 
-    boolean containsSecurityContext(ResourceAddress address) {
-        return securityContexts.containsKey(address);
+    boolean noSecurityContext(ResourceAddress address) {
+        return !securityContexts.containsKey(address);
     }
 
     void addSecurityContext(ResourceAddress address, SecurityContext securityContext) {
-        if (!containsSecurityContext(address)) {
+        if (noSecurityContext(address)) {
             securityContexts.put(address, securityContext);
         }
     }
 
     boolean shouldUpdate() {
-        return !resourceDescriptions.isEmpty() || !securityContexts.isEmpty();
+        return !resourceDescriptions.isEmpty() || !processedAddresses.isEmpty();
     }
 }

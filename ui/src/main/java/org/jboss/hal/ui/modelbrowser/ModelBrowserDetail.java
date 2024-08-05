@@ -140,7 +140,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             List<ModelBrowserNode> children = parseChildren(mbn.template, READ_CHILDREN_NAMES_OPERATION, result);
             return context.resolve(children);
         }));
-        tasks.add(context -> uic.metadataLookup.lookup(mbn.template).then(__ -> context.resolve()));
+        tasks.add(context -> uic.metadataRepository.lookup(mbn.template).then(__ -> context.resolve()));
         Flow.parallel(new FlowContext(), tasks).subscribe(context -> {
             if (context.successful()) {
                 List<ModelBrowserNode> children = context.pop();
@@ -163,7 +163,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             context.set(RESOURCE, result);
             return context.resolve();
         }));
-        tasks.add(context -> uic.metadataLookup.lookup(mbn.template).then(metadata -> {
+        tasks.add(context -> uic.metadataRepository.lookup(mbn.template).then(metadata -> {
             context.set(METADATA, metadata);
             return context.resolve();
         }));

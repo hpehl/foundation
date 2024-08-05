@@ -19,7 +19,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.jboss.hal.dmr.dispatch.Dispatcher;
-import org.jboss.hal.meta.MetadataLookup;
+import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 
 /** Holds common classes needed by UI elements. Use this class to keep the method signatures clean and tidy. */
@@ -27,13 +27,13 @@ import org.jboss.hal.meta.StatementContext;
 public class UIContext {
 
     public final Dispatcher dispatcher;
-    public final MetadataLookup metadataLookup;
+    public final MetadataRepository metadataRepository;
     public final StatementContext statementContext;
 
     @Inject
-    public UIContext(Dispatcher dispatcher, MetadataLookup metadataLookup, StatementContext statementContext) {
+    public UIContext(Dispatcher dispatcher, MetadataRepository metadataRepository, StatementContext statementContext) {
         this.dispatcher = dispatcher;
-        this.metadataLookup = metadataLookup;
+        this.metadataRepository = metadataRepository;
         this.statementContext = statementContext;
     }
 }

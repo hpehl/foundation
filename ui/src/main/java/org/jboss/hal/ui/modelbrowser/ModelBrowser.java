@@ -71,13 +71,15 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     public void show(AddressTemplate template) {
         if (template.fullyQualified()) {
-            ResourceAddress address = template.resolve(uic.statementContext);
-            Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
-                    .param(INCLUDE_SINGLETONS, true)
-                    .build();
-            uic.dispatcher.execute(operation, result -> {
-                tree.show(parseChildren(template, operation.getName(), result));
-                detail.show(new ModelBrowserNode(template, "Management Model", RESOURCE));
+            uic.metadataRepository.lookup(template, __ -> {
+                ResourceAddress address = template.resolve(uic.statementContext);
+                Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
+                        .param(INCLUDE_SINGLETONS, true)
+                        .build();
+                uic.dispatcher.execute(operation, result -> {
+                    tree.show(parseChildren(template, operation.getName(), result));
+                    detail.show(new ModelBrowserNode(template, "Management Model", RESOURCE));
+                });
             });
         } else {
             logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);

@@ -17,8 +17,9 @@ package org.jboss.hal.dmr;
 
 public class ValueEncoder {
 
+    public static final String ENCODED_SLASH = "\\/";
     private static final String[][] SPECIAL_CHARACTERS = new String[][]{
-            new String[]{"/", "\\/"},
+            new String[]{"/", ENCODED_SLASH},
             new String[]{":", "\\:"},
             new String[]{"=", "\\="},
     };

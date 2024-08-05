@@ -70,7 +70,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
                     .addItems(children, node -> {
                         String childId = Id.build(node.name);
                         AddressTemplate template = parent.type == FOLDER ? parent.template : node.template;
-                        Metadata metadata = uic.metadataLookup.get(template);
+                        Metadata metadata = uic.metadataRepository.get(template);
                         return dataListItem(childId)
                                 .addCell(dataListCell()
                                         .add(flex().direction(column)

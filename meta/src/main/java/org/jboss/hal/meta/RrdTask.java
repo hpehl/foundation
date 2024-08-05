@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +26,6 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Settings;
-import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.StatementContext;
-import org.jboss.hal.meta.StatementContextResolver;
 
 import elemental2.promise.Promise;
 
@@ -40,29 +37,21 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.COMBINED_DESCRIPTIONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LOCALE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.RECURSIVE_DEPTH;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.TRIM_DESCRIPTIONS;
-import static org.jboss.hal.meta.processing.RepositoryStatus.ALL_PRESENT;
-import static org.jboss.hal.meta.processing.RepositoryStatus.NOTHING_PRESENT;
-import static org.jboss.hal.meta.processing.RepositoryStatus.RESOURCE_DESCRIPTION_PRESENT;
-import static org.jboss.hal.meta.processing.RrdParser.parseComposite;
+import static org.jboss.hal.meta.RrdParser.parseComposite;
+import static org.jboss.hal.meta.RrdParser.parseSingle;
 
 /** Creates, executes and parses the {@code read-resource-description} operations to read metadata. */
 class RrdTask implements Task<ProcessingContext> {
 
-    private static final Logger logger = Logger.getLogger(MetadataProcessor.class.getName());
-    private final Dispatcher dispatcher;
-    private final StatementContext statementContext;
-    private final Settings settings;
-    private final int batchSize;
-    private final int depth;
+    private static final Logger logger = Logger.getLogger(RrdTask.class.getName());
+    private static final int BATCH_SIZE = 3;
 
-    RrdTask(Dispatcher dispatcher, StatementContext statementContext, Settings settings, int batchSize, int depth) {
+    private final Dispatcher dispatcher;
+    private final Settings settings;
+
+    RrdTask(Settings settings, Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
-        this.statementContext = statementContext;
         this.settings = settings;
-        this.batchSize = batchSize;
-        this.depth = depth;
     }
 
     @Override
@@ -71,60 +60,62 @@ class RrdTask implements Task<ProcessingContext> {
 
         // create and partition operations
         List<Operation> operations = createRrd(context);
-        List<List<Operation>> piles = partition(operations, batchSize);
-        List<Composite> composites = piles.stream().map(Composite::new).collect(toList());
-        for (Composite composite : composites) {
+        if (operations.size() == 1) {
+            Operation operation = operations.get(0);
+            logger.debug("About to execute one rrd operation: %s", operation.asCli());
+            tasks.add((ProcessingContext pc) -> dispatcher.execute(operation).then(result -> {
+                parseSingle(operation.getAddress(), result, context.rrdResult);
+                return Promise.resolve(pc);
+            }));
+
+        } else if (operations.size() <= BATCH_SIZE) {
+            Composite composite = new Composite(operations);
+            logger.debug("About to execute one composite rrd operation: %s", composite.asCli());
             tasks.add((ProcessingContext pc) -> dispatcher.execute(composite).then(result -> {
                 parseComposite(composite, result, context.rrdResult);
                 return Promise.resolve(pc);
             }));
+
+        } else {
+            List<List<Operation>> piles = partition(operations);
+            List<Composite> composites = piles.stream().map(Composite::new).collect(toList());
+            if (logger.isEnabled(DEBUG)) {
+                String ops = composites.stream().map(Composite::asCli).collect(joining(", "));
+                logger.debug("About to execute %d composite rrd operations: %s", composites.size(), ops);
+            }
+            for (Composite composite : composites) {
+                tasks.add((ProcessingContext pc) -> dispatcher.execute(composite).then(result -> {
+                    parseComposite(composite, result, context.rrdResult);
+                    return Promise.resolve(pc);
+                }));
+            }
         }
 
         if (!tasks.isEmpty()) {
-            if (logger.isEnabled(DEBUG)) {
-                String ops = composites.stream().map(Composite::asCli).collect(joining(", "));
-                logger.debug("About to execute %d composite operations: %s", composites.size(), ops);
-            }
             return Flow.sequential(context, tasks).promise();
         } else {
-            logger.debug("No DMR operations necessary");
+            logger.debug("No rrd operations necessary");
             return Promise.resolve(context);
         }
     }
 
     private List<Operation> createRrd(ProcessingContext context) {
-        RepositoryStatus repositoryStatus = context.repositoryStatus;
         List<Operation> operations = new ArrayList<>();
-        for (AddressTemplate template : repositoryStatus.templates()) {
-            int missingMetadata = repositoryStatus.missingMetadata(template);
-            if (missingMetadata != ALL_PRESENT) {
-
-                ResourceAddress address = template.resolve(new StatementContextResolver(statementContext));
-                Operation.Builder builder = new Operation.Builder(address, READ_RESOURCE_DESCRIPTION_OPERATION)
-                        .param(OPERATIONS, true);
-
-                if (missingMetadata == NOTHING_PRESENT) {
-                    builder.param(ACCESS_CONTROL, COMBINED_DESCRIPTIONS);
-                } else if (missingMetadata == RESOURCE_DESCRIPTION_PRESENT) {
-                    builder.param(ACCESS_CONTROL, TRIM_DESCRIPTIONS);
-                }
-
-                if (context.recursive) {
-                    builder.param(RECURSIVE_DEPTH, depth);
-                }
-
-                String locale = settings.get(Settings.Key.LOCALE).value();
-                builder.param(LOCALE, locale);
-                operations.add(builder.build());
-            }
+        String locale = settings.get(Settings.Key.LOCALE).value();
+        for (String address : context.addresses) {
+            operations.add(new Operation.Builder(ResourceAddress.from(address), READ_RESOURCE_DESCRIPTION_OPERATION)
+                    .param(OPERATIONS, true)
+                    .param(ACCESS_CONTROL, COMBINED_DESCRIPTIONS)
+                    .param(LOCALE, locale)
+                    .build());
         }
         return operations;
     }
 
-    private List<List<Operation>> partition(List<Operation> operations, int size) {
+    private List<List<Operation>> partition(List<Operation> operations) {
         List<List<Operation>> piles = new ArrayList<>();
-        for (int i = 0; i < operations.size(); i += size) {
-            piles.add(new ArrayList<>(operations.subList(i, Math.min(i + size, operations.size()))));
+        for (int i = 0; i < operations.size(); i += BATCH_SIZE) {
+            piles.add(new ArrayList<>(operations.subList(i, Math.min(i + BATCH_SIZE, operations.size()))));
         }
         return piles;
     }

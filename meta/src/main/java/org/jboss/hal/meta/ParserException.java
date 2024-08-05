@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
 class ParserException extends RuntimeException {
 

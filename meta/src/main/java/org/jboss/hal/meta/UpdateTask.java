@@ -13,52 +13,44 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.processing;
+package org.jboss.hal.meta;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.meta.description.ResourceDescriptionRepository;
 import org.jboss.hal.meta.security.SecurityContext;
-import org.jboss.hal.meta.security.SecurityContextRepository;
 
 import elemental2.promise.Promise;
 
 class UpdateTask implements Task<ProcessingContext> {
 
     private static final Logger logger = Logger.getLogger(UpdateTask.class.getName());
-    private final ResourceDescriptionRepository resourceDescriptionRepository;
-    private final SecurityContextRepository securityContextRepository;
+    private final MetadataRepository metadataRepository;
 
-    UpdateTask(ResourceDescriptionRepository resourceDescriptionRepository,
-            SecurityContextRepository securityContextRepository) {
-        this.resourceDescriptionRepository = resourceDescriptionRepository;
-        this.securityContextRepository = securityContextRepository;
+    UpdateTask(MetadataRepository metadataRepository) {
+        this.metadataRepository = metadataRepository;
     }
 
     @Override
     public Promise<ProcessingContext> apply(ProcessingContext context) {
         if (context.rrdResult.shouldUpdate()) {
-            int[] counter = new int[2];
             for (Map.Entry<ResourceAddress, ResourceDescription> entry : context.rrdResult.resourceDescriptions.entrySet()) {
                 ResourceAddress address = entry.getKey();
                 ResourceDescription resourceDescription = entry.getValue();
-                if (resourceDescriptionRepository.add(address, resourceDescription, context.recursive)) {
-                    counter[0]++;
+                SecurityContext securityContext = context.rrdResult.securityContexts.get(address);
+                if (securityContext == null) {
+                    logger.warn("No security context for %s in rrd results!", address);
+                    securityContext = SecurityContext.READ_ONLY;
                 }
+                metadataRepository.addMetadata(address, new Metadata(resourceDescription, securityContext));
             }
-            for (Map.Entry<ResourceAddress, SecurityContext> entry : context.rrdResult.securityContexts.entrySet()) {
-                ResourceAddress address = entry.getKey();
-                SecurityContext securityContext = entry.getValue();
-                if (securityContextRepository.add(address, securityContext, context.recursive)) {
-                    counter[1]++;
-                }
+            for (Map.Entry<String, Set<String>> entry : context.rrdResult.processedAddresses.entrySet()) {
+                metadataRepository.addProcessedAddresses(entry.getKey(), entry.getValue());
             }
-            logger.debug("Added %d resource descriptions and %d security contexts to the repositories",
-                    counter[0], counter[1]);
         }
         return Promise.resolve(context);
     }
