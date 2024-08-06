@@ -29,11 +29,8 @@ import jakarta.inject.Inject;
 import org.jboss.elemento.flow.Flow;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Settings;
-import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.meta.security.SecurityContext;
 
 import elemental2.promise.Promise;
 
@@ -60,7 +57,7 @@ public class MetadataRepository {
      * Template resolver used by this metadata repository. The template resolver is applied
      * <ol>
      *     <li>to address templates in {@link #get(AddressTemplate)} and {@link #lookup(AddressTemplate)} to check if a metadata is in the cache and</li>
-     *     <li>to resource addresses from the rrd-payload in {@link #add(AddressTemplate, ResourceAddress, ResourceDescription, SecurityContext)} when adding meta to cache</li>
+     *     <li>to resource addresses from the rrd-payload in {@link #addMetadata(String, Metadata)} when adding meta to cache</li>
      * </ol>
      */
     private final TemplateResolver resolver;
@@ -147,17 +144,18 @@ public class MetadataRepository {
                 return Promise.resolve(Metadata.empty());
             } else {
                 logger.debug("Process metadata for %s → %s", template, address);
-                return process(singleton(address));
+                return process(template, singleton(address));
             }
         }
     }
 
     // ------------------------------------------------------ internal
 
-    void addMetadata(ResourceAddress resourceAddress, Metadata metadata) {
-        String address = resourceAddress.toString();
-        logger.debug("Add metadata for %s", address);
-        cache.put(address, metadata);
+    void addMetadata(String address, Metadata metadata) {
+        AddressTemplate template = AddressTemplate.of(address);
+        String resolved = resolveTemplate(template);
+        logger.debug("Add metadata for %s → %s", address, resolved);
+        cache.put(resolved, metadata);
     }
 
     void addProcessedAddresses(String address, Set<String> processedAddresses) {
@@ -178,13 +176,13 @@ public class MetadataRepository {
         return false;
     }
 
-    private Promise<Metadata> process(Set<String> addresses) {
+    private Promise<Metadata> process(AddressTemplate template, Set<String> addresses) {
         String handle = logger.timeInfo("Metadata processing for " + addresses);
         List<Task<ProcessingContext>> tasks = new ArrayList<>();
         tasks.add(new RrdTask(settings, dispatcher));
         tasks.add(new UpdateTask(this));
         return Flow.sequential(new ProcessingContext(addresses), tasks)
-                .then(context -> Promise.resolve(context.metadata))
+                .then(context -> Promise.resolve(get(template)))
                 .finally_(() -> logger.timeInfoEnd(handle));
     }
 

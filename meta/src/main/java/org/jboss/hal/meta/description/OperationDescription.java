@@ -15,16 +15,13 @@
  */
 package org.jboss.hal.meta.description;
 
-import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUEST_PROPERTIES;
 
-public class OperationDescription extends NamedNode {
+public class OperationDescription extends NamedNode implements Description {
 
     private final OperationDescriptions operations;
 
@@ -33,27 +30,12 @@ public class OperationDescription extends NamedNode {
         this.operations = operations;
     }
 
-    public OperationDescription(OperationDescriptions operations, String name, ModelNode node) {
-        super(name, node);
-        this.operations = operations;
-    }
-
-    public String description() {
-        return get(DESCRIPTION).asString();
+    @Override
+    public ModelNode modelNode() {
+        return asModelNode();
     }
 
     public AttributeDescriptions requestProperties() {
         return new AttributeDescriptions(get(REQUEST_PROPERTIES));
-    }
-
-    public boolean deprecated() {
-        return hasDefined(DEPRECATED) && get(DEPRECATED).asBoolean();
-    }
-
-    public Deprecation deprecation() {
-        if (deprecated()) {
-            return new Deprecation(get(DEPRECATED));
-        }
-        return null;
     }
 }

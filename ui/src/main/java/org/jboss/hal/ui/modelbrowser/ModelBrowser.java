@@ -71,14 +71,16 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     public void show(AddressTemplate template) {
         if (template.fullyQualified()) {
-            uic.metadataRepository.lookup(template, __ -> {
+            uic.metadataRepository.lookup(template, metadata -> {
                 ResourceAddress address = template.resolve(uic.statementContext);
                 Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
                         .param(INCLUDE_SINGLETONS, true)
                         .build();
                 uic.dispatcher.execute(operation, result -> {
-                    tree.show(parseChildren(template, operation.getName(), result));
-                    detail.show(new ModelBrowserNode(template, "Management Model", RESOURCE));
+                    String name = template.isEmpty() ? "Management Model" : template.last().value;
+                    ModelBrowserNode mbn = new ModelBrowserNode(template, name, RESOURCE);
+                    tree.show(parseChildren(mbn, result, true));
+                    detail.show(mbn);
                 });
             });
         } else {

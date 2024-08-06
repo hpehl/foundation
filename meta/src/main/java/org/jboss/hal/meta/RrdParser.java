@@ -125,23 +125,25 @@ class RrdParser {
             ModelNode modelNode, RrdResult rrdResult) {
         String oas = operationAddress.toString();
         String cas = currentAddress.toString();
+        logger.debug("Parse %s → %s", operationAddress, currentAddress);
         if (!oas.equals(cas)) {
-            logger.debug("Parse %s → %s", operationAddress, currentAddress);
             rrdResult.processedAddresses.computeIfAbsent(oas, key -> new HashSet<>()).add(cas);
         }
 
         // resource description
         // to reduce the payload, we only use the flat model node w/o children
-        ModelNode childrenNode = modelNode.hasDefined(CHILDREN) ? modelNode.remove(CHILDREN) : new ModelNode();
-        if (rrdResult.noResourceDescription(currentAddress) && modelNode.hasDefined(DESCRIPTION)) {
-            rrdResult.addResourceDescription(currentAddress, new ResourceDescription(modelNode));
+        ModelNode childrenNode = modelNode.hasDefined(CHILDREN) && !modelNode.get(CHILDREN).asList().isEmpty()
+                ? modelNode.remove(CHILDREN)
+                : new ModelNode();
+        if (rrdResult.noResourceDescription(cas) && modelNode.hasDefined(DESCRIPTION)) {
+            rrdResult.addResourceDescription(cas, new ResourceDescription(modelNode));
         }
 
         // security context
         ModelNode accessControl = modelNode.get(ACCESS_CONTROL);
         if (accessControl.isDefined()) {
-            if (rrdResult.noSecurityContext(currentAddress) && accessControl.hasDefined(DEFAULT)) {
-                rrdResult.addSecurityContext(currentAddress, new SecurityContext(accessControl.get(DEFAULT)));
+            if (rrdResult.noSecurityContext(cas) && accessControl.hasDefined(DEFAULT)) {
+                rrdResult.addSecurityContext(cas, new SecurityContext(accessControl.get(DEFAULT)));
             }
 
             // exceptions
@@ -149,7 +151,7 @@ class RrdParser {
                 List<Property> exceptions = accessControl.get(EXCEPTIONS).asPropertyList();
                 for (Property property : exceptions) {
                     ModelNode exception = property.getValue();
-                    ResourceAddress exceptionAddress = new ResourceAddress(exception.get(ADDRESS));
+                    String exceptionAddress = new ResourceAddress(exception.get(ADDRESS)).toString();
                     if (rrdResult.noSecurityContext(exceptionAddress)) {
                         rrdResult.addSecurityContext(exceptionAddress, new SecurityContext(exception));
                     }

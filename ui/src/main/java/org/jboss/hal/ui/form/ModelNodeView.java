@@ -150,48 +150,56 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
     // ------------------------------------------------------ api
 
     public void show(ModelNode modelNode) {
-        if (valid(modelNode)) {
-            removeChildrenFrom(root);
-            updateValueFunctions.clear();
-            DescriptionList dl = descriptionList().css(halComponent(modelNodeView))
-                    .horizontal()
-                    .horizontalTermWidth(breakpoints(
-                            default_, "12ch",
-                            sm, "15ch",
-                            md, "18ch",
-                            lg, "23ch",
-                            xl, "25ch",
-                            _2xl, "28ch"));
-            List<Property> properties = modelNode.asPropertyList();
-            properties.sort(comparing(Property::getName));
-            for (Property property : properties) {
-                String name = property.getName();
-                AttributeDescription attribute = metadata.resourceDescription.attributes().get(name);
-                dl.addItem(descriptionListGroup(Id.build(name, "group"))
-                        .addTerm(label(name, attribute))
-                        .addDescription(value(name, property.getValue(), attribute)));
-            }
-            root.append(dl.element());
-            empty = false;
+        if (metadata.empty) {
+            error();
         } else {
-            empty();
+            if (valid(modelNode)) {
+                removeChildrenFrom(root);
+                updateValueFunctions.clear();
+                DescriptionList dl = descriptionList().css(halComponent(modelNodeView))
+                        .horizontal()
+                        .horizontalTermWidth(breakpoints(
+                                default_, "12ch",
+                                sm, "15ch",
+                                md, "18ch",
+                                lg, "23ch",
+                                xl, "25ch",
+                                _2xl, "28ch"));
+                List<Property> properties = modelNode.asPropertyList();
+                properties.sort(comparing(Property::getName));
+                for (Property property : properties) {
+                    String name = property.getName();
+                    AttributeDescription attribute = metadata.resourceDescription.attributes().get(name);
+                    dl.addItem(descriptionListGroup(Id.build(name, "group"))
+                            .addTerm(label(name, attribute))
+                            .addDescription(value(name, property.getValue(), attribute)));
+                }
+                root.append(dl.element());
+                empty = false;
+            } else {
+                empty();
+            }
         }
     }
 
     public void update(ModelNode modelNode) {
-        if (empty) {
-            show(modelNode);
-        } else if (valid(modelNode)) {
-            for (Property property : modelNode.asPropertyList()) {
-                UpdateValueFn updateAttribute = updateValueFunctions.get(property.getName());
-                if (updateAttribute != null) {
-                    updateAttribute.update(modelNode);
-                } else {
-                    logger.warn("Unable to update attribute %s. No update function found", property.getName());
-                }
-            }
+        if (metadata.empty) {
+            error();
         } else {
-            empty();
+            if (empty) {
+                show(modelNode);
+            } else if (valid(modelNode)) {
+                for (Property property : modelNode.asPropertyList()) {
+                    UpdateValueFn updateAttribute = updateValueFunctions.get(property.getName());
+                    if (updateAttribute != null) {
+                        updateAttribute.update(modelNode);
+                    } else {
+                        logger.warn("Unable to update attribute %s. No update function found", property.getName());
+                    }
+                }
+            } else {
+                empty();
+            }
         }
     }
 
@@ -199,6 +207,16 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     private boolean valid(ModelNode modelNode) {
         return modelNode != null && modelNode.isDefined() && !modelNode.asPropertyList().isEmpty();
+    }
+
+    private void error() {
+        removeChildrenFrom(root);
+        root.append(alert(Severity.danger, "No metadata")
+                .inline()
+                .addDescription("Unable to view resource: No metadata found!")
+                .element());
+        empty = true;
+        updateValueFunctions.clear();
     }
 
     private void empty() {
@@ -245,6 +263,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
         HTMLElement element;
         UpdateValueFn fn;
 
+        // TODO Default values and sensitive
         if (modelNode.isDefined()) {
             if (modelNode.getType() == EXPRESSION) {
                 HTMLElement resolveButton = button().plain().inline().icon(link()).element();

@@ -17,6 +17,7 @@ package org.jboss.hal.ui.modelbrowser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.gwtproject.safehtml.shared.SafeHtmlUtils;
@@ -31,7 +32,7 @@ import org.patternfly.icon.PredefinedIcon;
  */
 class ModelBrowserNode {
 
-    private static String templateId(String template) {
+    private static String uniqueId(String template) {
         if (template.isEmpty()) {
             return "root";
         } else {
@@ -70,11 +71,17 @@ class ModelBrowserNode {
     boolean exists;
 
     ModelBrowserNode(AddressTemplate template, String name, Type type) {
-        this.id = templateId(template.template);
+        this.id = uniqueId(template.template);
         this.template = template;
         this.name = name != null ? SafeHtmlUtils.htmlEscape(name) : null;
         this.type = type;
         this.children = new ArrayList<>();
         this.exists = true;
+    }
+
+    ModelBrowserNode copy(Consumer<ModelBrowserNode> fn) {
+        ModelBrowserNode copy = new ModelBrowserNode(template, name, type);
+        fn.accept(copy);
+        return copy;
     }
 }

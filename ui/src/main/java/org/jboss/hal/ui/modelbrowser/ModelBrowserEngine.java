@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.jboss.elemento.By;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
@@ -40,7 +41,11 @@ import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.tree.TreeViewItem.treeViewItem;
+import static org.patternfly.core.Dataset.identifier;
+import static org.patternfly.style.Classes.disabled;
+import static org.patternfly.style.Classes.modifier;
 
 /**
  * Contains code to build read children operations, parse the result, and turn it into {@link ModelBrowserNode}s and
@@ -53,7 +58,7 @@ class ModelBrowserEngine {
 
     /**
      * Returns a function that returns a promise to read the child resources of the selected tree view item. Uses
-     * {@link #parseChildren(AddressTemplate, String, ModelNode)} and {@link #mbn2tvi(Dispatcher)}.
+     * {@link #parseChildren(ModelBrowserNode, ModelNode, boolean)} and {@link #mbn2tvi(Dispatcher)}.
      */
     static Function<TreeViewItem, Promise<Iterable<TreeViewItem>>> readChildrenOperation(Dispatcher dispatcher) {
         return tvi -> {
@@ -63,7 +68,6 @@ class ModelBrowserEngine {
                 if (mbn.type == SINGLETON_FOLDER || mbn.type == FOLDER) {
                     operation = new Operation.Builder(mbn.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
                             .param(CHILD_TYPE, mbn.name)
-                            .param(INCLUDE_SINGLETONS, true)
                             .build();
                 } else if (mbn.type == SINGLETON_RESOURCE || mbn.type == RESOURCE) {
                     operation = new Operation.Builder(mbn.template.resolve(), READ_CHILDREN_TYPES_OPERATION)
@@ -71,9 +75,8 @@ class ModelBrowserEngine {
                             .build();
                 }
                 if (operation != null) {
-                    String operationName = operation.getName();
                     return dispatcher.execute(operation)
-                            .then(result -> Promise.resolve(parseChildren(mbn.template, operationName, result)
+                            .then(result -> Promise.resolve(parseChildren(mbn, result, true)
                                     .stream()
                                     .map(mbn2tvi(dispatcher))
                                     .collect(toList())));
@@ -94,13 +97,18 @@ class ModelBrowserEngine {
     /**
      * Parses the result of {@link #readChildrenOperation(Dispatcher)} and turns it into a list of {@link ModelBrowserNode}s.
      */
-    static List<ModelBrowserNode> parseChildren(AddressTemplate template, String operation, ModelNode result) {
+    static List<ModelBrowserNode> parseChildren(ModelBrowserNode parent, ModelNode result,
+            boolean nonExistingSingletons) {
+        AddressTemplate template = parent.template;
         Map<String, ModelBrowserNode> mbns = new LinkedHashMap<>();
         for (ModelNode modelNode : result.asList()) {
             String name = modelNode.asString();
-            if (operation.equals(READ_CHILDREN_TYPES_OPERATION)) {
+            if (parent.type == RESOURCE) {
                 int index = name.indexOf("=");
                 if (index != -1 && !name.equals("=")) {
+                    // This adds *all* children: those who exist and those who do not.
+                    // When this method is called with parent.type == SINGLETON_FOLDER,
+                    // we can detect the difference (see below)
                     String singleton = name.substring(0, index);
                     String child = name.substring(index + 1);
                     ModelBrowserNode node = mbns.computeIfAbsent(singleton,
@@ -122,6 +130,17 @@ class ModelBrowserEngine {
                 }
             }
         }
+        if (nonExistingSingletons &&
+                parent.type == SINGLETON_FOLDER &&
+                !parent.children.isEmpty() &&
+                parent.children.size() > mbns.size()) {
+            // Add non-existing singleton resources
+            for (ModelBrowserNode child : parent.children) {
+                if (!mbns.containsKey(child.name)) {
+                    mbns.put(child.name, child.copy(mbn -> mbn.exists = false));
+                }
+            }
+        }
         return new ArrayList<>(mbns.values());
     }
 
@@ -135,7 +154,12 @@ class ModelBrowserEngine {
                 .store(MODEL_BROWSER_NODE, mbn)
                 .addItems(readChildrenOperation(dispatcher))
                 .run(tvi -> {
-                    if (mbn.type.expandedIcon != null) {
+                    if (!mbn.exists) {
+                        tvi.css(modifier(disabled));
+                        tvi.add(popover(By.data(identifier, mbn.id))
+                                .addHeader(mbn.name)
+                                .addBody("Non-existing singleton resource"));
+                    } else if (mbn.type.expandedIcon != null) {
                         tvi.expandedIcon(mbn.type.expandedIcon.get());
                     }
                 });

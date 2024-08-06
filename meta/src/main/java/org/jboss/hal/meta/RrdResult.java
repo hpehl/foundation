@@ -19,14 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
 class RrdResult {
 
-    final Map<ResourceAddress, ResourceDescription> resourceDescriptions;
-    final Map<ResourceAddress, SecurityContext> securityContexts;
+    final Map<String, ResourceDescription> resourceDescriptions;
+    final Map<String, SecurityContext> securityContexts;
     final Map<String, Set<String>> processedAddresses;
 
     RrdResult() {
@@ -35,21 +34,21 @@ class RrdResult {
         processedAddresses = new HashMap<>();
     }
 
-    boolean noResourceDescription(ResourceAddress address) {
+    boolean noResourceDescription(String address) {
         return !resourceDescriptions.containsKey(address);
     }
 
-    void addResourceDescription(ResourceAddress address, ResourceDescription resourceDescription) {
+    void addResourceDescription(String address, ResourceDescription resourceDescription) {
         if (noResourceDescription(address)) {
             resourceDescriptions.put(address, resourceDescription);
         }
     }
 
-    boolean noSecurityContext(ResourceAddress address) {
+    boolean noSecurityContext(String address) {
         return !securityContexts.containsKey(address);
     }
 
-    void addSecurityContext(ResourceAddress address, SecurityContext securityContext) {
+    void addSecurityContext(String address, SecurityContext securityContext) {
         if (noSecurityContext(address)) {
             securityContexts.put(address, securityContext);
         }

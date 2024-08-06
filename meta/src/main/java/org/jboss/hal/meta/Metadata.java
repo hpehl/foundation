@@ -19,8 +19,6 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.HAL_RECURSIVE;
-
 public class Metadata {
 
     public static Metadata empty() {
@@ -28,15 +26,12 @@ public class Metadata {
     }
 
     public final boolean empty;
-    public final boolean recursive;
     public final ResourceDescription resourceDescription;
     public final SecurityContext securityContext;
 
     public Metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
         this.resourceDescription = resourceDescription == null ? new ResourceDescription(new ModelNode()) : resourceDescription;
         this.securityContext = securityContext == null ? new SecurityContext(new ModelNode()) : securityContext;
-        this.recursive = this.resourceDescription.get(HAL_RECURSIVE).asBoolean(false) &&
-                this.securityContext.get(HAL_RECURSIVE).asBoolean(false);
         this.empty = !this.resourceDescription.isDefined() && !this.securityContext.isDefined();
     }
 }

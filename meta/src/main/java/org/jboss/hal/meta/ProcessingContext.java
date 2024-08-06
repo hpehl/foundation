@@ -23,11 +23,9 @@ class ProcessingContext extends FlowContext {
 
     final Set<String> addresses;
     final RrdResult rrdResult;
-    Metadata metadata;
 
     ProcessingContext(Set<String> addresses) {
         this.addresses = addresses;
         this.rrdResult = new RrdResult();
-        this.metadata = Metadata.empty();
     }
 }

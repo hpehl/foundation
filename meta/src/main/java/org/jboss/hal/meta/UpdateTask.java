@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
@@ -38,8 +37,8 @@ class UpdateTask implements Task<ProcessingContext> {
     @Override
     public Promise<ProcessingContext> apply(ProcessingContext context) {
         if (context.rrdResult.shouldUpdate()) {
-            for (Map.Entry<ResourceAddress, ResourceDescription> entry : context.rrdResult.resourceDescriptions.entrySet()) {
-                ResourceAddress address = entry.getKey();
+            for (Map.Entry<String, ResourceDescription> entry : context.rrdResult.resourceDescriptions.entrySet()) {
+                String address = entry.getKey();
                 ResourceDescription resourceDescription = entry.getValue();
                 SecurityContext securityContext = context.rrdResult.securityContexts.get(address);
                 if (securityContext == null) {

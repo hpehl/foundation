@@ -18,18 +18,15 @@ package org.jboss.hal.meta.description;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 
 import static java.util.Collections.emptyList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALTERNATIVES;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
 
-public class AttributeDescription extends NamedNode {
+public class AttributeDescription extends NamedNode implements Description {
 
     private final AttributeDescriptions attributes;
 
@@ -38,13 +35,9 @@ public class AttributeDescription extends NamedNode {
         this.attributes = attributes;
     }
 
-    public AttributeDescription(AttributeDescriptions attributes, String name, ModelNode node) {
-        super(name, node);
-        this.attributes = attributes;
-    }
-
-    public String description() {
-        return get(DESCRIPTION).asString();
+    @Override
+    public ModelNode modelNode() {
+        return asModelNode();
     }
 
     /**
@@ -64,17 +57,6 @@ public class AttributeDescription extends NamedNode {
      */
     public List<AttributeDescription> requires(String path, String name) {
         return find(REQUIRES);
-    }
-
-    public boolean deprecated() {
-        return hasDefined(DEPRECATED) && get(DEPRECATED).asBoolean();
-    }
-
-    public Deprecation deprecation() {
-        if (deprecated()) {
-            return new Deprecation(get(DEPRECATED));
-        }
-        return null;
     }
 
     private List<AttributeDescription> find(String name) {

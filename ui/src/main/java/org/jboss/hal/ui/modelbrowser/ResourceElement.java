@@ -15,28 +15,50 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.gwtproject.safehtml.shared.SafeHtmlUtils;
+import org.jboss.elemento.By;
+import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
+import org.jboss.elemento.flow.Flow;
+import org.jboss.elemento.flow.FlowContext;
+import org.jboss.elemento.flow.Task;
+import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Table;
 import org.patternfly.component.table.Td;
+import org.patternfly.component.tabs.Tabs;
 
 import elemental2.dom.HTMLElement;
+import elemental2.dom.HTMLParagraphElement;
 
 import static org.jboss.elemento.Elements.br;
+import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.p;
 import static org.jboss.elemento.Elements.strong;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CONFIGURATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.METRIC;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_WRITE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+import static org.jboss.hal.resources.HalClasses.deprecated;
+import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.form.ModelNodeView.modelNodeView;
+import static org.patternfly.component.popover.Popover.popover;
+import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.table.Tbody.tbody;
 import static org.patternfly.component.table.Td.td;
@@ -45,7 +67,6 @@ import static org.patternfly.component.table.Thead.thead;
 import static org.patternfly.component.table.Tr.tr;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
-import static org.patternfly.component.tabs.Tabs.tabs;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.icon.IconSets.fas.database;
 import static org.patternfly.icon.IconSets.fas.edit;
@@ -59,13 +80,42 @@ import static org.patternfly.style.Width.width60;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
+    private static final String RESOURCE = "modelbrowser.resource-element.resource";
+    private static final String METADATA = "modelbrowser.resource-element.metadata";
     private final HTMLElement root;
 
-    ResourceElement(UIContext uic, Metadata metadata, ModelNode modelNode) {
-        this.root = tabs()
+    ResourceElement(UIContext uic, ModelBrowserNode mbn, Consumer<Metadata> metadataConsumer) {
+        this.root = div().element();
+
+        List<Task<FlowContext>> tasks = new ArrayList<>();
+        Operation operation = new Operation.Builder(mbn.template.resolve(uic.statementContext), READ_RESOURCE_OPERATION)
+                .param(ATTRIBUTES_ONLY, true)
+                .param(INCLUDE_RUNTIME, true)
+                .build();
+        tasks.add(context -> uic.dispatcher.execute(operation).then(result -> context.resolve(RESOURCE, result)));
+        tasks.add(context -> uic.metadataRepository.lookup(mbn.template).then(metadata -> context.resolve(METADATA, metadata)));
+        Flow.parallel(new FlowContext(), tasks).subscribe(context -> {
+            if (context.successful()) {
+                ModelNode resource = context.get(RESOURCE);
+                Metadata metadata = context.get(METADATA);
+                metadataConsumer.accept(metadata);
+                details(metadata, resource);
+            } else {
+                // TODO Error handling
+            }
+        });
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
+    }
+
+    private void details(Metadata metadata, ModelNode resource) {
+        root.append(Tabs.tabs()
                 .addItem(tab("data", "Data")
                         .addContent(tabContent()
-                                .add(modelNodeView(metadata, modelNode).css(util("mt-lg")))))
+                                .add(modelNodeView(metadata, resource).css(util("mt-lg")))))
                 .addItem(tab("attributes", "Attributes")
                         .addContent(tabContent()
                                 .add(attributes(metadata))))
@@ -78,12 +128,7 @@ class ResourceElement implements IsElement<HTMLElement> {
                 .addItem(tab("children", "Children")
                         .addContent(tabContent()
                                 .add(children(metadata))))
-                .element();
-    }
-
-    @Override
-    public HTMLElement element() {
-        return root;
+                .element());
     }
 
     private Table attributes(Metadata metadata) {
@@ -95,17 +140,41 @@ class ResourceElement implements IsElement<HTMLElement> {
                                 .addItem(th("Storage").width(width10).textContent("Storage"))
                                 .addItem(th("Access type").width(width10).textContent("Access type"))))
                 .addBody(tbody()
-                        .addRows(metadata.resourceDescription.attributes(), attribute -> tr(attribute.name())
-                                .addItem(td("Name")
-                                        .add(textContent()
-                                                .add(p()
-                                                        .add(strong().textContent(attribute.name()))
-                                                        .add(br())
-                                                        .add(attribute.description()))))
-                                .addItem(td("Type").textContent(Types.formatType(attribute)))
-                                .addItem(td("Storage").run(td -> storage(td, attribute)))
-                                .addItem(td("Access type").run(td -> accessType(td, attribute)))
+                        .addRows(metadata.resourceDescription.attributes(), attribute -> {
+                                    return tr(attribute.name())
+                                            .addItem(td("Name")
+                                                    .add(textContent()
+                                                            .add(attributeName(attribute)
+                                                                    .add(br())
+                                                                    .add(attribute.description()))))
+                                            .addItem(td("Type").textContent(Types.formatType(attribute)))
+                                            .addItem(td("Storage").run(td -> storage(td, attribute)))
+                                            .addItem(td("Access type").run(td -> accessType(td, attribute)));
+                                }
                         ));
+    }
+
+    private HTMLContainerBuilder<HTMLParagraphElement> attributeName(AttributeDescription attribute) {
+        String attributeId = Id.unique(attribute.name());
+        Deprecation deprecation = attribute.deprecation();
+        return p()
+                .add(strong().id(attributeId)
+                        .textContent(attribute.name())
+                        .run(strong -> {
+                            if (deprecation != null) {
+                                strong.style("cursor", "pointer")
+                                        .css(halModifier(deprecated));
+                            }
+                        }))
+                .run(p -> {
+                    if (deprecation != null) {
+                        p.add(popover(By.id(attributeId))
+                                .addBody(popoverBody()
+                                        .add("Deprecated since " + deprecation.since().toString())
+                                        .add(br())
+                                        .add("Reason: " + deprecation.reason())));
+                    }
+                });
     }
 
     private void storage(Td td, AttributeDescription attribute) {
