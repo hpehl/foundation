@@ -31,7 +31,6 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.LabelBuilder;
-import org.patternfly.component.Severity;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionList;
@@ -39,6 +38,8 @@ import org.patternfly.component.list.DescriptionListDescription;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Tuple;
+import org.patternfly.style.Breakpoint;
+import org.patternfly.style.Size;
 import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
@@ -69,7 +70,6 @@ import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.modelNodeView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
-import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -87,17 +87,17 @@ import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.ban;
+import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.style.Breakpoint._2xl;
 import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoint.lg;
 import static org.patternfly.style.Breakpoint.md;
-import static org.patternfly.style.Breakpoint.sm;
 import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
-import static org.patternfly.style.Size.xs;
+import static org.patternfly.style.Variable.globalVar;
 import static org.patternfly.style.Variable.utilVar;
 
 public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, IsElement<HTMLElement> {
@@ -165,7 +165,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
                         .horizontal()
                         .horizontalTermWidth(breakpoints(
                                 default_, "12ch",
-                                sm, "15ch",
+                                Breakpoint.sm, "15ch",
                                 md, "18ch",
                                 lg, "23ch",
                                 xl, "25ch",
@@ -216,9 +216,12 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     private void error() {
         removeChildrenFrom(root);
-        root.append(alert(Severity.danger, "No metadata")
-                .inline()
-                .addDescription("Unable to view resource: No metadata found!")
+        root.append(emptyState().size(Size.sm)
+                .addHeader(emptyStateHeader()
+                        .icon(exclamationCircle(), globalVar("danger-color", "100"))
+                        .text("No metadata"))
+                .addBody(emptyStateBody()
+                        .textContent("Unable to view resource: No metadata found!"))
                 .element());
         empty = true;
         updateValueFunctions.clear();
@@ -226,7 +229,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     private void empty() {
         removeChildrenFrom(root);
-        root.append(emptyState().size(xs)
+        root.append(emptyState().size(Size.sm)
                 .addHeader(emptyStateHeader()
                         .icon(ban())
                         .text("No attributes"))

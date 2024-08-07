@@ -28,12 +28,13 @@ import org.jboss.elemento.router.Route;
 import elemental2.dom.HTMLElement;
 
 import static java.util.Collections.singletonList;
-import static org.jboss.elemento.Elements.h;
 import static org.jboss.elemento.Elements.p;
 import static org.jboss.elemento.router.Link.link;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
+import static org.patternfly.component.title.Title.title;
 import static org.patternfly.style.Brightness.light;
+import static org.patternfly.style.Size._3xl;
 
 @Dependent
 @Route("/runtime")
@@ -50,7 +51,7 @@ public class RuntimePage implements Page {
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         return singletonList(pageMainSection().background(light)
                 .add(textContent()
-                        .add(h(1, "Runtime"))
+                        .add(title(1, _3xl, "Runtime"))
                         .add(p().textContent("Not yet implemented!"))
                         .add(p().add(link(placeManager, "/").textContent("Home"))))
                 .element());

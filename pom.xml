@@ -170,6 +170,7 @@
                             <exclude>**/.parcel-cache/**</exclude>
                             <exclude>**/node/**</exclude>
                             <exclude>**/node_modules/**</exclude>
+                            <exclude>**/src/main/resources/META-INF/resources/**</exclude>
                         </excludes>
                     </configuration>
                 </plugin>
@@ -231,6 +232,7 @@
                                     <exclude>**/node_modules/**</exclude>
                                     <exclude>**/src/demo/java/**</exclude>
                                     <exclude>**/src/main/resources/META-INF/externs/**</exclude>
+                                    <exclude>**/src/main/resources/META-INF/resources/**</exclude>
                                     <exclude>**/yarn.lock</exclude>
                                 </excludes>
                             </licenseSet>

@@ -51,6 +51,7 @@ import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.layout.flex.Direction.column;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.layout.flex.FlexWrap.noWrap;
 import static org.patternfly.layout.flex.SpaceItems.none;
 import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Classes.brand;
@@ -96,10 +97,10 @@ public class Skeleton implements IsElement<HTMLElement> {
                 .addMain(pageMain = pageMain(Ids.MAIN_ID))
                 .add(backToTop()
                         .scrollableSelector(By.id(Ids.MAIN_ID)));
-        if (environment != null && environment.highlightStabilityLevel()) {
+        if (environment != null && environment.highlightStability()) {
             root = flex()
                     .direction(column)
-                    .css(modifier("nowrap")) // TODO .flexWrap(FlexWrap.noWrap)
+                    .flexWrap(noWrap)
                     .spaceItems(none)
                     .style("height", "100%")
                     .add(stabilityBanner(environment, this::dismiss))

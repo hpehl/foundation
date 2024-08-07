@@ -15,14 +15,14 @@
  */
 package org.jboss.hal.meta.description;
 
+import java.util.Random;
+
 import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.dmr.ModelNodeHelper;
 import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEPRECATED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STABILITY;
 
 public interface Description {
 
@@ -33,7 +33,9 @@ public interface Description {
     }
 
     default Stability stability() {
-        return ModelNodeHelper.asEnumValue(modelNode(), STABILITY, Stability::valueOf, Stability.DEFAULT);
+        int index = new Random().nextInt(Stability.values().length);
+        return Stability.values()[index];
+        // return ModelNodeHelper.asEnumValue(modelNode(), STABILITY, Stability::valueOf, Stability.DEFAULT);
     }
 
     default Deprecation deprecation() {

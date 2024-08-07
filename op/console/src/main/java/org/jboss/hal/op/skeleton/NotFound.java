@@ -30,6 +30,7 @@ import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
 import static org.patternfly.style.Brightness.light;
+import static org.patternfly.style.Size._3xl;
 
 @Dependent
 public class NotFound implements Page {
@@ -39,7 +40,7 @@ public class NotFound implements Page {
         return singletonList(pageMainSection()
                 .background(light)
                 .add(textContent()
-                        .add(title(1, "Not found"))
+                        .add(title(1, _3xl, "Not found"))
                         .add(p().textContent("Page " + place.route + " not found")))
                 .element());
     }

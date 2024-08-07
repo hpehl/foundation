@@ -192,7 +192,7 @@ public class Environment {
      *
      * @return true if the stability level of the environment is greater than the built-in stability level, false otherwise.
      */
-    public boolean highlightStabilityLevel() {
+    public boolean highlightStability() {
         return stability.order > builtInStability.order;
     }
 
@@ -203,7 +203,7 @@ public class Environment {
      * @return true if the stability level of the given stability is greater than the stability level of the environment, false
      * otherwise.
      */
-    public boolean highlightStabilityLevel(Stability stability) {
+    public boolean highlightStability(Stability stability) {
         return stability != null && stability.order > this.stability.order;
     }
 

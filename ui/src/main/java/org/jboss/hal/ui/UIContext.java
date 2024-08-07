@@ -19,6 +19,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.jboss.hal.dmr.dispatch.Dispatcher;
+import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 
@@ -26,12 +27,17 @@ import org.jboss.hal.meta.StatementContext;
 @ApplicationScoped
 public class UIContext {
 
+    public final Environment environment;
     public final Dispatcher dispatcher;
     public final MetadataRepository metadataRepository;
     public final StatementContext statementContext;
 
     @Inject
-    public UIContext(Dispatcher dispatcher, MetadataRepository metadataRepository, StatementContext statementContext) {
+    public UIContext(Environment environment,
+            Dispatcher dispatcher,
+            MetadataRepository metadataRepository,
+            StatementContext statementContext) {
+        this.environment = environment;
         this.dispatcher = dispatcher;
         this.metadataRepository = metadataRepository;
         this.statementContext = statementContext;

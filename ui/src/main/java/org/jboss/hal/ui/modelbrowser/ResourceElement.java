@@ -15,14 +15,7 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
 import org.jboss.elemento.IsElement;
-import org.jboss.elemento.flow.Flow;
-import org.jboss.elemento.flow.FlowContext;
-import org.jboss.elemento.flow.Task;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.Metadata;
@@ -44,30 +37,15 @@ import static org.patternfly.style.Classes.util;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
-    private static final String RESOURCE = "modelbrowser.detail.resource";
-    private static final String METADATA = "modelbrowser.detail.metadata";
     private final HTMLElement root;
 
-    ResourceElement(UIContext uic, ModelBrowserNode mbn, Consumer<Metadata> metadataConsumer) {
+    ResourceElement(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
         this.root = div().element();
-
-        List<Task<FlowContext>> tasks = new ArrayList<>();
         Operation operation = new Operation.Builder(mbn.template.resolve(uic.statementContext), READ_RESOURCE_OPERATION)
                 .param(ATTRIBUTES_ONLY, true)
                 .param(INCLUDE_RUNTIME, true)
                 .build();
-        tasks.add(context -> uic.dispatcher.execute(operation).then(result -> context.resolve(RESOURCE, result)));
-        tasks.add(context -> uic.metadataRepository.lookup(mbn.template).then(metadata -> context.resolve(METADATA, metadata)));
-        Flow.parallel(new FlowContext(), tasks).subscribe(context -> {
-            if (context.successful()) {
-                ModelNode resource = context.get(RESOURCE);
-                Metadata metadata = context.get(METADATA);
-                metadataConsumer.accept(metadata);
-                details(resource, metadata);
-            } else {
-                // TODO Error handling
-            }
-        });
+        uic.dispatcher.execute(operation, resource -> details(resource, metadata));
     }
 
     @Override

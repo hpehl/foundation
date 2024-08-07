@@ -44,7 +44,7 @@ public class StabilityLabel implements IsElement<HTMLElement> {
     private final Stability stability;
     private final Label label;
 
-    public StabilityLabel(Stability stability, boolean icon) {
+    StabilityLabel(Stability stability, boolean icon) {
         this.stability = stability;
         PredefinedIcon pi = stabilityIcon(stability);
         label = label(stability.label, stabilityColor(stability));

@@ -30,6 +30,7 @@ import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
 import static org.patternfly.style.Brightness.light;
+import static org.patternfly.style.Size._3xl;
 
 @Dependent
 public class NoData implements Page {
@@ -39,7 +40,7 @@ public class NoData implements Page {
         return singletonList(pageMainSection()
                 .background(light)
                 .add(textContent()
-                        .add(title(1, "No data"))
+                        .add(title(1, _3xl, "No data"))
                         .add(p().textContent("The data for the page " + place.route + " could not be loaded.")))
                 .element());
     }

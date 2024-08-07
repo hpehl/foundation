@@ -42,6 +42,7 @@ import static org.patternfly.component.title.Title.title;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
 import static org.patternfly.style.Brightness.light;
+import static org.patternfly.style.Size._3xl;
 
 @Dependent
 @Route("/")
@@ -97,7 +98,7 @@ public class DashboardPage implements Page {
         HTMLElement header = pageMainSection().limitWidth().background(light)
                 .addBody(pageMainBody()
                         .add(textContent()
-                                .add(title(1).text("WildFly Application Server"))
+                                .add(title(1, _3xl).text("WildFly Application Server"))
                                 .add(p().textContent("Dashboard"))))
                 .element();
         HTMLElement dashboard = pageMainSection().limitWidth()
