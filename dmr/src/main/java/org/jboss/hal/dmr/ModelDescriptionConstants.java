@@ -521,8 +521,10 @@ public interface ModelDescriptionConstants {
     String LIST_ADD_OPERATION = "list-add";
     String LIST_ALL_CONSUMERS_AS_JSON = "list-all-consumers-as-json";
     String LIST_CHANGES_OPERATION = "list-changes";
+    String LIST_CLEAR_OPERATION = "list-clear";
     String LIST_CONNECTIONS_AS_JSON = "list-connections-as-json";
     String LIST_CONSUMERS_AS_JSON = "list-consumers-as-json";
+    String LIST_GET_OPERATION = "list-get";
     String LIST_MESSAGES = "list-messages";
     String LIST_PREPARED_TRANSACTION_DETAILS_AS_JSON = "list-prepared-transaction-details-as-json";
     String LIST_PRODUCERS_INFO_AS_JSON = "list-producers-info-as-json";
@@ -567,6 +569,10 @@ public interface ModelDescriptionConstants {
     String MANAGEMENT_SPEC_VERSION = "management-spec-version";
     String MANAGEMENT_VERSION = "management-version";
     String MANIFEST = "manifest";
+    String MAP_CLEAR_OPERATION = "map-clear";
+    String MAP_GET_OPERATION = "map-get";
+    String MAP_PUT_OPERATION = "map-put";
+    String MAP_REMOVE_OPERATION = "map-remove";
     String MAPPED_REGEX_REALM_MAPPER = "mapped-regex-realm-mapper";
     String MAPPED_ROLE_MAPPER = "mapped-role-mapper";
     String MAPPED_ROLES = "mapped-roles";
@@ -745,7 +751,7 @@ public interface ModelDescriptionConstants {
     String PROXY = "proxy";
     String PRUNE_DISCONNECTED = "prune-disconnected";
     String PRUNE_EXPIRED = "prune-expired";
-    String QUERY = "query";
+    String QUERY_OPERATION = "query";
     String QUEUE = "queue";
     String QUEUE_ADDRESS = "queue-address";
     String QUEUE_LENGTH = "queue-length";
@@ -757,6 +763,8 @@ public interface ModelDescriptionConstants {
     String READ_ALIAS = "read-alias";
     String READ_ALIASES_OPERATION = "read-aliases";
     String READ_ATTRIBUTE_OPERATION = "read-attribute";
+    String READ_ATTRIBUTE_GROUP_OPERATION = "read-attribute-group";
+    String READ_ATTRIBUTE_GROUP_NAMES_OPERATION = "read-attribute-group-names";
     String READ_BOOT_ERRORS = "read-boot-errors";
     String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
     String READ_CHILDREN_RESOURCES_OPERATION = "read-children-resources";
@@ -765,6 +773,8 @@ public interface ModelDescriptionConstants {
     String READ_IDENTITY = "read-identity";
     String READ_LOG_FILE = "read-log-file";
     String READ_ONLY = "read-only";
+    String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
+    String READ_OPERATION_NAMES_OPERATION = "read-operation-names";
     String READ_RESOURCE_DESCRIPTION_OPERATION = "read-resource-description";
     String READ_RESOURCE_OPERATION = "read-resource";
     String READ_WRITE = "read-write";

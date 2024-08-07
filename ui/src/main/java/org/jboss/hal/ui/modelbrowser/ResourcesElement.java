@@ -27,7 +27,6 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.Severity;
 
 import elemental2.dom.HTMLElement;
 
@@ -39,14 +38,18 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OP
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
-import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.list.DataList.dataList;
 import static org.patternfly.component.list.DataListAction.dataListAction;
 import static org.patternfly.component.list.DataListCell.dataListCell;
 import static org.patternfly.component.list.DataListItem.dataListItem;
+import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.layout.flex.Direction.column;
 import static org.patternfly.layout.flex.Flex.flex;
+import static org.patternfly.style.Size.xs;
 
 class ResourcesElement implements IsElement<HTMLElement> {
 
@@ -81,9 +84,12 @@ class ResourcesElement implements IsElement<HTMLElement> {
     }
 
     private void empty() {
-        root.append(alert(Severity.info, "No child resources")
-                .inline()
-                .addDescription("This resource contains no child resources.")
+        root.append(emptyState().size(xs)
+                .addHeader(emptyStateHeader()
+                        .icon(ban())
+                        .text("No child resources"))
+                .addBody(emptyStateBody()
+                        .textContent("This resource has no child resources."))
                 .element());
     }
 

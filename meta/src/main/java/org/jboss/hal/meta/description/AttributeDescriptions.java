@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 
+import static java.util.Comparator.comparing;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
@@ -30,10 +31,13 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
     private final LinkedHashMap<String, AttributeDescription> attributes;
 
     public AttributeDescriptions(ModelNode modelNode) {
-        this.attributes = modelNode.asPropertyList()
+        this.attributes = modelNode != null && modelNode.isDefined()
+                ? modelNode.asPropertyList()
                 .stream()
-                .map(property -> new AttributeDescription(this, property))
-                .collect(toMap(NamedNode::name, identity(), (existing, replacement) -> replacement, LinkedHashMap::new));
+                .map(AttributeDescription::new)
+                .sorted(comparing(NamedNode::name))
+                .collect(toMap(NamedNode::name, identity(), (existing, replacement) -> replacement, LinkedHashMap::new))
+                : new LinkedHashMap<>();
     }
 
     @Override
@@ -43,5 +47,9 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
     public AttributeDescription get(String name) {
         return attributes.get(name);
+    }
+
+    public boolean isEmpty() {
+        return attributes.isEmpty();
     }
 }

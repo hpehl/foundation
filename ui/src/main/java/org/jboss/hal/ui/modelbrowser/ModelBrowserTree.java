@@ -20,6 +20,7 @@ import java.util.List;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.tree.TreeView;
+import org.patternfly.component.tree.TreeViewItem;
 
 import elemental2.dom.HTMLElement;
 
@@ -28,6 +29,7 @@ import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
 import static org.patternfly.component.tree.TreeView.treeView;
+import static org.patternfly.component.tree.TreeViewItemStatus.pending;
 import static org.patternfly.component.tree.TreeViewType.selectableItems;
 import static org.patternfly.core.Roles.tree;
 
@@ -62,6 +64,14 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     }
 
     void select(ModelBrowserNode parent, ModelBrowserNode mbn) {
-        treeView.select(mbn.id);
+        TreeViewItem parentItem = treeView.findItem(parent.id);
+        if (parentItem != null && !parentItem.expanded() && parentItem.status() == pending) {
+            parentItem.load().then(__ -> {
+                treeView.select(mbn.id);
+                return null;
+            });
+        } else {
+            treeView.select(mbn.id);
+        }
     }
 }

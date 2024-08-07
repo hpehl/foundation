@@ -24,7 +24,6 @@ import org.jboss.elemento.HasElement;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.Property;
@@ -38,16 +37,15 @@ import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionList;
 import org.patternfly.component.list.DescriptionListDescription;
 import org.patternfly.component.list.DescriptionListTerm;
-import org.patternfly.component.popover.PopoverBody;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Tuple;
+import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
-import static org.jboss.elemento.Elements.br;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.span;
@@ -70,9 +68,13 @@ import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.modelNodeView;
 import static org.jboss.hal.resources.HalClasses.undefined;
+import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.label.LabelGroup.labelGroup;
 import static org.patternfly.component.list.DescriptionList.descriptionList;
 import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
@@ -84,6 +86,7 @@ import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Tuple.tuple;
+import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.style.Breakpoint._2xl;
 import static org.patternfly.style.Breakpoint.default_;
@@ -94,6 +97,8 @@ import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
+import static org.patternfly.style.Size.xs;
+import static org.patternfly.style.Variable.utilVar;
 
 public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, IsElement<HTMLElement> {
 
@@ -221,9 +226,12 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     private void empty() {
         removeChildrenFrom(root);
-        root.append(alert(Severity.info, "No attributes")
-                .inline()
-                .addDescription("This resource contains no attributes.")
+        root.append(emptyState().size(xs)
+                .addHeader(emptyStateHeader()
+                        .icon(ban())
+                        .text("No attributes"))
+                .addBody(emptyStateBody()
+                        .textContent("This resource has no attributes."))
                 .element());
         empty = true;
         updateValueFunctions.clear();
@@ -233,22 +241,15 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
         String label = labelBuilder.label(name);
         DescriptionListTerm term = descriptionListTerm(label);
         if (attribute != null) {
-            Deprecation deprecation = attribute.deprecation();
-            PopoverBody popoverBody = popoverBody();
-            if (deprecation != null) {
+            if (attribute.deprecation() != null) {
                 term.css(halModifier(deprecated));
-                popoverBody
-                        .add(div().textContent(attribute.description()))
-                        .add(div().css(util("mt-sm"))
-                                .add("Deprecated since " + deprecation.since().toString())
-                                .add(br())
-                                .add("Reason: " + deprecation.reason()));
-            } else {
-                popoverBody.textContent(attribute.description());
             }
             term.help(popover()
+                    .css(util("min-width"))
+                    .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
                     .addHeader(label)
-                    .addBody(popoverBody));
+                    .addBody(popoverBody()
+                            .add(attributeDescription(attribute))));
         }
         return term;
     }

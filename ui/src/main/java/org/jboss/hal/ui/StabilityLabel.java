@@ -23,8 +23,8 @@ import org.patternfly.icon.PredefinedIcon;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.ui.StabilityUI.color;
-import static org.jboss.hal.ui.StabilityUI.icon;
+import static org.jboss.hal.ui.BuildingBlocks.stabilityColor;
+import static org.jboss.hal.ui.BuildingBlocks.stabilityIcon;
 import static org.patternfly.component.label.Label.label;
 
 public class StabilityLabel implements IsElement<HTMLElement> {
@@ -46,8 +46,8 @@ public class StabilityLabel implements IsElement<HTMLElement> {
 
     public StabilityLabel(Stability stability, boolean icon) {
         this.stability = stability;
-        PredefinedIcon pi = icon(stability);
-        label = label(stability.label, color(stability));
+        PredefinedIcon pi = stabilityIcon(stability);
+        label = label(stability.label, stabilityColor(stability));
         if (icon) {
             label.icon(pi);
         }

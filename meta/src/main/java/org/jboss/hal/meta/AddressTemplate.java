@@ -372,5 +372,4 @@ public final class AddressTemplate implements Iterable<Segment> {
         }
         return segments;
     }
-
 }

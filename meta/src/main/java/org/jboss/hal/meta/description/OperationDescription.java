@@ -15,19 +15,67 @@
  */
 package org.jboss.hal.meta.description;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 
+import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_ADD_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_CLEAR_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_GET_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_REMOVE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.MAP_CLEAR_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.MAP_GET_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.MAP_PUT_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.MAP_REMOVE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.QUERY_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ATTRIBUTE_GROUP_NAMES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ATTRIBUTE_GROUP_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 public class OperationDescription extends NamedNode implements Description {
 
-    private final OperationDescriptions operations;
+    public static final Set<String> GLOBAL_OPERATIONS = new HashSet<>();
 
-    public OperationDescription(OperationDescriptions operations, Property property) {
+    static {
+        GLOBAL_OPERATIONS.add(LIST_ADD_OPERATION);
+        GLOBAL_OPERATIONS.add(LIST_CLEAR_OPERATION);
+        GLOBAL_OPERATIONS.add(LIST_GET_OPERATION);
+        GLOBAL_OPERATIONS.add(LIST_REMOVE_OPERATION);
+        GLOBAL_OPERATIONS.add(MAP_CLEAR_OPERATION);
+        GLOBAL_OPERATIONS.add(MAP_GET_OPERATION);
+        GLOBAL_OPERATIONS.add(MAP_PUT_OPERATION);
+        GLOBAL_OPERATIONS.add(MAP_REMOVE_OPERATION);
+        GLOBAL_OPERATIONS.add(QUERY_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_ATTRIBUTE_GROUP_NAMES_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_ATTRIBUTE_GROUP_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_ATTRIBUTE_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_CHILDREN_NAMES_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_CHILDREN_RESOURCES_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_CHILDREN_TYPES_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_OPERATION_DESCRIPTION_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_OPERATION_NAMES_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_RESOURCE_DESCRIPTION_OPERATION);
+        GLOBAL_OPERATIONS.add(READ_RESOURCE_OPERATION);
+        GLOBAL_OPERATIONS.add(UNDEFINE_ATTRIBUTE_OPERATION);
+        GLOBAL_OPERATIONS.add(WRITE_ATTRIBUTE_OPERATION);
+    }
+
+    public OperationDescription(Property property) {
         super(property);
-        this.operations = operations;
     }
 
     @Override
@@ -35,7 +83,15 @@ public class OperationDescription extends NamedNode implements Description {
         return asModelNode();
     }
 
-    public AttributeDescriptions requestProperties() {
+    public boolean global() {
+        return GLOBAL_OPERATIONS.contains(name());
+    }
+
+    public AttributeDescriptions parameters() {
         return new AttributeDescriptions(get(REQUEST_PROPERTIES));
+    }
+
+    public AttributeDescription returnValue() {
+        return new AttributeDescription("return-value", get(REPLY_PROPERTIES));
     }
 }

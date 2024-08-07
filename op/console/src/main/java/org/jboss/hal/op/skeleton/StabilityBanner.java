@@ -28,8 +28,8 @@ import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.strong;
-import static org.jboss.hal.ui.StabilityUI.color;
-import static org.jboss.hal.ui.StabilityUI.iconSupplier;
+import static org.jboss.hal.ui.BuildingBlocks.stabilityColor;
+import static org.jboss.hal.ui.BuildingBlocks.stabilityIconSupplier;
 import static org.patternfly.component.banner.Banner.banner;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.divider.Divider.divider;
@@ -56,8 +56,8 @@ public class StabilityBanner implements IsElement<HTMLElement> {
 
     StabilityBanner(Environment environment, Callback gotIt) {
         Stability stability = environment.stability();
-        Color color = color(stability);
-        Supplier<PredefinedIcon> icon = iconSupplier(stability);
+        Color color = stabilityColor(stability);
+        Supplier<PredefinedIcon> icon = stabilityIconSupplier(stability);
         String moreInfo = "https://docs.wildfly.org/" + environment.productVersionLink() + "/Admin_Guide.html#Feature_stability_levels";
 
         root = banner(color)

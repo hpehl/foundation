@@ -152,15 +152,17 @@ class ModelBrowserEngine {
                 .text(mbn.name)
                 .icon(mbn.type.icon.get())
                 .store(MODEL_BROWSER_NODE, mbn)
-                .addItems(readChildrenOperation(dispatcher))
                 .run(tvi -> {
-                    if (!mbn.exists) {
+                    if (mbn.exists) {
+                        tvi.addItems(readChildrenOperation(dispatcher));
+                        if (mbn.type.expandedIcon != null) {
+                            tvi.expandedIcon(mbn.type.expandedIcon.get());
+                        }
+                    } else {
                         tvi.css(modifier(disabled));
                         tvi.add(popover(By.data(identifier, mbn.id))
                                 .addHeader(mbn.name)
                                 .addBody("Non-existing singleton resource"));
-                    } else if (mbn.type.expandedIcon != null) {
-                        tvi.expandedIcon(mbn.type.expandedIcon.get());
                     }
                 });
     }

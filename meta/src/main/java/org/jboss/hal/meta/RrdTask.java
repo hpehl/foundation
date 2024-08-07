@@ -103,7 +103,8 @@ class RrdTask implements Task<ProcessingContext> {
         List<Operation> operations = new ArrayList<>();
         String locale = settings.get(Settings.Key.LOCALE).value();
         for (String address : context.addresses) {
-            operations.add(new Operation.Builder(ResourceAddress.from(address), READ_RESOURCE_DESCRIPTION_OPERATION)
+            ResourceAddress resourceAddress = AddressTemplate.of(address).resolve(); // to get the encoding right
+            operations.add(new Operation.Builder(resourceAddress, READ_RESOURCE_DESCRIPTION_OPERATION)
                     .param(OPERATIONS, true)
                     .param(ACCESS_CONTROL, COMBINED_DESCRIPTIONS)
                     .param(LOCALE, locale)

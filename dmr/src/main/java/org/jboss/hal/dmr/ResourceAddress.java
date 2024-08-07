@@ -33,45 +33,6 @@ public class ResourceAddress extends ModelNode {
         return new ResourceAddress();
     }
 
-    /** Creates a new resource address from the specified string. */
-    public static ResourceAddress from(String address) {
-        if (address == null) {
-            throw new IllegalArgumentException("Address must not be null");
-        }
-
-        ResourceAddress ra;
-        String trimmed = address.trim();
-        if (trimmed.isEmpty()) {
-            ra = ResourceAddress.root();
-        } else {
-            String safeAddress = trimmed.startsWith("/") ? trimmed.substring(1) : address;
-            if (safeAddress.isEmpty()) {
-                ra = ResourceAddress.root();
-            } else if (!safeAddress.contains("/")) {
-                ra = new ResourceAddress();
-                String[] parts = safeAddress.split("=");
-                if (parts.length != 2) {
-                    throw new IllegalArgumentException("Malformed address: " + address);
-                }
-                ra.add(parts[0], parts[1]);
-            } else {
-                ra = new ResourceAddress();
-                String[] parts = safeAddress.split("/");
-                if (parts.length == 0) {
-                    throw new IllegalArgumentException("Malformed address: " + address);
-                }
-                for (String part : parts) {
-                    String[] kv = part.split("=");
-                    if (kv.length != 2) {
-                        throw new IllegalArgumentException("Malformed part '" + part + "' in address: " + address);
-                    }
-                    ra.add(kv[0], kv[1]);
-                }
-            }
-        }
-        return ra;
-    }
-
     public ResourceAddress() {
         setEmptyList();
     }

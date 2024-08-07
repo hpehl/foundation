@@ -15,22 +15,15 @@
  */
 package org.jboss.hal.meta.description;
 
-import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.dmr.NamedNode;
-import org.jboss.hal.dmr.Property;
+public enum RestartMode {
 
-public class AttributeDescription extends NamedNode implements Description {
+    ALL_SERVICES,
 
-    public AttributeDescription(String name, ModelNode modelNode) {
-        super(name, modelNode);
-    }
+    JVM,
 
-    public AttributeDescription(Property property) {
-        super(property);
-    }
+    NO_SERVICES,
 
-    @Override
-    public ModelNode modelNode() {
-        return asModelNode();
-    }
+    RESOURCE_SERVICES,
+
+    UNKNOWN
 }

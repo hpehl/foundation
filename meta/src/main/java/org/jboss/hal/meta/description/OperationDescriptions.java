@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 
+import static java.util.Comparator.comparing;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 
@@ -30,10 +31,13 @@ public class OperationDescriptions implements Iterable<OperationDescription> {
     private final LinkedHashMap<String, OperationDescription> operations;
 
     public OperationDescriptions(ModelNode modelNode) {
-        this.operations = modelNode.asPropertyList()
+        this.operations = modelNode != null && modelNode.isDefined()
+                ? modelNode.asPropertyList()
                 .stream()
-                .map(property -> new OperationDescription(this, property))
-                .collect(toMap(NamedNode::name, identity(), (existing, replacement) -> replacement, LinkedHashMap::new));
+                .map(OperationDescription::new)
+                .sorted(comparing(NamedNode::name))
+                .collect(toMap(NamedNode::name, identity(), (existing, replacement) -> replacement, LinkedHashMap::new))
+                : new LinkedHashMap<>();
     }
 
     @Override
@@ -43,5 +47,9 @@ public class OperationDescriptions implements Iterable<OperationDescription> {
 
     public OperationDescription get(String name) {
         return operations.get(name);
+    }
+
+    public boolean isEmpty() {
+        return operations.isEmpty();
     }
 }
