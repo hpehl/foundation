@@ -69,7 +69,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
         Operation operation = new Operation.Builder(parent.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
                 .param(CHILD_TYPE, parent.name)
                 .build();
-        uic.dispatcher.execute(operation, result -> {
+        uic.dispatcher().execute(operation, result -> {
             List<ModelBrowserNode> children = parseChildren(parent, result, false);
             if (children.isEmpty()) {
                 empty();
@@ -94,7 +94,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
                 .addItems(children, child -> {
                     String childId = Id.build(child.name);
                     Metadata childMetadata = parent.type == SINGLETON_FOLDER
-                            ? uic.metadataRepository.get(child.template)
+                            ? uic.metadataRepository().get(child.template)
                             : metadata;
                     return dataListItem(childId)
                             .addCell(nameCell(childId, child, childMetadata))
@@ -110,7 +110,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
         Flex flex = flex().direction(column);
         if (parent.type == SINGLETON_FOLDER) {
             Stability stability = metadata.resourceDescription.stability();
-            if (uic.environment.highlightStability(stability)) {
+            if (uic.environment().highlightStability(stability)) {
                 flex.add(flex().alignItems(center).columnGap(md)
                         .add(flexItem().id(childId).textContent(child.name))
                         .add(flexItem().add(stabilityLabel(stability))));

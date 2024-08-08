@@ -89,7 +89,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
 
     void show(ModelBrowserNode mbn) {
         clear();
-        uic.metadataRepository.lookup(mbn.template, metadata -> {
+        uic.metadataRepository().lookup(mbn.template, metadata -> {
             fillBreadcrumb(mbn);
             adjustHeader(mbn, metadata);
             switch (mbn.type) {
@@ -120,7 +120,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
         }
         if (mbn.type == FOLDER || mbn.type == SINGLETON_RESOURCE || mbn.type == RESOURCE) {
             Stability stability = metadata.resourceDescription.stability();
-            if (uic.environment.highlightStability(stability)) {
+            if (uic.environment().highlightStability(stability)) {
                 stabilityContainer.add(stabilityLabel(stability));
             }
             description.textContent(metadata.resourceDescription.description());

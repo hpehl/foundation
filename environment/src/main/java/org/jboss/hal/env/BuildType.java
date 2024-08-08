@@ -24,8 +24,8 @@ public enum BuildType {
 
     PRODUCTION;
 
-    public static BuildType parse(String value) {
-        BuildType build = DEVELOPMENT;
+    public static BuildType parse(String value, BuildType defaultValue) {
+        BuildType build = defaultValue;
         if (value != null) {
             try {
                 build = BuildType.valueOf(value.toUpperCase());

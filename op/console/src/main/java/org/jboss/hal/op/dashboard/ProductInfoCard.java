@@ -63,7 +63,7 @@ class ProductInfoCard implements DashboardCard {
                                 .addItem(descriptionListGroup("stability")
                                         .addTerm(descriptionListTerm("Stability"))
                                         .addDescription(descriptionListDescription()
-                                                .add(stabilityLabel(environment.stability()))))))
+                                                .add(stabilityLabel(environment.serverStability()))))))
                 .add(divider(hr))
                 .addFooter(cardFooter()
                         .add(a("#").textContent("View settings")))

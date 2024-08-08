@@ -22,16 +22,29 @@ import org.jboss.hal.meta.security.SecurityContext;
 public class Metadata {
 
     public static Metadata empty() {
-        return new Metadata(new ResourceDescription(new ModelNode()), new SecurityContext(new ModelNode()));
+        return new Metadata(AddressTemplate.root(),
+                new ResourceDescription(new ModelNode()),
+                new SecurityContext(new ModelNode()));
+    }
+
+    public static Metadata metadata(AddressTemplate template,
+            ResourceDescription resourceDescription,
+            SecurityContext securityContext) {
+        return new Metadata(template, resourceDescription, securityContext);
     }
 
     public final boolean empty;
+    /**
+     * The template that was used in {@link MetadataRepository#lookup(AddressTemplate)}
+     */
+    public final AddressTemplate template;
     public final ResourceDescription resourceDescription;
     public final SecurityContext securityContext;
 
-    public Metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
-        this.resourceDescription = resourceDescription == null ? new ResourceDescription(new ModelNode()) : resourceDescription;
-        this.securityContext = securityContext == null ? new SecurityContext(new ModelNode()) : securityContext;
+    Metadata(AddressTemplate template, ResourceDescription resourceDescription, SecurityContext securityContext) {
+        this.template = template;
+        this.resourceDescription = resourceDescription;
+        this.securityContext = securityContext;
         this.empty = !this.resourceDescription.isDefined() && !this.securityContext.isDefined();
     }
 }

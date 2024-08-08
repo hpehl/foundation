@@ -15,17 +15,23 @@
  */
 package org.jboss.hal.env;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 import static org.jboss.hal.env.AccessControlProvider.SIMPLE;
+import static org.jboss.hal.env.BuildType.DEVELOPMENT;
 import static org.jboss.hal.env.OperationMode.STANDALONE;
 import static org.jboss.hal.env.Stability.COMMUNITY;
 import static org.jboss.hal.env.Version.EMPTY_VERSION;
 
 @ApplicationScoped
 public class Environment {
+
+    private static final Stability LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED = COMMUNITY;
 
     private final String applicationId;
     private final String applicationName;
@@ -39,20 +45,21 @@ public class Environment {
     private Version productVersion;
     private Version managementVersion;
     private OperationMode operationMode;
-    private Stability stability;
+    private Stability serverStability;
     private Stability[] permissibleStabilityLevels;
     private AccessControlProvider accessControlProvider;
     private boolean sso;
     private String domainController;
 
     public Environment() {
-        // final properties are defined as Closure defines in the POM
+        // final instance variables must be passed to the
+        // j2cl-maven-plugin as `<environment.x/>` closure defines (sse POM)
         this.applicationId = System.getProperty("environment.id");
         this.applicationName = System.getProperty("environment.name");
         this.applicationVersion = Version.parseVersion(System.getProperty("environment.version"));
         this.base = System.getProperty("environment.base");
-        this.buildType = BuildType.parse(System.getProperty("environment.build"));
-        this.builtInStability = Stability.parse(System.getProperty("environment.stability"));
+        this.buildType = BuildType.parse(System.getProperty("environment.build"), DEVELOPMENT);
+        this.builtInStability = Stability.parse(System.getProperty("environment.stability"), COMMUNITY);
 
         // default values for the non-final properties
         this.instanceName = "undefined";
@@ -61,11 +68,22 @@ public class Environment {
         this.productVersion = EMPTY_VERSION;
         this.managementVersion = EMPTY_VERSION;
         this.operationMode = STANDALONE;
-        this.stability = COMMUNITY;
+        this.serverStability = COMMUNITY;
         this.permissibleStabilityLevels = new Stability[0];
         this.accessControlProvider = SIMPLE;
         this.sso = false;
         this.domainController = "undefined";
+    }
+
+    // used for unit tests only
+    Environment(String applicationId, String applicationName, Version applicationVersion,
+            String base, BuildType buildType, Stability builtInStability) {
+        this.applicationId = applicationId;
+        this.applicationName = applicationName;
+        this.applicationVersion = applicationVersion;
+        this.base = base;
+        this.buildType = buildType;
+        this.builtInStability = builtInStability;
     }
 
     @Override
@@ -82,7 +100,7 @@ public class Environment {
                 ", productVersion=" + productVersion +
                 ", managementVersion=" + managementVersion +
                 ", operationMode=" + operationMode +
-                ", stability=" + stability +
+                ", stability=" + serverStability +
                 ", permissibleStabilityLevels=" + Arrays.toString(permissibleStabilityLevels) +
                 ", accessControlProvider=" + accessControlProvider +
                 ", sso=" + sso +
@@ -113,7 +131,7 @@ public class Environment {
     }
 
     public void update(Stability stability, Stability[] permissibleStabilityLevels) {
-        this.stability = stability;
+        this.serverStability = stability;
         this.permissibleStabilityLevels = permissibleStabilityLevels;
     }
 
@@ -179,8 +197,8 @@ public class Environment {
         return operationMode;
     }
 
-    public Stability stability() {
-        return stability;
+    public Stability serverStability() {
+        return serverStability;
     }
 
     public Stability builtInStability() {
@@ -188,23 +206,47 @@ public class Environment {
     }
 
     /**
-     * Determines if the stability level of the environment is greater than the built-in stability level.
+     * Determines if the stability level of the server is greater than the built-in stability level.
+     * <p>
+     * The built-in stability level is the stability level the console was built with. It is passed at built time using the
+     * system property {@code environment.stability}.
      *
-     * @return true if the stability level of the environment is greater than the built-in stability level, false otherwise.
+     * @return true if the stability level of the server is greater than the built-in stability level, false otherwise.
      */
     public boolean highlightStability() {
-        return stability.order > builtInStability.order;
+        return checkStability(serverStability, builtInStability);
     }
 
     /**
-     * Determines if the stability level of the given stability is greater than the stability level of the environment.
+     * Determines if the given stability level is greater than the stability level of the server. If one or more dependent
+     * stability levels are given, then this method returns true only if the dependent stability is greater than all previous
+     * levels.
+     * <p>
+     * Use this method to check resources, attributes, operations and operation parameters, e.g.:
+     * <ul>
+     *     <li><code>highlightStability(resourceStability)</code></li>
+     *     <li><code>highlightStability(resourceStability, attributeStability)</code></li>
+     *     <li><code>highlightStability(resourceStability, operationStability)</code></li>
+     *     <li><code>highlightStability(resourceStability, operationStability, parameterStability)</code></li>
+     * </ul>
      *
-     * @param stability the stability level to compare with the environment stability level
-     * @return true if the stability level of the given stability is greater than the stability level of the environment, false
-     * otherwise.
+     * @param stability            the stability level to compare with the server stability level
+     * @param dependentStabilities optional dependent stability levels
+     * @return true if the stability level and all dependent stability levels are greater than the stability level of the
+     * server, false otherwise.
      */
-    public boolean highlightStability(Stability stability) {
-        return stability != null && stability.order > this.stability.order;
+    public boolean highlightStability(Stability stability, Stability... dependentStabilities) {
+        boolean highlight = checkStability(stability, serverStability);
+        if (dependentStabilities != null) {
+            List<Stability> previous = new ArrayList<>();
+            previous.add(serverStability);
+            previous.add(stability);
+            for (Stability dependency : dependentStabilities) {
+                highlight = checkStability(dependency, previous);
+                previous.add(dependency);
+            }
+        }
+        return highlight;
     }
 
     public boolean standalone() {
@@ -225,5 +267,23 @@ public class Environment {
 
     public String domainController() {
         return domainController;
+    }
+
+    // ------------------------------------------------------ internal
+
+    private static boolean checkStability(Stability stability, List<Stability> compareToAll) {
+        boolean check = stability != null &&
+                stability.order > LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED.order;
+        for (Iterator<Stability> iterator = compareToAll.iterator(); iterator.hasNext() && check; ) {
+            Stability compareTo = iterator.next();
+            check = checkStability(stability, compareTo);
+        }
+        return check;
+    }
+
+    private static boolean checkStability(Stability stability, Stability compareTo) {
+        return stability != null &&
+                stability.order > LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED.order &&
+                stability.order > compareTo.order;
     }
 }

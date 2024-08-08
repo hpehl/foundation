@@ -29,6 +29,7 @@ import org.jboss.hal.meta.description.RestartMode;
 import org.patternfly.component.list.List;
 import org.patternfly.component.list.ListItem;
 import org.patternfly.icon.PredefinedIcon;
+import org.patternfly.layout.flex.Flex;
 import org.patternfly.style.Color;
 import org.patternfly.style.Variable;
 
@@ -54,11 +55,16 @@ import static org.jboss.hal.env.Stability.PREVIEW;
 import static org.jboss.hal.meta.description.RestartMode.UNKNOWN;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halModifier;
+import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
 import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
 import static org.patternfly.icon.IconSets.fas.flask;
 import static org.patternfly.icon.IconSets.fas.infoCircle;
+import static org.patternfly.layout.flex.AlignItems.center;
+import static org.patternfly.layout.flex.Flex.flex;
+import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.layout.flex.SpaceItems.sm;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.list;
 import static org.patternfly.style.Classes.util;
@@ -72,14 +78,25 @@ public class BuildingBlocks {
 
     // ------------------------------------------------------ attributes
 
-    public static HTMLContainerBuilder<HTMLElement> attributeName(AttributeDescription attribute) {
-        return strong()
+    public static Flex attributeName(AttributeDescription attribute, Supplier<Boolean> stabilityCheck) {
+        return attributeName(attribute, false, stabilityCheck);
+    }
+
+    public static Flex attributeName(AttributeDescription attribute, boolean compact, Supplier<Boolean> stabilityCheck) {
+        HTMLContainerBuilder<HTMLElement> name = strong()
                 .textContent(attribute.name())
-                .run(strong -> {
+                .run(element -> {
                     if (attribute.deprecation() != null) {
-                        strong.css(halModifier(deprecated));
+                        element.css(halModifier(deprecated));
                     }
                 });
+        if (stabilityCheck.get()) {
+            return flex().alignItems(center).spaceItems(sm)
+                    .addItem(flexItem().add(name))
+                    .addItem(flexItem().add(stabilityLabel(attribute.stability()).compact(compact)));
+        } else {
+            return flex().add(name);
+        }
     }
 
     public static HTMLContainerBuilder<HTMLDivElement> attributeDescription(AttributeDescription attribute) {

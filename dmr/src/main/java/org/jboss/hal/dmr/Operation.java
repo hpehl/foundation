@@ -24,7 +24,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.OP;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RESOLVE_EXPRESSION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ROLES;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI_OPERATION;
 
 /**
  * Represents a DMR operation.
@@ -54,7 +54,7 @@ public class Operation extends ModelNode {
     }
 
     private void addRolesAsHeaders() {
-        if (roles != null && !roles.isEmpty() && !name.equals(WHOAMI)) {
+        if (roles != null && !roles.isEmpty() && !name.equals(WHOAMI_OPERATION)) {
             // roles are headers!
             if (roles.size() == 1) {
                 header.get(ROLES).set(roles.iterator().next());

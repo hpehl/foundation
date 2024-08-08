@@ -71,7 +71,7 @@ public class Skeleton implements IsElement<HTMLElement> {
         return new Skeleton(environment);
     }
 
-    public static Skeleton skeleton() {
+    public static Skeleton errorSkeleton() {
         return new Skeleton(null);
     }
 

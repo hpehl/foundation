@@ -18,19 +18,28 @@ package org.jboss.hal.meta.description;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
+import org.jboss.hal.env.Stability;
 
 public class AttributeDescription extends NamedNode implements Description {
 
-    public AttributeDescription(String name, ModelNode modelNode) {
+    private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
+
+    AttributeDescription(String name, ModelNode modelNode) {
         super(name, modelNode);
     }
 
-    public AttributeDescription(Property property) {
+    AttributeDescription(Property property) {
         super(property);
     }
 
     @Override
     public ModelNode modelNode() {
         return asModelNode();
+    }
+
+    @Override
+    // TODO Remove pseudo stability code
+    public Stability stability() {
+        return stability;
     }
 }

@@ -29,7 +29,7 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.hal.ui.form.ModelNodeView.modelNodeView;
+import static org.jboss.hal.ui.resource.ResourceView.resourceView;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
@@ -37,15 +37,17 @@ import static org.patternfly.style.Classes.util;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
+    private final UIContext uic;
     private final HTMLElement root;
 
     ResourceElement(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
+        this.uic = uic;
         this.root = div().element();
-        Operation operation = new Operation.Builder(mbn.template.resolve(uic.statementContext), READ_RESOURCE_OPERATION)
+        Operation operation = new Operation.Builder(mbn.template.resolve(uic.statementContext()), READ_RESOURCE_OPERATION)
                 .param(ATTRIBUTES_ONLY, true)
                 .param(INCLUDE_RUNTIME, true)
                 .build();
-        uic.dispatcher.execute(operation, resource -> details(resource, metadata));
+        uic.dispatcher().execute(operation, resource -> details(resource, metadata));
     }
 
     @Override
@@ -57,35 +59,30 @@ class ResourceElement implements IsElement<HTMLElement> {
         root.append(Tabs.tabs()
                 .addItem(tab("data", "Data")
                         .addContent(tabContent()
-                                .add(modelNodeView(metadata, resource).css(util("mt-lg")))))
+                                .add(resourceView(uic, metadata, resource).css(util("mt-lg")))))
                 .run(tabs -> {
                     if (!metadata.resourceDescription.attributes().isEmpty()) {
                         tabs.addItem(tab("attributes", "Attributes")
                                 .addContent(tabContent()
-                                        .add(new AttributesTable(metadata.resourceDescription.attributes()))));
+                                        .add(new AttributesTable(uic, metadata.resourceDescription,
+                                                metadata.resourceDescription.attributes()))));
                     }
                 })
                 .run(tabs -> {
                     if (!metadata.resourceDescription.operations().isEmpty()) {
                         tabs.addItem(tab("operations", "Operations")
                                 .addContent(tabContent()
-                                        .add(new OperationsTable(metadata.resourceDescription.operations()))));
+                                        .add(new OperationsTable(uic, metadata.resourceDescription,
+                                                metadata.resourceDescription.operations()))));
                     }
                 })
                 .addItem(tab("capabilities", "Capabilities")
                         .addContent(tabContent()
                                 .add(capabilities(metadata))))
-                .addItem(tab("children", "Children")
-                        .addContent(tabContent()
-                                .add(children(metadata))))
                 .element());
     }
 
     private Table capabilities(Metadata metadata) {
-        return table();
-    }
-
-    private Table children(Metadata metadata) {
         return table();
     }
 }

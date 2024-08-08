@@ -45,6 +45,10 @@
         cursor: not-allowed;
     }
 
+    .pf-v5-c-tree-view__node {
+        pointer-events: none;
+    }
+
     .pf-v5-c-tree-view__content:hover,
     .pf-v5-c-tree-view__content:focus-within {
         background-color: unset;

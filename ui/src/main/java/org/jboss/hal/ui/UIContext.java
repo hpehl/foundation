@@ -15,22 +15,42 @@
  */
 package org.jboss.hal.ui;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 
 /** Holds common classes needed by UI elements. Use this class to keep the method signatures clean and tidy. */
+@Startup
 @ApplicationScoped
 public class UIContext {
 
-    public final Environment environment;
-    public final Dispatcher dispatcher;
-    public final MetadataRepository metadataRepository;
-    public final StatementContext statementContext;
+    // ------------------------------------------------------ singleton
+
+    // Hacky way to make the UIContext statically available.
+    // Use this only if there's no other (CDI-compliant) way!
+    private static UIContext instance;
+
+    public static UIContext uic() {
+        if (instance == null) {
+            logger.error("UIContext has not yet been initialized. Static access is not possible!");
+        }
+        return instance;
+    }
+
+    // ------------------------------------------------------ instance
+
+    private static final Logger logger = Logger.getLogger(UIContext.class.getName());
+    private final Environment environment;
+    private final Dispatcher dispatcher;
+    private final MetadataRepository metadataRepository;
+    private final StatementContext statementContext;
 
     @Inject
     public UIContext(Environment environment,
@@ -41,5 +61,26 @@ public class UIContext {
         this.dispatcher = dispatcher;
         this.metadataRepository = metadataRepository;
         this.statementContext = statementContext;
+    }
+
+    @PostConstruct
+    void init() {
+        UIContext.instance = this;
+    }
+
+    public Environment environment() {
+        return environment;
+    }
+
+    public Dispatcher dispatcher() {
+        return dispatcher;
+    }
+
+    public MetadataRepository metadataRepository() {
+        return metadataRepository;
+    }
+
+    public StatementContext statementContext() {
+        return statementContext;
     }
 }

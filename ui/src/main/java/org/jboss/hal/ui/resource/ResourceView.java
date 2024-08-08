@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.form;
+package org.jboss.hal.ui.resource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.jboss.elemento.HasElement;
 import org.jboss.elemento.Id;
-import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
@@ -31,6 +30,7 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.LabelBuilder;
+import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionList;
@@ -38,7 +38,6 @@ import org.patternfly.component.list.DescriptionListDescription;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Tuple;
-import org.patternfly.style.Breakpoint;
 import org.patternfly.style.Size;
 import org.patternfly.style.Variables;
 
@@ -54,22 +53,18 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.hal.dmr.ModelType.BIG_DECIMAL;
-import static org.jboss.hal.dmr.ModelType.BIG_INTEGER;
 import static org.jboss.hal.dmr.ModelType.BOOLEAN;
-import static org.jboss.hal.dmr.ModelType.DOUBLE;
 import static org.jboss.hal.dmr.ModelType.EXPRESSION;
-import static org.jboss.hal.dmr.ModelType.INT;
 import static org.jboss.hal.dmr.ModelType.LIST;
-import static org.jboss.hal.dmr.ModelType.LONG;
 import static org.jboss.hal.dmr.ModelType.OBJECT;
-import static org.jboss.hal.dmr.ModelType.STRING;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.modelNodeView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
+import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.Types.simpleType;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -93,6 +88,7 @@ import static org.patternfly.style.Breakpoint._2xl;
 import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoint.lg;
 import static org.patternfly.style.Breakpoint.md;
+import static org.patternfly.style.Breakpoint.sm;
 import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Classes.util;
@@ -100,23 +96,29 @@ import static org.patternfly.style.Color.grey;
 import static org.patternfly.style.Variable.globalVar;
 import static org.patternfly.style.Variable.utilVar;
 
-public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, IsElement<HTMLElement> {
+// TODO Implement toolbar with filters/flags:
+//  Show/hide undefined
+//  Show/hides default values
+//  Resolve all expressions
+//  Show runtime/configuration
+public class ResourceView implements HasElement<HTMLElement, ResourceView> {
 
     // ------------------------------------------------------ factory
 
-    public static ModelNodeView modelNodeView(Metadata metadata) {
-        return new ModelNodeView(metadata);
+    public static ResourceView resourceView(UIContext uic, Metadata metadata) {
+        return new ResourceView(uic, metadata);
     }
 
-    public static ModelNodeView modelNodeView(Metadata metadata, ModelNode modelNode) {
-        ModelNodeView modelNodeView = new ModelNodeView(metadata);
-        modelNodeView.show(modelNode);
-        return modelNodeView;
+    public static ResourceView resourceView(UIContext uic, Metadata metadata, ModelNode resource) {
+        ResourceView resourceView = new ResourceView(uic, metadata);
+        resourceView.show(resource);
+        return resourceView;
     }
 
     // ------------------------------------------------------ instance
 
-    private static final Logger logger = Logger.getLogger(ModelNodeView.class.getName());
+    private static final Logger logger = Logger.getLogger(ResourceView.class.getName());
+    private final UIContext uic;
     private final Metadata metadata;
     private final LabelBuilder labelBuilder;
     private final List<String> attributes;
@@ -124,7 +126,8 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
     private final HTMLElement root;
     private boolean empty;
 
-    ModelNodeView(Metadata metadata) {
+    ResourceView(UIContext uic, Metadata metadata) {
+        this.uic = uic;
         this.metadata = metadata;
         this.labelBuilder = new LabelBuilder();
         this.attributes = new ArrayList<>();
@@ -140,7 +143,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     // ------------------------------------------------------ builder
 
-    public ModelNodeView attributes(Iterable<String> attributes) {
+    public ResourceView attributes(Iterable<String> attributes) {
         for (String attribute : attributes) {
             this.attributes.add(attribute);
         }
@@ -148,29 +151,29 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
     }
 
     @Override
-    public ModelNodeView that() {
+    public ResourceView that() {
         return this;
     }
 
     // ------------------------------------------------------ api
 
-    public void show(ModelNode modelNode) {
+    public void show(ModelNode resource) {
         if (metadata.empty) {
             error();
         } else {
-            if (valid(modelNode)) {
+            if (valid(resource)) {
                 removeChildrenFrom(root);
                 updateValueFunctions.clear();
                 DescriptionList dl = descriptionList().css(halComponent(modelNodeView))
                         .horizontal()
                         .horizontalTermWidth(breakpoints(
                                 default_, "12ch",
-                                Breakpoint.sm, "15ch",
+                                sm, "15ch",
                                 md, "18ch",
                                 lg, "23ch",
                                 xl, "25ch",
                                 _2xl, "28ch"));
-                List<Property> properties = modelNode.asPropertyList();
+                List<Property> properties = resource.asPropertyList();
                 properties.sort(comparing(Property::getName));
                 for (Property property : properties) {
                     String name = property.getName();
@@ -187,17 +190,17 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
         }
     }
 
-    public void update(ModelNode modelNode) {
+    public void update(ModelNode resource) {
         if (metadata.empty) {
             error();
         } else {
             if (empty) {
-                show(modelNode);
-            } else if (valid(modelNode)) {
-                for (Property property : modelNode.asPropertyList()) {
+                show(resource);
+            } else if (valid(resource)) {
+                for (Property property : resource.asPropertyList()) {
                     UpdateValueFn updateAttribute = updateValueFunctions.get(property.getName());
                     if (updateAttribute != null) {
-                        updateAttribute.update(modelNode);
+                        updateAttribute.update(resource);
                     } else {
                         logger.warn("Unable to update attribute %s. No update function found", property.getName());
                     }
@@ -210,8 +213,8 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
 
     // ------------------------------------------------------ internal
 
-    private boolean valid(ModelNode modelNode) {
-        return modelNode != null && modelNode.isDefined() && !modelNode.asPropertyList().isEmpty();
+    private boolean valid(ModelNode resource) {
+        return resource != null && resource.isDefined() && !resource.asPropertyList().isEmpty();
     }
 
     private void error() {
@@ -244,6 +247,18 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
         String label = labelBuilder.label(name);
         DescriptionListTerm term = descriptionListTerm(label);
         if (attribute != null) {
+            if (uic.environment().highlightStability(metadata.resourceDescription.stability(), attribute.stability())) {
+                // Kind of a hack: Because DescriptionListTerm implements ElementDelegate
+                // and delegates to the internal text element, we must use
+                // term.element.appendChild() instead of term.add() to add the
+                // stability label after the text element instead of into the text element.
+                // Then we must reset the font weight to normal (DescriptionListTerm uses bold)
+                term.style("align-items", "center");
+                term.element().appendChild(stabilityLabel(attribute.stability()).compact()
+                        .style("align-self", "baseline")
+                        .css(util("ml-sm"), util("font-weight-normal"))
+                        .element());
+            }
             if (attribute.deprecation() != null) {
                 term.css(halModifier(deprecated));
             }
@@ -257,19 +272,19 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
         return term;
     }
 
-    private DescriptionListDescription value(String name, ModelNode modelNode, AttributeDescription attribute) {
-        Tuple<HTMLElement, UpdateValueFn> tuple = valueElement(name, modelNode, attribute);
+    private DescriptionListDescription value(String name, ModelNode resource, AttributeDescription attribute) {
+        Tuple<HTMLElement, UpdateValueFn> tuple = valueElement(name, resource, attribute);
         updateValueFunctions.put(name, tuple.value);
         return descriptionListDescription().add(tuple.key);
     }
 
-    private Tuple<HTMLElement, UpdateValueFn> valueElement(String name, ModelNode modelNode, AttributeDescription attribute) {
+    private Tuple<HTMLElement, UpdateValueFn> valueElement(String name, ModelNode resource, AttributeDescription attribute) {
         HTMLElement element;
         UpdateValueFn fn;
 
-        // TODO Default values and sensitive
-        if (modelNode.isDefined()) {
-            if (modelNode.getType() == EXPRESSION) {
+        // TODO Implement default values and sensitive
+        if (resource.isDefined()) {
+            if (resource.getType() == EXPRESSION) {
                 HTMLElement resolveButton = button().plain().inline().icon(link()).element();
                 HTMLElement expressionElement = span().element();
                 element = span()
@@ -308,7 +323,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
                                         .stream()
                                         .map(ModelNode::asString)
                                         .collect(toList());
-                                allowed.remove(modelNode.asString());
+                                allowed.remove(resource.asString());
                                 allowed.sort(naturalOrder());
                                 Label label = Label.label("", grey);
                                 element = labelGroup()
@@ -359,11 +374,7 @@ public class ModelNodeView implements HasElement<HTMLElement, ModelNodeView>, Is
             fn = value -> element.textContent = value.asString();
         }
 
-        fn.update(modelNode);
+        fn.update(resource);
         return tuple(element, fn);
-    }
-
-    private boolean simpleType(ModelType type) {
-        return type == BOOLEAN || type == BIG_DECIMAL || type == BIG_INTEGER || type == INT || type == LONG || type == DOUBLE || type == STRING;
     }
 }

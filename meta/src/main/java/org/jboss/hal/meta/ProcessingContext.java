@@ -21,10 +21,12 @@ import org.jboss.elemento.flow.FlowContext;
 
 class ProcessingContext extends FlowContext {
 
+    final AddressTemplate template;
     final Set<String> addresses;
     final RrdResult rrdResult;
 
-    ProcessingContext(Set<String> addresses) {
+    ProcessingContext(AddressTemplate template, Set<String> addresses) {
+        this.template = template;
         this.addresses = addresses;
         this.rrdResult = new RrdResult();
     }

@@ -17,6 +17,10 @@
  */
 goog.provide('environment');
 
+// The names used here must be passed to the
+// j2cl-maven-plugin as `<environment.x/>` closure defines (sse POM)
+// In Java they can be accessed via `System.getProperty("<name>")`
+
 /** @define {string} */
 environment.id = goog.define('environment.id', 'undefined');
 

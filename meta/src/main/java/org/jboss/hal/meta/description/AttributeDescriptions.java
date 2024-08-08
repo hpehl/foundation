@@ -30,7 +30,7 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
     private final LinkedHashMap<String, AttributeDescription> attributes;
 
-    public AttributeDescriptions(ModelNode modelNode) {
+    AttributeDescriptions(ModelNode modelNode) {
         this.attributes = modelNode != null && modelNode.isDefined()
                 ? modelNode.asPropertyList()
                 .stream()

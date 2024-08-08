@@ -21,6 +21,9 @@ import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
+import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.ui.Types;
+import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Table;
 import org.patternfly.component.table.Td;
 import org.patternfly.style.Variable;
@@ -61,7 +64,7 @@ class AttributesTable implements IsElement<HTMLElement> {
     private static final String ATTRIBUTE = "modelbrowser.attribute";
     private final Table table;
 
-    AttributesTable(AttributeDescriptions attributes) {
+    AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
         table = table()
                 .addHead(thead().css(util("mt-sm"))
                         .addRow(tr("attributes-head")
@@ -73,7 +76,8 @@ class AttributesTable implements IsElement<HTMLElement> {
                         .addRows(attributes, attribute -> tr(attribute.name())
                                 .store(ATTRIBUTE, attribute)
                                 .addItem(td("Name")
-                                        .add(attributeName(attribute))
+                                        .add(attributeName(attribute, () -> uic.environment()
+                                                .highlightStability(resource.stability(), attribute.stability())))
                                         .add(attributeDescription(attribute).css(util("mt-sm"))))
                                 .addItem(td("Type").textContent(Types.formatType(attribute)))
                                 .addItem(td("Storage").run(td -> storage(td, attribute)))

@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.modelbrowser;
+package org.jboss.hal.ui;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
@@ -21,10 +21,17 @@ import org.jboss.hal.resources.Names;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.hal.dmr.ModelType.BIG_DECIMAL;
+import static org.jboss.hal.dmr.ModelType.BIG_INTEGER;
+import static org.jboss.hal.dmr.ModelType.BOOLEAN;
+import static org.jboss.hal.dmr.ModelType.DOUBLE;
+import static org.jboss.hal.dmr.ModelType.INT;
+import static org.jboss.hal.dmr.ModelType.LONG;
+import static org.jboss.hal.dmr.ModelType.STRING;
 
-class Types {
+public class Types {
 
-    static String formatType(ModelNode hasType) {
+    public static String formatType(ModelNode hasType) {
         StringBuilder builder = new StringBuilder();
         if (hasType.hasDefined(TYPE)) {
             builder.append(hasType.get(TYPE).asString());
@@ -38,5 +45,9 @@ class Types {
             builder.append(Names.NOT_AVAILABLE);
         }
         return builder.toString();
+    }
+
+    public static boolean simpleType(ModelType type) {
+        return type == BOOLEAN || type == BIG_DECIMAL || type == BIG_INTEGER || type == INT || type == LONG || type == DOUBLE || type == STRING;
     }
 }

@@ -177,13 +177,13 @@ public class MetadataRepository {
     }
 
     private Promise<Metadata> process(AddressTemplate template, Set<String> addresses) {
-        String handle = logger.timeInfo("Metadata processing for " + addresses);
+        String timer = logger.timeInfo("Metadata processing for " + template.template + " → " + addresses);
         List<Task<ProcessingContext>> tasks = new ArrayList<>();
         tasks.add(new RrdTask(settings, dispatcher));
         tasks.add(new UpdateTask(this));
-        return Flow.sequential(new ProcessingContext(addresses), tasks)
+        return Flow.sequential(new ProcessingContext(template, addresses), tasks)
                 .then(context -> Promise.resolve(get(template)))
-                .finally_(() -> logger.timeInfoEnd(handle));
+                .finally_(() -> logger.timeEnd(timer));
     }
 
     private String resolveTemplate(AddressTemplate template) {

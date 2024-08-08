@@ -1080,7 +1080,7 @@ public interface ModelDescriptionConstants {
     String WELCOME_FILE = "welcome-file";
     String WELD = "weld";
     String WHERE = "where";
-    String WHOAMI = "whoami";
+    String WHOAMI_OPERATION = "whoami";
     String WM_SECURITY_MAPPING_GROUPS = "wm-security-mapping-groups";
     String WM_SECURITY_MAPPING_USERS = "wm-security-mapping-users";
     String WORK_DIR = "work-dir";

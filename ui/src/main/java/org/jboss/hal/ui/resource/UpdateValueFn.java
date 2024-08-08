@@ -13,7 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.form;
+package org.jboss.hal.ui.resource;
 
-public class ModelNodeForm {
+import org.jboss.hal.dmr.ModelNode;
+
+@FunctionalInterface
+interface UpdateValueFn {
+
+    void update(ModelNode value);
 }

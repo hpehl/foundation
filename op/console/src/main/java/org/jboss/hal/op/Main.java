@@ -29,6 +29,7 @@ import org.patternfly.component.navigation.Navigation;
 import static elemental2.dom.DomGlobal.document;
 import static org.jboss.elemento.Elements.insertFirst;
 import static org.jboss.hal.op.bootstrap.BootstrapErrorElement.bootstrapError;
+import static org.jboss.hal.op.skeleton.Skeleton.errorSkeleton;
 import static org.jboss.hal.op.skeleton.Skeleton.skeleton;
 
 @Application(packages = {"org.jboss.hal"})
@@ -52,7 +53,7 @@ public class Main {
                 placeManager.start();
             } else {
                 BootstrapError error = context.pop(BootstrapError.UNKNOWN);
-                insertFirst(document.body, skeleton().add(bootstrapError(error)));
+                insertFirst(document.body, errorSkeleton().add(bootstrapError(error)));
             }
         });
     }

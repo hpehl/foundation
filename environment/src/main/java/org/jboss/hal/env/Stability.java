@@ -17,16 +17,16 @@ package org.jboss.hal.env;
 
 public enum Stability {
 
-    EXPERIMENTAL(300, "E", "experimental"),
+    DEFAULT(0, "default"),
 
-    PREVIEW(200, "P", "preview"),
+    COMMUNITY(100, "community"),
 
-    COMMUNITY(100, "C", "community"),
+    PREVIEW(200, "preview"),
 
-    DEFAULT(0, "D", "default");
+    EXPERIMENTAL(300, "experimental");
 
-    public static Stability parse(String value) {
-        Stability stability = COMMUNITY;
+    public static Stability parse(String value, Stability defaultValue) {
+        Stability stability = defaultValue;
         if (value != null) {
             try {
                 stability = Stability.valueOf(value.toUpperCase());
@@ -37,13 +37,15 @@ public enum Stability {
         return stability;
     }
 
+    public static Stability random() {
+        return Stability.values()[(int) (Math.random() * Stability.values().length)];
+    }
+
     public final int order;
-    public final String letter;
     public final String label;
 
-    Stability(int order, String letter, String label) {
+    Stability(int order, String label) {
         this.order = order;
-        this.letter = letter;
         this.label = label;
     }
 }

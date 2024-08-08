@@ -144,6 +144,8 @@
                     <compilationLevel>${j2cl.compilationLevel}</compilationLevel>
                     <enableSourcemaps>${j2cl.sourcemaps}</enableSourcemaps>
                     <initialScriptFilename>console.js</initialScriptFilename>
+                    <!-- Keep in sync with
+                    environment/src/main/java/org/jboss/hal/env/environment.js -->
                     <defines>
                         <environment.id>${project.artifactId}</environment.id>
                         <environment.name>${project.name}</environment.name>

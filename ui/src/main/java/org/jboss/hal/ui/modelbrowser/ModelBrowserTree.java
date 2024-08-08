@@ -60,7 +60,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     }
 
     void show(List<ModelBrowserNode> nodes) {
-        treeView.addItems(nodes, mbn2tvi(uic.dispatcher));
+        treeView.addItems(nodes, mbn2tvi(uic.dispatcher()));
     }
 
     void select(ModelBrowserNode parent, ModelBrowserNode mbn) {

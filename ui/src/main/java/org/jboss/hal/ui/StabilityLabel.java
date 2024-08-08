@@ -15,11 +15,11 @@
  */
 package org.jboss.hal.ui;
 
-import org.jboss.elemento.IsElement;
+import org.jboss.elemento.HasElement;
+import org.jboss.elemento.HasHTMLElement;
 import org.jboss.hal.env.Stability;
 import org.patternfly.component.label.Label;
 import org.patternfly.core.Aria;
-import org.patternfly.icon.PredefinedIcon;
 
 import elemental2.dom.HTMLElement;
 
@@ -27,30 +27,29 @@ import static org.jboss.hal.ui.BuildingBlocks.stabilityColor;
 import static org.jboss.hal.ui.BuildingBlocks.stabilityIcon;
 import static org.patternfly.component.label.Label.label;
 
-public class StabilityLabel implements IsElement<HTMLElement> {
+public class StabilityLabel implements
+        HasHTMLElement<HTMLElement, StabilityLabel>,
+        HasElement<HTMLElement, StabilityLabel> {
 
     // ------------------------------------------------------ factory
 
     public static StabilityLabel stabilityLabel(Stability stability) {
-        return new StabilityLabel(stability, true);
-    }
-
-    public static StabilityLabel stabilityLabel(Stability stability, boolean icon) {
-        return new StabilityLabel(stability, icon);
+        return new StabilityLabel(stability);
     }
 
     // ------------------------------------------------------ instance
 
-    private final Stability stability;
     private final Label label;
 
-    StabilityLabel(Stability stability, boolean icon) {
-        this.stability = stability;
-        PredefinedIcon pi = stabilityIcon(stability);
-        label = label(stability.label, stabilityColor(stability));
-        if (icon) {
-            label.icon(pi);
-        }
+    StabilityLabel(Stability stability) {
+        label = label(stability.label, stabilityColor(stability))
+                .aria(Aria.label, stability.label)
+                .icon(stabilityIcon(stability));
+    }
+
+    @Override
+    public StabilityLabel that() {
+        return this;
     }
 
     @Override
@@ -61,11 +60,13 @@ public class StabilityLabel implements IsElement<HTMLElement> {
     // ------------------------------------------------------ modifier
 
     public StabilityLabel compact() {
-        label.compact()
-                .removeIcon()
-                .text(stability.letter)
-                .aria(Aria.label, stability.label)
-                .title(stability.label);
+        return compact(false);
+    }
+
+    public StabilityLabel compact(boolean compact) {
+        if (compact) {
+            label.compact().removeIcon();
+        }
         return this;
     }
 }

@@ -25,6 +25,8 @@ import org.jboss.hal.meta.security.SecurityContext;
 
 import elemental2.promise.Promise;
 
+import static org.jboss.hal.meta.Metadata.metadata;
+
 class UpdateTask implements Task<ProcessingContext> {
 
     private static final Logger logger = Logger.getLogger(UpdateTask.class.getName());
@@ -42,10 +44,10 @@ class UpdateTask implements Task<ProcessingContext> {
                 ResourceDescription resourceDescription = entry.getValue();
                 SecurityContext securityContext = context.rrdResult.securityContexts.get(address);
                 if (securityContext == null) {
-                    logger.warn("No security context for %s in rrd results!", address);
+                    logger.warn("No security context for %s in rrd results. Fallback to read-only security context.", address);
                     securityContext = SecurityContext.READ_ONLY;
                 }
-                metadataRepository.addMetadata(address, new Metadata(resourceDescription, securityContext));
+                metadataRepository.addMetadata(address, metadata(context.template, resourceDescription, securityContext));
             }
             for (Map.Entry<String, Set<String>> entry : context.rrdResult.processedAddresses.entrySet()) {
                 metadataRepository.addProcessedAddresses(entry.getKey(), entry.getValue());

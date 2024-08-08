@@ -30,7 +30,7 @@ public class OperationDescriptions implements Iterable<OperationDescription> {
 
     private final LinkedHashMap<String, OperationDescription> operations;
 
-    public OperationDescriptions(ModelNode modelNode) {
+    OperationDescriptions(ModelNode modelNode) {
         this.operations = modelNode != null && modelNode.isDefined()
                 ? modelNode.asPropertyList()
                 .stream()

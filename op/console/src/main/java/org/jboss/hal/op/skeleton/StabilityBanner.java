@@ -36,10 +36,10 @@ import static org.patternfly.component.divider.Divider.divider;
 import static org.patternfly.component.divider.DividerType.hr;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.layout.flex.FlexWrap.noWrap;
 import static org.patternfly.layout.flex.JustifyContent.center;
 import static org.patternfly.layout.flex.SpaceItems.none;
 import static org.patternfly.layout.flex.SpaceItems.sm;
-import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Orientation.vertical;
 
 public class StabilityBanner implements IsElement<HTMLElement> {
@@ -55,22 +55,22 @@ public class StabilityBanner implements IsElement<HTMLElement> {
     private final HTMLElement root;
 
     StabilityBanner(Environment environment, Callback gotIt) {
-        Stability stability = environment.stability();
-        Color color = stabilityColor(stability);
-        Supplier<PredefinedIcon> icon = stabilityIconSupplier(stability);
+        Stability serverStability = environment.serverStability();
+        Color color = stabilityColor(serverStability);
+        Supplier<PredefinedIcon> icon = stabilityIconSupplier(serverStability);
         String moreInfo = "https://docs.wildfly.org/" + environment.productVersionLink() + "/Admin_Guide.html#Feature_stability_levels";
 
         root = banner(color)
                 .sticky()
-                .screenReader("The server has been started with stability level " + stability.label)
+                .screenReader("The server has been started with stability level " + serverStability.label)
                 .add(flex().spaceItems(none)
                         .justifyContent(center)
-                        .css(modifier("nowrap")) // TODO .flexWrap(FlexWrap.noWrap)
+                        .flexWrap(noWrap)
                         .add(flex().spaceItems(sm)
                                 .addItem(flexItem().add(icon.get()))
                                 .addItem(flexItem()
                                         .add("The server has been started with stability level ")
-                                        .add(strong().textContent(stability.label)))
+                                        .add(strong().textContent(serverStability.label)))
                                 .addItem(flexItem().add(icon.get())))
                         .add(flex().spaceItems(sm).style("position:fixed;right:var(--pf-v5-global--spacer--lg)")
                                 .add(button("Got it").link().inline().onClick((event, component) -> gotIt.call()))

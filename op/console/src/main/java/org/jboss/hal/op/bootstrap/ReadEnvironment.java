@@ -48,7 +48,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATIO
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RESULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VERBOSE;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI_OPERATION;
 import static org.jboss.hal.dmr.ModelNodeHelper.asEnumValue;
 
 class ReadEnvironment implements Task<FlowContext> {
@@ -71,7 +71,7 @@ class ReadEnvironment implements Task<FlowContext> {
                 .param(ATTRIBUTES_ONLY, true)
                 .param(INCLUDE_RUNTIME, true)
                 .build());
-        operations.add(new Operation.Builder(ResourceAddress.root(), WHOAMI).param(VERBOSE, true).build());
+        operations.add(new Operation.Builder(ResourceAddress.root(), WHOAMI_OPERATION).param(VERBOSE, true).build());
 
         return dispatcher.execute(new Composite(operations))
                 .then(result -> {

@@ -21,6 +21,7 @@ import java.util.Set;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
+import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_ADD_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_CLEAR_OPERATION;
@@ -44,6 +45,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATIO
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 public class OperationDescription extends NamedNode implements Description {
@@ -71,10 +73,13 @@ public class OperationDescription extends NamedNode implements Description {
         GLOBAL_OPERATIONS.add(READ_RESOURCE_DESCRIPTION_OPERATION);
         GLOBAL_OPERATIONS.add(READ_RESOURCE_OPERATION);
         GLOBAL_OPERATIONS.add(UNDEFINE_ATTRIBUTE_OPERATION);
+        GLOBAL_OPERATIONS.add(WHOAMI_OPERATION);
         GLOBAL_OPERATIONS.add(WRITE_ATTRIBUTE_OPERATION);
     }
 
-    public OperationDescription(Property property) {
+    private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
+
+    OperationDescription(Property property) {
         super(property);
     }
 
@@ -93,5 +98,11 @@ public class OperationDescription extends NamedNode implements Description {
 
     public AttributeDescription returnValue() {
         return new AttributeDescription("return-value", get(REPLY_PROPERTIES));
+    }
+
+    @Override
+    // TODO Remove pseudo stability code
+    public Stability stability() {
+        return stability;
     }
 }
