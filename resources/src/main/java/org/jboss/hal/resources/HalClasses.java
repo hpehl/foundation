@@ -23,7 +23,8 @@ public interface HalClasses {
     String detail = "detail";
     String content = "content";
     String modelBrowser = "model-browser";
-    String modelNodeView = "model-node-view";
+    String resourceView = "resource-view";
+    String stabilityLevel = "stability-level";
     String unit = "unit";
     String undefined = "undefined";
 

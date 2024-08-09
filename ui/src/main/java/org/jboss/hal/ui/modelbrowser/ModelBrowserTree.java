@@ -63,6 +63,10 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         treeView.addItems(nodes, mbn2tvi(uic.dispatcher()));
     }
 
+    void select(String identifier) {
+        treeView.select(identifier);
+    }
+
     void select(ModelBrowserNode parent, ModelBrowserNode mbn) {
         TreeViewItem parentItem = treeView.findItem(parent.id);
         if (parentItem != null && !parentItem.expanded() && parentItem.status() == pending) {

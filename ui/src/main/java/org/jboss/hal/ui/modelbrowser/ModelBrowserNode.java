@@ -32,11 +32,13 @@ import org.patternfly.icon.PredefinedIcon;
  */
 class ModelBrowserNode {
 
-    private static String uniqueId(String template) {
+    static final String ROOT_ID = "root";
+
+    static String uniqueId(AddressTemplate template) {
         if (template.isEmpty()) {
-            return "root";
+            return ROOT_ID;
         } else {
-            String safeTemplate = template
+            String safeTemplate = template.template
                     .replace("/", "-s-")
                     .replace("=", "-e-")
                     .replace(":", "-c-")
@@ -71,7 +73,7 @@ class ModelBrowserNode {
     boolean exists;
 
     ModelBrowserNode(AddressTemplate template, String name, Type type) {
-        this.id = uniqueId(template.template);
+        this.id = uniqueId(template);
         this.template = template;
         this.name = name != null ? SafeHtmlUtils.htmlEscape(name) : null;
         this.type = type;

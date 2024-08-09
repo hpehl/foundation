@@ -60,7 +60,7 @@ import static org.jboss.hal.dmr.ModelType.OBJECT;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
-import static org.jboss.hal.resources.HalClasses.modelNodeView;
+import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
@@ -164,7 +164,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
             if (valid(resource)) {
                 removeChildrenFrom(root);
                 updateValueFunctions.clear();
-                DescriptionList dl = descriptionList().css(halComponent(modelNodeView))
+                DescriptionList dl = descriptionList().css(halComponent(resourceView))
                         .horizontal()
                         .horizontalTermWidth(breakpoints(
                                 default_, "12ch",
@@ -260,7 +260,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         .element());
             }
             if (attribute.deprecation() != null) {
-                term.css(halModifier(deprecated));
+                term.delegate().classList.add(halModifier(deprecated));
             }
             term.help(popover()
                     .css(util("min-width"))
@@ -312,7 +312,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                             String unit = attribute.hasDefined(UNIT) ? attribute.get(UNIT).asString() : null;
                             if (unit != null) {
                                 HTMLElement valueElement = span().element();
-                                HTMLElement unitElement = span().css(halComponent(modelNodeView, HalClasses.unit))
+                                HTMLElement unitElement = span().css(halComponent(resourceView, HalClasses.unit))
                                         .textContent(unit)
                                         .element();
                                 element = span().add(valueElement).add(unitElement).element();
@@ -370,7 +370,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 }
             }
         } else {
-            element = span().css(halComponent(modelNodeView, undefined)).element();
+            element = span().css(halComponent(resourceView, undefined)).element();
             fn = value -> element.textContent = value.asString();
         }
 

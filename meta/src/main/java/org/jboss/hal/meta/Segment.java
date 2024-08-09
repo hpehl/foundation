@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.meta;
 
+import java.util.Objects;
+
 import org.jboss.hal.dmr.ValueEncoder;
 
 /**
@@ -65,5 +67,18 @@ public class Segment {
     @Override
     public String toString() {
         return hasKey() ? key + "=" + ValueEncoder.encode(value) : value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {return true;}
+        if (o == null || getClass() != o.getClass()) {return false;}
+        Segment segment = (Segment) o;
+        return Objects.equals(key, segment.key) && Objects.equals(value, segment.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value);
     }
 }

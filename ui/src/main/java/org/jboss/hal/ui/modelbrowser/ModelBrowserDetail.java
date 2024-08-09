@@ -16,11 +16,13 @@
 package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.HTMLContainerBuilder;
-import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.env.Stability;
+import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.meta.Segment;
 import org.jboss.hal.ui.UIContext;
+import org.patternfly.component.breadcrumb.Breadcrumb;
 import org.patternfly.component.page.PageMainBreadcrumb;
 import org.patternfly.component.page.PageMainSection;
 import org.patternfly.component.title.Title;
@@ -38,9 +40,11 @@ import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.breadcrumb.Breadcrumb.breadcrumb;
 import static org.patternfly.component.breadcrumb.BreadcrumbItem.breadcrumbItem;
 import static org.patternfly.component.page.PageMainBreadcrumb.pageMainBreadcrumb;
@@ -105,6 +109,32 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
         });
     }
 
+    private void fillBreadcrumb(ModelBrowserNode mbn) {
+        AddressTemplate current = AddressTemplate.root();
+        Breadcrumb breadcrumb = breadcrumb();
+        if (mbn.template.isEmpty()) {
+            breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/"));
+        } else {
+            breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/", "/management-model"));
+            for (Segment segment : mbn.template) {
+                current = current.append(segment.key, segment.value);
+                boolean last = current.last().equals(mbn.template.last());
+                breadcrumb.addItem(breadcrumbItem(uniqueId(current), segment.key + "=" + segment.value)
+                        .active(last)
+                        .run(bci -> {
+                            if (!last) {
+                                bci.onClick((event, component) -> {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    tree.select(component.identifier());
+                                });
+                            }
+                        }));
+            }
+        }
+        pageMainBreadcrumb.addBreadcrumb(breadcrumb);
+    }
+
     private void adjustHeader(ModelBrowserNode mbn, Metadata metadata) {
         switch (mbn.type) {
             case SINGLETON_FOLDER:
@@ -124,17 +154,6 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                 stabilityContainer.add(stabilityLabel(stability));
             }
             description.textContent(metadata.resourceDescription.description());
-        }
-    }
-
-    private void fillBreadcrumb(ModelBrowserNode mbn) {
-        if (mbn.template.isEmpty()) {
-            pageMainBreadcrumb.add(breadcrumb()
-                    .addItem(breadcrumbItem("root", "/")));
-        } else {
-            pageMainBreadcrumb.add(breadcrumb()
-                    .addItems(mbn.template, segment -> breadcrumbItem(Id.build(segment.key, segment.value),
-                            segment.key + "=" + segment.value)));
         }
     }
 

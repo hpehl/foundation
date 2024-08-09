@@ -23,6 +23,8 @@ import org.patternfly.core.Aria;
 
 import elemental2.dom.HTMLElement;
 
+import static org.jboss.hal.resources.HalClasses.halComponent;
+import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.ui.BuildingBlocks.stabilityColor;
 import static org.jboss.hal.ui.BuildingBlocks.stabilityIcon;
 import static org.patternfly.component.label.Label.label;
@@ -43,6 +45,7 @@ public class StabilityLabel implements
 
     StabilityLabel(Stability stability) {
         label = label(stability.label, stabilityColor(stability))
+                .css(halComponent(stabilityLevel))
                 .aria(Aria.label, stability.label)
                 .icon(stabilityIcon(stability));
     }

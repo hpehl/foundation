@@ -13,12 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-.hal-c-model-node-view__unit {
+.hal-c-resource-view__unit {
     margin-left: var(--pf-v5-global--spacer--sm);
     color: var(--pf-v5-global--Color--200);
     font-size: var(--pf-v5-global--FontSize--sm);
 }
 
-.hal-c-model-node-view__undefined {
+.hal-c-resource-view__undefined {
     color: var(--pf-v5-global--disabled-color--100);
 }

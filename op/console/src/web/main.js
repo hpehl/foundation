@@ -16,5 +16,6 @@
 import "@patternfly/patternfly/patternfly.css";
 import "@patternfly/patternfly/patternfly-addons.css";
 import "./model-browser.css"
-import "./model-node-view.css"
+import "./resource-view.css"
+import "./stability.css"
 import "./ui.css"
