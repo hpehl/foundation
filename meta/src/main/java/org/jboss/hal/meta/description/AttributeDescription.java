@@ -15,20 +15,31 @@
  */
 package org.jboss.hal.meta.description;
 
+import java.util.List;
+
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 import org.jboss.hal.env.Stability;
+
+import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.hal.dmr.ModelType.OBJECT;
 
 public class AttributeDescription extends NamedNode implements Description {
 
     private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
 
-    AttributeDescription(String name, ModelNode modelNode) {
+    public AttributeDescription() {
+        super();
+    }
+
+    public AttributeDescription(String name, ModelNode modelNode) {
         super(name, modelNode);
     }
 
-    AttributeDescription(Property property) {
+    public AttributeDescription(Property property) {
         super(property);
     }
 
@@ -41,5 +52,48 @@ public class AttributeDescription extends NamedNode implements Description {
     // TODO Remove pseudo stability code
     public Stability stability() {
         return stability;
+    }
+
+    public String formatType() {
+        StringBuilder builder = new StringBuilder();
+        if (hasDefined(TYPE)) {
+            builder.append(get(TYPE).asString());
+            if (hasDefined(VALUE_TYPE)) {
+                ModelNode node = get(VALUE_TYPE);
+                if (ModelType.TYPE.equals(node.getType())) {
+                    builder.append("<").append(node.asString()).append(">");
+                }
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Checks if the current attribute description represents a simple record. A simple record is of type
+     * {@link ModelType#OBJECT} and has nested {@linkplain ModelType#simple() simple attributes} inside its
+     * {@value org.jboss.hal.dmr.ModelDescriptionConstants#VALUE_TYPE}.
+     *
+     * @return {@code true} if the attribute description represents a simple record, {@code false} otherwise.
+     */
+    public boolean simpleRecord() {
+        try {
+            ModelType type = get(TYPE).asType();
+            if (type == OBJECT) {
+                ModelType valueType = get(VALUE_TYPE).getType();
+                if (valueType == OBJECT) {
+                    List<Property> properties = get(VALUE_TYPE).asPropertyList();
+                    for (Property property : properties) {
+                        ModelType propertyType = property.getValue().get(TYPE).asType();
+                        if (!propertyType.simple()) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

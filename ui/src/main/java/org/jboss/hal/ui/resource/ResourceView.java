@@ -24,6 +24,7 @@ import org.jboss.elemento.HasElement;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelNodeHelper;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.Property;
 import org.jboss.hal.meta.Metadata;
@@ -34,7 +35,6 @@ import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionList;
-import org.patternfly.component.list.DescriptionListDescription;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Tuple;
@@ -43,7 +43,6 @@ import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
-import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.div;
@@ -64,7 +63,6 @@ import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
-import static org.jboss.hal.ui.Types.simpleType;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -99,8 +97,9 @@ import static org.patternfly.style.Variable.utilVar;
 // TODO Implement toolbar with filters/flags:
 //  Show/hide undefined
 //  Show/hides default values
-//  Resolve all expressions
 //  Show runtime/configuration
+//  Resolve all expressions
+//  Add reset/edit actions
 public class ResourceView implements HasElement<HTMLElement, ResourceView> {
 
     // ------------------------------------------------------ factory
@@ -124,7 +123,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     private final List<String> attributes;
     private final Map<String, UpdateValueFn> updateValueFunctions;
     private final HTMLElement root;
-    private boolean empty;
+    private boolean shown;
 
     ResourceView(UIContext uic, Metadata metadata) {
         this.uic = uic;
@@ -133,7 +132,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         this.attributes = new ArrayList<>();
         this.updateValueFunctions = new HashMap<>();
         this.root = div().element();
-        this.empty = true;
+        this.shown = false;
     }
 
     @Override
@@ -158,9 +157,8 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     // ------------------------------------------------------ api
 
     public void show(ModelNode resource) {
-        if (metadata.empty) {
-            error();
-        } else {
+        shown = false;
+        if (metadata.isDefined()) {
             if (valid(resource)) {
                 removeChildrenFrom(root);
                 updateValueFunctions.clear();
@@ -173,41 +171,43 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                 lg, "23ch",
                                 xl, "25ch",
                                 _2xl, "28ch"));
-                List<Property> properties = resource.asPropertyList();
-                properties.sort(comparing(Property::getName));
-                for (Property property : properties) {
-                    String name = property.getName();
-                    AttributeDescription attribute = metadata.resourceDescription.attributes().get(name);
-                    dl.addItem(descriptionListGroup(Id.build(name, "group"))
-                            .addTerm(label(name, attribute))
-                            .addDescription(value(name, property.getValue(), attribute)));
+                for (ResourceAttribute ra : resourceAttributes(resource)) {
+                    DescriptionListTerm label = label(ra);
+                    Tuple<HTMLElement, UpdateValueFn> tuple = value(ra);
+                    dl.addItem(descriptionListGroup(Id.build(ra.name, "group"))
+                            .addTerm(label)
+                            .addDescription(descriptionListDescription()
+                                    .add(tuple.key)));
+                    updateValueFunctions.put(ra.name, tuple.value);
                 }
                 root.append(dl.element());
-                empty = false;
+                shown = true;
             } else {
                 empty();
             }
+        } else {
+            error();
         }
     }
 
     public void update(ModelNode resource) {
-        if (metadata.empty) {
-            error();
-        } else {
-            if (empty) {
+        if (metadata.isDefined()) {
+            if (!shown) {
                 show(resource);
             } else if (valid(resource)) {
-                for (Property property : resource.asPropertyList()) {
-                    UpdateValueFn updateAttribute = updateValueFunctions.get(property.getName());
+                for (ResourceAttribute ra : resourceAttributes(resource)) {
+                    UpdateValueFn updateAttribute = updateValueFunctions.get(ra.name);
                     if (updateAttribute != null) {
-                        updateAttribute.update(resource);
+                        updateAttribute.update(ra.value);
                     } else {
-                        logger.warn("Unable to update attribute %s. No update function found", property.getName());
+                        logger.warn("Unable to update attribute %s. No update function found", ra.name);
                     }
                 }
             } else {
                 empty();
             }
+        } else {
+            error();
         }
     }
 
@@ -226,8 +226,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 .addBody(emptyStateBody()
                         .textContent("Unable to view resource: No metadata found!"))
                 .element());
-        empty = true;
-        updateValueFunctions.clear();
     }
 
     private void empty() {
@@ -239,27 +237,60 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 .addBody(emptyStateBody()
                         .textContent("This resource has no attributes."))
                 .element());
-        empty = true;
-        updateValueFunctions.clear();
     }
 
-    private DescriptionListTerm label(String name, AttributeDescription attribute) {
-        String label = labelBuilder.label(name);
+    private List<ResourceAttribute> resourceAttributes(ModelNode resource) {
+        List<ResourceAttribute> resourceAttributes = new ArrayList<>();
+        if (attributes.isEmpty()) {
+            // collect all properties (including nested, record-like properties)
+            for (Property property : resource.asPropertyList()) {
+                String name = property.getName();
+                ModelNode value = property.getValue();
+                AttributeDescription description = metadata.resourceDescription().attributes().get(name);
+                if (description.simpleRecord()) {
+                    List<Property> nestedTypes = description.get(VALUE_TYPE).asPropertyList();
+                    for (Property nestedType : nestedTypes) {
+                        String nestedName = name + "." + nestedType.getName();
+                        ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedName);
+                        AttributeDescription nestedDescription = new AttributeDescription(nestedType);
+                        resourceAttributes.add(new ResourceAttribute(nestedName, nestedValue, nestedDescription));
+                    }
+                } else {
+                    resourceAttributes.add(new ResourceAttribute(name, value, description));
+                }
+            }
+        } else {
+            // collect only the specified attributes (which can be nested)
+            for (String attribute : attributes) {
+                if (attribute.contains(".")) {
+                    // TODO Support nested attributes
+                } else {
+                    ModelNode value = resource.get(attribute);
+                    AttributeDescription description = metadata.resourceDescription().attributes().get(attribute);
+                    resourceAttributes.add(new ResourceAttribute(attribute, value, description));
+                }
+            }
+        }
+        return resourceAttributes;
+    }
+
+    private DescriptionListTerm label(ResourceAttribute ra) {
+        String label = labelBuilder.label(ra.name);
         DescriptionListTerm term = descriptionListTerm(label);
-        if (attribute != null) {
-            if (uic.environment().highlightStability(metadata.resourceDescription.stability(), attribute.stability())) {
+        if (ra.description != null) {
+            if (uic.environment().highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
                 // Kind of a hack: Because DescriptionListTerm implements ElementDelegate
                 // and delegates to the internal text element, we must use
                 // term.element.appendChild() instead of term.add() to add the
                 // stability label after the text element instead of into the text element.
                 // Then we must reset the font weight to normal (DescriptionListTerm uses bold)
                 term.style("align-items", "center");
-                term.element().appendChild(stabilityLabel(attribute.stability()).compact()
+                term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
                         .style("align-self", "baseline")
                         .css(util("ml-sm"), util("font-weight-normal"))
                         .element());
             }
-            if (attribute.deprecation() != null) {
+            if (ra.description.deprecation().isDefined()) {
                 term.delegate().classList.add(halModifier(deprecated));
             }
             term.help(popover()
@@ -267,24 +298,18 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                     .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
                     .addHeader(label)
                     .addBody(popoverBody()
-                            .add(attributeDescription(attribute))));
+                            .add(attributeDescription(ra.description))));
         }
         return term;
     }
 
-    private DescriptionListDescription value(String name, ModelNode resource, AttributeDescription attribute) {
-        Tuple<HTMLElement, UpdateValueFn> tuple = valueElement(name, resource, attribute);
-        updateValueFunctions.put(name, tuple.value);
-        return descriptionListDescription().add(tuple.key);
-    }
-
-    private Tuple<HTMLElement, UpdateValueFn> valueElement(String name, ModelNode resource, AttributeDescription attribute) {
+    private Tuple<HTMLElement, UpdateValueFn> value(ResourceAttribute ra) {
         HTMLElement element;
         UpdateValueFn fn;
 
         // TODO Implement default values and sensitive
-        if (resource.isDefined()) {
-            if (resource.getType() == EXPRESSION) {
+        if (ra.value.isDefined()) {
+            if (ra.value.getType() == EXPRESSION) {
                 HTMLElement resolveButton = button().plain().inline().icon(link()).element();
                 HTMLElement expressionElement = span().element();
                 element = span()
@@ -293,23 +318,20 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         .add(resolveButton).element();
                 fn = value -> expressionElement.textContent = value.asString();
             } else {
-                if (attribute != null) {
-                    if (attribute.hasDefined(TYPE)) {
-                        ModelType type = attribute.get(TYPE).asType();
-                        ModelType valueType = (attribute.has(VALUE_TYPE) && attribute.get(VALUE_TYPE)
-                                .getType() != OBJECT)
-                                ? ModelType.valueOf(attribute.get(VALUE_TYPE).asString())
-                                : null;
+                if (ra.description != null) {
+                    if (ra.description.hasDefined(TYPE)) {
+                        ModelType type = ra.description.get(TYPE).asType();
                         if (type == BOOLEAN) {
-                            String unique = Id.unique(name);
+                            String unique = Id.unique(ra.name);
                             Switch switch_ = Switch.switch_(unique, unique)
-                                    .ariaLabel(name)
+                                    .ariaLabel(ra.name)
                                     .checkIcon()
                                     .readonly();
                             element = switch_.element();
                             fn = value -> switch_.value(value.asBoolean());
-                        } else if (simpleType(type)) {
-                            String unit = attribute.hasDefined(UNIT) ? attribute.get(UNIT).asString() : null;
+                        } else if (type.simple()) {
+                            String unit = ra.description.hasDefined(UNIT) ? ra.description.get(UNIT)
+                                    .asString() : null;
                             if (unit != null) {
                                 HTMLElement valueElement = span().element();
                                 HTMLElement unitElement = span().css(halComponent(resourceView, HalClasses.unit))
@@ -317,13 +339,13 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                         .element();
                                 element = span().add(valueElement).add(unitElement).element();
                                 fn = value -> valueElement.textContent = value.asString();
-                            } else if (attribute.hasDefined(ALLOWED)) {
-                                List<String> allowed = attribute.get(ALLOWED)
+                            } else if (ra.description.hasDefined(ALLOWED)) {
+                                List<String> allowed = ra.description.get(ALLOWED)
                                         .asList()
                                         .stream()
                                         .map(ModelNode::asString)
                                         .collect(toList());
-                                allowed.remove(resource.asString());
+                                allowed.remove(ra.value.asString());
                                 allowed.sort(naturalOrder());
                                 Label label = Label.label("", grey);
                                 element = labelGroup()
@@ -338,7 +360,11 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                 fn = value -> element.textContent = value.asString();
                             }
                         } else if (type == LIST) {
-                            if (simpleType(valueType)) {
+                            ModelType valueType = ra.description.has(VALUE_TYPE) &&
+                                    ra.description.get(VALUE_TYPE).getType() != OBJECT
+                                    ? ra.description.get(VALUE_TYPE).asType()
+                                    : null;
+                            if (valueType != null && valueType.simple()) {
                                 element = div().element();
                                 fn = value -> {
                                     removeChildrenFrom(element);
@@ -374,7 +400,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
             fn = value -> element.textContent = value.asString();
         }
 
-        fn.update(resource);
+        fn.update(ra.value);
         return tuple(element, fn);
     }
 }

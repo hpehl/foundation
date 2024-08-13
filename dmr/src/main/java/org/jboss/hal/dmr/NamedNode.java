@@ -16,6 +16,7 @@
 package org.jboss.hal.dmr;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.NAME;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 
 /** A model node with a name. */
 public class NamedNode extends ModelNode {
@@ -25,11 +26,28 @@ public class NamedNode extends ModelNode {
     private final String name;
     private final ModelNode node;
 
+    public NamedNode() {
+        this(new ModelNode());
+    }
+
     public NamedNode(ModelNode node) {
-        this(node.hasDefined(NAME) ? node.get(NAME).asString()
-                        : ModelDescriptionConstants.UNDEFINED + "_" + System
-                        .currentTimeMillis(),
-                node);
+        if (node.isDefined()) {
+            if (node.hasDefined(NAME)) {
+                this.name = node.get(NAME).asString();
+                this.node = node;
+            } else {
+                this.name = undefinedName();
+                this.node = node;
+                set(node);
+                assignName(name);
+            }
+        } else {
+            this.name = undefinedName();
+            this.node = node;
+            set(node);
+            // Do not call assignName(name) here.
+            // This defines the model node.
+        }
     }
 
     public NamedNode(Property property) {
@@ -85,7 +103,7 @@ public class NamedNode extends ModelNode {
      * @return the name of this named node
      */
     public String name() {
-        return get(NAME).asString();
+        return name;
     }
 
     public void assignName(String name) {
@@ -102,5 +120,11 @@ public class NamedNode extends ModelNode {
     public void update(ModelNode node) {
         set(node);
         assignName(name); // restore name!
+    }
+
+    // ------------------------------------------------------ internal
+
+    private static String undefinedName() {
+        return UNDEFINED + "-" + System.currentTimeMillis();
     }
 }

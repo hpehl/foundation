@@ -19,10 +19,10 @@ import java.util.Iterator;
 import java.util.function.Supplier;
 
 import org.jboss.elemento.HTMLContainerBuilder;
-import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.description.Deprecation;
 import org.jboss.hal.meta.description.Description;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.RestartMode;
@@ -86,7 +86,7 @@ public class BuildingBlocks {
         HTMLContainerBuilder<HTMLElement> name = strong()
                 .textContent(attribute.name())
                 .run(element -> {
-                    if (attribute.deprecation() != null) {
+                    if (attribute.deprecation().isDefined()) {
                         element.css(halModifier(deprecated));
                     }
                 });
@@ -169,7 +169,7 @@ public class BuildingBlocks {
         HTMLContainerBuilder<HTMLDivElement> div = div();
         div.add(div().textContent(description.description()));
         Deprecation deprecation = description.deprecation();
-        if (deprecation != null) {
+        if (deprecation.isDefined()) {
             div.add(div().css(util("mt-sm"))
                     .add("Deprecated since " + deprecation.since().toString())
                     .add(br())

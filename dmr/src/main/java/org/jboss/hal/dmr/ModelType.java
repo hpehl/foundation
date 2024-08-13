@@ -19,8 +19,34 @@ package org.jboss.hal.dmr;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public enum ModelType {
-    BIG_DECIMAL('d'), BIG_INTEGER('i'), BOOLEAN('Z'), BYTES('b'), DOUBLE('D'), EXPRESSION('e'), INT('I'), LIST('l'), LONG(
-            'J'), OBJECT('o'), PROPERTY('p'), STRING('s'), TYPE('t'), UNDEFINED('u');
+
+    BIG_DECIMAL('d'),
+
+    BIG_INTEGER('i'),
+
+    BOOLEAN('Z'),
+
+    BYTES('b'),
+
+    DOUBLE('D'),
+
+    EXPRESSION('e'),
+
+    INT('I'),
+
+    LIST('l'),
+
+    LONG('J'),
+
+    OBJECT('o'),
+
+    PROPERTY('p'),
+
+    STRING('s'),
+
+    TYPE('t'),
+
+    UNDEFINED('u');
 
     static ModelType forChar(char c) {
         switch (c) {
@@ -65,5 +91,9 @@ public enum ModelType {
 
     char getTypeChar() {
         return typeChar;
+    }
+
+    public boolean simple() {
+        return this == BOOLEAN || this == BIG_DECIMAL || this == BIG_INTEGER || this == INT || this == LONG || this == DOUBLE || this == STRING;
     }
 }

@@ -22,23 +22,23 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LabelBuilderTest {
+class LabelBuilderTest {
 
     private LabelBuilder labelBuilder;
 
     @BeforeEach
-    public void beforeAll() {
+    void beforeAll() {
         labelBuilder = new LabelBuilder();
     }
 
     @Test
-    public void capitalize() {
+    void capitalize() {
         assertEquals("Background Validation", labelBuilder.label("background-validation"));
         assertEquals("Enabled", labelBuilder.label("enabled"));
     }
 
     @Test
-    public void specials() {
+    void specials() {
         assertEquals("Check Valid Connection SQL", labelBuilder.label("check-valid-connection-sql"));
         assertEquals("Connection URL", labelBuilder.label("connection-url"));
         assertEquals("JNDI Name", labelBuilder.label("jndi-name"));
@@ -48,7 +48,7 @@ public class LabelBuilderTest {
     }
 
     @Test
-    public void enumeration() {
+    void enumeration() {
         assertEquals("'First'", labelBuilder.enumeration(singletonList("first"), "and"));
         assertEquals("'First' or 'Second'", labelBuilder.enumeration(asList("first", "second"), "or"));
         assertEquals("'First', 'Second' and / or 'Third'",
@@ -56,7 +56,13 @@ public class LabelBuilderTest {
     }
 
     @Test
-    public void label() {
+    void label() {
         assertEquals("Profile Name", labelBuilder.label("Profile Name"));
+    }
+
+    @Test
+    void nested() {
+        assertEquals("HTTP Upgrade / Enabled", labelBuilder.label("http-upgrade.enabled"));
+        assertEquals("A / B / C / D", labelBuilder.label("a.b.c.d"));
     }
 }

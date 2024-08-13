@@ -21,7 +21,6 @@ import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.OperationDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.ui.Types;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Table;
@@ -34,7 +33,6 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
@@ -61,6 +59,10 @@ import static org.patternfly.style.Width.width20;
 import static org.patternfly.style.Width.width35;
 import static org.patternfly.style.Width.width45;
 
+// TODO Implement toolbar with filters/flags:
+//  Find an operation
+//  Filter global/non-global operations
+//  Filter by return-value: void/non-void
 class OperationsTable implements IsElement<HTMLElement> {
 
     private static final String OPERATION = "modelbrowser.operation";
@@ -76,26 +78,34 @@ class OperationsTable implements IsElement<HTMLElement> {
                                 .addItem(th("parameters").width(width45).textContent("Parameters"))
                                 .addItem(th("return-value").width(width20).textContent("Return value"))))
                 .addBody(tbody()
-                        .addRows(operations, operation -> tr(operation.name())
-                                .store(OPERATION, operation)
-                                .addItem(td("Name")
-                                        .add(operationName(resource, operation))
-                                        .add(operationDescription(operation)))
-                                .addItem(td("Parameters").add(parameters(resource, operation)))
-                                .addItem(td("Return value")
-                                        .run(td -> {
-                                            AttributeDescription returnValue = operation.returnValue();
-                                            if (returnValue.hasDefined(TYPE)) {
-                                                td.add(returnValue(returnValue));
-                                            }
-                                        }))));
+                        .addRows(operations, operation -> {
+                            AttributeDescription returnValue = operation.returnValue();
+                            return tr(operation.name())
+                                    .store(OPERATION, operation)
+                                    .addItem(td("Name")
+                                            .add(operationName(resource, operation))
+                                            .add(operationDescription(operation)))
+                                    .addItem(td("Parameters")
+                                            .run(td -> {
+                                                if (!returnValue.isDefined()) {
+                                                    td.colSpan(2);
+                                                }
+                                            })
+                                            .add(parameters(resource, operation)))
+                                    .addItem(td("Return value")
+                                            .run(td -> {
+                                                if (returnValue.isDefined()) {
+                                                    td.add(returnValue(returnValue));
+                                                }
+                                            }));
+                        }));
     }
 
     private Flex operationName(ResourceDescription resource, OperationDescription operation) {
         HTMLContainerBuilder<HTMLElement> name = strong()
                 .textContent(operation.name())
                 .run(strong -> {
-                    if (operation.deprecation() != null) {
+                    if (operation.deprecation().isDefined()) {
                         strong.css(halModifier(deprecated));
                     }
                 });
@@ -121,13 +131,13 @@ class OperationsTable implements IsElement<HTMLElement> {
                                         parameter.stability()))
                                 .alignItems(center).spaceItems(xs)
                                 .add(span().textContent(":"))
-                                .add(span().textContent(Types.formatType(parameter))))
+                                .add(span().textContent(parameter.formatType())))
                         .add(attributeDescription(parameter).css(util("mt-sm"))));
     }
 
     private HTMLContainerBuilder<HTMLDivElement> returnValue(AttributeDescription returnValue) {
         return div()
-                .add(Types.formatType(returnValue))
+                .add(returnValue.formatType())
                 .run(div -> {
                     if (returnValue.hasDefined(DESCRIPTION)) {
                         div.add(div().css(util("mt-sm")).add(returnValue.description()));

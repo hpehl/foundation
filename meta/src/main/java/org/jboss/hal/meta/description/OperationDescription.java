@@ -44,6 +44,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_DESCRIPT
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUEST_PROPERTIES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WHOAMI_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -79,6 +80,10 @@ public class OperationDescription extends NamedNode implements Description {
 
     private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
 
+    public OperationDescription() {
+        super();
+    }
+
     OperationDescription(Property property) {
         super(property);
     }
@@ -97,7 +102,11 @@ public class OperationDescription extends NamedNode implements Description {
     }
 
     public AttributeDescription returnValue() {
-        return new AttributeDescription("return-value", get(REPLY_PROPERTIES));
+        if (hasDefined(REPLY_PROPERTIES) && get(REPLY_PROPERTIES).hasDefined(TYPE)) {
+            return new AttributeDescription("return-value", get(REPLY_PROPERTIES));
+        } else {
+            return new AttributeDescription();
+        }
     }
 
     @Override

@@ -13,14 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.dmr;
+package org.jboss.hal.meta.description;
 
+import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.env.Version;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REASON;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.SINCE;
 
 public class Deprecation extends ModelNode {
+
+    public Deprecation() {
+        super();
+    }
 
     public Deprecation(ModelNode modelNode) {
         set(modelNode);
@@ -31,6 +36,6 @@ public class Deprecation extends ModelNode {
     }
 
     public String reason() {
-        return hasDefined(REASON) ? get(REASON).asString() : null;
+        return get(REASON).asString();
     }
 }

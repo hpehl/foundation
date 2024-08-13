@@ -108,7 +108,7 @@ public class MetadataRepository {
             } else {
                 logger.error("No metadata found for %s → %s. Returning an empty metadata", template, address);
             }
-            return Metadata.empty();
+            return Metadata.undefined();
         }
     }
 
@@ -141,7 +141,7 @@ public class MetadataRepository {
             if (processedInCache(address)) {
                 logger.debug("Metadata for %s → %s has been processed, but resulted in multiple metadata. " +
                         "Returning an empty metadata", template, address);
-                return Promise.resolve(Metadata.empty());
+                return Promise.resolve(Metadata.undefined());
             } else {
                 logger.debug("Process metadata for %s → %s", template, address);
                 return process(template, singleton(address));

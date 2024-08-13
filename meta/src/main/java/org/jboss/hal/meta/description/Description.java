@@ -15,7 +15,6 @@
  */
 package org.jboss.hal.meta.description;
 
-import org.jboss.hal.dmr.Deprecation;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelNodeHelper;
 import org.jboss.hal.env.Stability;
@@ -32,14 +31,25 @@ public interface Description {
         return modelNode().get(DESCRIPTION).asString();
     }
 
+    /**
+     * Returns the stability of the description.
+     *
+     * @return the stability of the description as a {@link Stability} enum constant, or {@link Stability#DEFAULT} if no
+     * stability can be found.
+     */
     default Stability stability() {
         return ModelNodeHelper.asEnumValue(modelNode(), STABILITY, Stability::valueOf, Stability.DEFAULT);
     }
 
+    /**
+     * Returns the deprecation information for this description.
+     *
+     * @return the deprecation object representing the deprecation information, never {@code null}
+     */
     default Deprecation deprecation() {
         if (modelNode().hasDefined(DEPRECATED)) {
             return new Deprecation(modelNode().get(DEPRECATED));
         }
-        return null;
+        return new Deprecation();
     }
 }

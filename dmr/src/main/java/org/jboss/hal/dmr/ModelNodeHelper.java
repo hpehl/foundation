@@ -25,6 +25,35 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSI
 
 public final class ModelNodeHelper {
 
+    // ------------------------------------------------------ nested
+
+    /**
+     * Tries to get a deeply nested model node from the specified model node. Nested paths must be separated with ".".
+     *
+     * @param modelNode The model node to read from
+     * @param path      A path separated with "."
+     * @return The nested node or an undefined model node
+     */
+    public static ModelNode nested(ModelNode modelNode, String path) {
+        ModelNode undefined = new ModelNode();
+
+        if (path != null && !path.isEmpty()) {
+            String[] keys = path.split("\\.");
+            ModelNode context = modelNode;
+            for (String key : keys) {
+                String safeKey = ValueEncoder.decode(key);
+                if (context.hasDefined(safeKey)) {
+                    context = context.get(safeKey);
+                } else {
+                    context = undefined;
+                    break;
+                }
+            }
+            return context;
+        }
+        return undefined;
+    }
+
     // ------------------------------------------------------ enums
 
     /**

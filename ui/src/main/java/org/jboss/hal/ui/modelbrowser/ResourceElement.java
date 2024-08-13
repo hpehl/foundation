@@ -61,19 +61,19 @@ class ResourceElement implements IsElement<HTMLElement> {
                         .addContent(tabContent()
                                 .add(resourceView(uic, metadata, resource).css(util("mt-lg")))))
                 .run(tabs -> {
-                    if (!metadata.resourceDescription.attributes().isEmpty()) {
+                    if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tabs.addItem(tab("attributes", "Attributes")
                                 .addContent(tabContent()
-                                        .add(new AttributesTable(uic, metadata.resourceDescription,
-                                                metadata.resourceDescription.attributes()))));
+                                        .add(new AttributesTable(uic, metadata.resourceDescription(),
+                                                metadata.resourceDescription().attributes()))));
                     }
                 })
                 .run(tabs -> {
-                    if (!metadata.resourceDescription.operations().isEmpty()) {
+                    if (!metadata.resourceDescription().operations().isEmpty()) {
                         tabs.addItem(tab("operations", "Operations")
                                 .addContent(tabContent()
-                                        .add(new OperationsTable(uic, metadata.resourceDescription,
-                                                metadata.resourceDescription.operations()))));
+                                        .add(new OperationsTable(uic, metadata.resourceDescription(),
+                                                metadata.resourceDescription().operations()))));
                     }
                 })
                 .addItem(tab("capabilities", "Capabilities")

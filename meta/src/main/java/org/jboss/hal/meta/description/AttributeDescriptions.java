@@ -30,8 +30,12 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
     private final LinkedHashMap<String, AttributeDescription> attributes;
 
+    AttributeDescriptions() {
+        this.attributes = new LinkedHashMap<>();
+    }
+
     AttributeDescriptions(ModelNode modelNode) {
-        this.attributes = modelNode != null && modelNode.isDefined()
+        this.attributes = modelNode.isDefined()
                 ? modelNode.asPropertyList()
                 .stream()
                 .map(AttributeDescription::new)
@@ -46,7 +50,7 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
     }
 
     public AttributeDescription get(String name) {
-        return attributes.get(name);
+        return attributes.getOrDefault(name, new AttributeDescription());
     }
 
     public boolean isEmpty() {

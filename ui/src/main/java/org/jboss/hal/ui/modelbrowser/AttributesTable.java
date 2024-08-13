@@ -22,7 +22,6 @@ import org.jboss.elemento.IsElement;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.ui.Types;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Table;
 import org.patternfly.component.table.Td;
@@ -59,6 +58,9 @@ import static org.patternfly.style.Width.width10;
 import static org.patternfly.style.Width.width20;
 import static org.patternfly.style.Width.width60;
 
+// TODO Implement toolbar with filters/flags:
+//  Find an attribute
+//  Filter type/storage/access type
 class AttributesTable implements IsElement<HTMLElement> {
 
     private static final String ATTRIBUTE = "modelbrowser.attribute";
@@ -79,7 +81,7 @@ class AttributesTable implements IsElement<HTMLElement> {
                                         .add(attributeName(attribute, () -> uic.environment()
                                                 .highlightStability(resource.stability(), attribute.stability())))
                                         .add(attributeDescription(attribute).css(util("mt-sm"))))
-                                .addItem(td("Type").textContent(Types.formatType(attribute)))
+                                .addItem(td("Type").textContent(attribute.formatType()))
                                 .addItem(td("Storage").run(td -> storage(td, attribute)))
                                 .addItem(td("Access type").run(td -> accessType(td, attribute)))));
     }

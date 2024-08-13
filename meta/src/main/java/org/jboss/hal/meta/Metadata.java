@@ -19,32 +19,41 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
-public class Metadata {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.RESOURCE_DESCRIPTION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SECURITY_CONTEXT;
 
-    public static Metadata empty() {
-        return new Metadata(AddressTemplate.root(),
-                new ResourceDescription(new ModelNode()),
-                new SecurityContext(new ModelNode()));
+public class Metadata extends ModelNode {
+
+    public static Metadata undefined() {
+        return new Metadata();
     }
 
-    public static Metadata metadata(AddressTemplate template,
-            ResourceDescription resourceDescription,
-            SecurityContext securityContext) {
-        return new Metadata(template, resourceDescription, securityContext);
+    public static Metadata metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
+        return new Metadata(resourceDescription, securityContext);
     }
 
-    public final boolean empty;
-    /**
-     * The template that was used in {@link MetadataRepository#lookup(AddressTemplate)}
-     */
-    public final AddressTemplate template;
-    public final ResourceDescription resourceDescription;
-    public final SecurityContext securityContext;
+    private final ResourceDescription resourceDescription;
+    private final SecurityContext securityContext;
 
-    Metadata(AddressTemplate template, ResourceDescription resourceDescription, SecurityContext securityContext) {
-        this.template = template;
+    Metadata() {
+        super();
+        this.resourceDescription = new ResourceDescription();
+        this.securityContext = new SecurityContext();
+    }
+
+    Metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
+        super();
         this.resourceDescription = resourceDescription;
         this.securityContext = securityContext;
-        this.empty = !this.resourceDescription.isDefined() && !this.securityContext.isDefined();
+        get(RESOURCE_DESCRIPTION).set(resourceDescription);
+        get(SECURITY_CONTEXT).set(securityContext);
+    }
+
+    public ResourceDescription resourceDescription() {
+        return resourceDescription;
+    }
+
+    public SecurityContext securityContext() {
+        return securityContext;
     }
 }

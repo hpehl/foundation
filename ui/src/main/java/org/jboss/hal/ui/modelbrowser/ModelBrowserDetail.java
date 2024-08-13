@@ -149,11 +149,11 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                 break;
         }
         if (mbn.type == FOLDER || mbn.type == SINGLETON_RESOURCE || mbn.type == RESOURCE) {
-            Stability stability = metadata.resourceDescription.stability();
+            Stability stability = metadata.resourceDescription().stability();
             if (uic.environment().highlightStability(stability)) {
                 stabilityContainer.add(stabilityLabel(stability));
             }
-            description.textContent(metadata.resourceDescription.description());
+            description.textContent(metadata.resourceDescription().description());
         }
     }
 

@@ -109,7 +109,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
     private DataListCell nameCell(String childId, ModelBrowserNode child, Metadata metadata) {
         Flex flex = flex().direction(column);
         if (parent.type == SINGLETON_FOLDER) {
-            Stability stability = metadata.resourceDescription.stability();
+            Stability stability = metadata.resourceDescription().stability();
             if (uic.environment().highlightStability(stability)) {
                 flex.add(flex().alignItems(center).columnGap(md)
                         .add(flexItem().id(childId).textContent(child.name))
@@ -117,7 +117,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
             } else {
                 flex.addItem(flexItem().id(childId).textContent(child.name));
             }
-            flex.add(small().textContent(metadata.resourceDescription.description()));
+            flex.add(small().textContent(metadata.resourceDescription().description()));
         } else {
             flex.addItem(flexItem().id(childId).textContent(child.name));
         }

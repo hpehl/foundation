@@ -82,18 +82,22 @@ public class SecurityContext extends ModelNode {
         }
     };
 
+    public SecurityContext() {
+        super();
+    }
+
     public SecurityContext(ModelNode payload) {
         set(payload);
     }
 
     /** @return whether the security context is readable */
     public boolean readable() {
-        return get(READ).asBoolean();
+        return hasDefined(READ) && get(READ).asBoolean();
     }
 
     /** @return whether the security context is writable */
     public boolean writable() {
-        return get(WRITE).asBoolean();
+        return hasDefined(WRITE) && get(WRITE).asBoolean();
     }
 
     /**

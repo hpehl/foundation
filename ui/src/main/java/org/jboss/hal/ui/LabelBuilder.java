@@ -20,11 +20,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.jboss.hal.dmr.Property;
-
-import static org.jboss.hal.dmr.ModelDescriptionConstants.HAL_LABEL;
+import static java.util.Arrays.stream;
+import static java.util.stream.Collectors.joining;
 
 /** Generates human-readable labels from terms used in the management model. */
 public class LabelBuilder {
@@ -105,18 +103,17 @@ public class LabelBuilder {
         SPECIALS.put("wsdl", "WSDL");
     }
 
-    public String label(Property property) {
-        return property.getValue().hasDefined(HAL_LABEL)
-                ? label(property.getValue().get(HAL_LABEL).asString())
-                : label(property.getName());
-    }
-
     public String label(String name) {
-        String label = name;
-        label = label.replace('-', ' ');
-        label = replaceSpecial(label);
-        label = capitalize(label);
-        return label;
+        if (name.contains(".")) {
+            String[] parts = name.split("\\.");
+            return String.join(" / ", stream(parts).map(this::label).collect(joining(" / ")));
+        } else {
+            String label = name;
+            label = label.replace('-', ' ');
+            label = replaceSpecial(label);
+            label = capitalize(label);
+            return label;
+        }
     }
 
     /**
@@ -140,7 +137,7 @@ public class LabelBuilder {
                 String last = ll.removeLast();
                 enumeration = ll.stream()
                         .map(name -> QUOTE + label(name) + QUOTE)
-                        .collect(Collectors.joining(", "));
+                        .collect(joining(", "));
                 enumeration = enumeration + SPACE + conjunction + SPACE + QUOTE + label(last) + QUOTE;
             }
         }
