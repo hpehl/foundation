@@ -33,7 +33,6 @@ import static org.jboss.hal.ui.resource.ResourceView.resourceView;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
-import static org.patternfly.style.Classes.util;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
@@ -59,7 +58,7 @@ class ResourceElement implements IsElement<HTMLElement> {
         root.append(Tabs.tabs()
                 .addItem(tab("data", "Data")
                         .addContent(tabContent()
-                                .add(resourceView(uic, metadata, resource).css(util("mt-lg")))))
+                                .add(resourceView(uic, metadata, resource))))
                 .run(tabs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tabs.addItem(tab("attributes", "Attributes")

@@ -18,6 +18,10 @@
     text-decoration: line-through !important;
 }
 
+.hal-m-filtered {
+    display: none !important;
+}
+
 .hal-m-help-text {
     text-decoration: underline;
     text-decoration-thickness: var(--pf-v5-c-description-list__text--m-help-text--TextDecorationThickness);

@@ -13,6 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
+.hal-c-resource-view {
+    padding: var(--pf-v5-global--spacer--md);
+}
+
 .hal-c-resource-view__unit {
     margin-left: var(--pf-v5-global--spacer--sm);
     color: var(--pf-v5-global--Color--200);

@@ -156,17 +156,17 @@ class EndpointForm implements IsElement<HTMLElement> {
         this.endpoint = endpoint;
         this.newEndpoint = endpoint == null;
         if (newEndpoint) {
-            nameInput.value("", false);
-            secureSwitch.value(false, false);
-            hostInput.value("", false);
-            portInput.value("", false);
+            nameInput.value("");
+            secureSwitch.value(false);
+            hostInput.value("");
+            portInput.value("");
             url.change(DEFAULT_URL);
         } else {
             URL u = new URL(endpoint.url);
-            nameInput.value(endpoint.name, false);
-            secureSwitch.value(u.protocol.equals("https:"), false);
-            hostInput.value(u.hostname, false);
-            portInput.value(u.port, false);
+            nameInput.value(endpoint.name);
+            secureSwitch.value(u.protocol.equals("https:"));
+            hostInput.value(u.hostname);
+            portInput.value(u.port);
             url.change(endpoint.url);
         }
     }

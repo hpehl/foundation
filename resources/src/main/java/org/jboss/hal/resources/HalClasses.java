@@ -22,6 +22,7 @@ public interface HalClasses {
     String deprecated = "deprecated";
     String detail = "detail";
     String content = "content";
+    String filtered = "filtered";
     String modelBrowser = "model-browser";
     String resourceView = "resource-view";
     String stabilityLevel = "stability-level";
