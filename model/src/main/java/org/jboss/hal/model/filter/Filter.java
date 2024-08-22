@@ -17,65 +17,58 @@ package org.jboss.hal.model.filter;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-public abstract class Filter implements Iterable<FilterAttribute> {
+public abstract class Filter<T> implements Iterable<FilterValue<T, ?>> {
 
-    public static final String DATA = "filter";
+    private final Map<String, FilterValue<T, ?>> attributes;
 
-    public static boolean asBoolean(String value, boolean defaultValue) {
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        return Boolean.parseBoolean(value);
-    }
-
-    public static int asInteger(String value, int defaultValue) {
-        if (value == null || value.isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    private final Map<String, FilterAttribute> attributes;
-
-    protected Filter(List<FilterAttribute> attributes) {
+    protected Filter() {
         this.attributes = new HashMap<>();
-        for (FilterAttribute attribute : attributes) {
-            this.attributes.put(attribute.name, attribute);
-        }
+    }
+
+    protected <V> void add(FilterValue<T, V> attribute) {
+        attributes.put(attribute.name, attribute);
     }
 
     @Override
-    public Iterator<FilterAttribute> iterator() {
+    public Iterator<FilterValue<T, ?>> iterator() {
         return attributes.values().iterator();
     }
 
-    public boolean isDefined() {
-        return attributes.values().stream().anyMatch(FilterAttribute::isDefined);
+    public boolean filter(T object) {
+        boolean filtered = false;
+        for (Iterator<FilterValue<T, ?>> iterator = this.iterator(); iterator.hasNext() && !filtered; ) {
+            FilterValue<T, ?> filterValue = iterator.next();
+            if (filterValue.isDefined()) {
+                filtered = !filterValue.matches(object);
+            }
+        }
+        return filtered;
     }
 
-    public void set(String name, String value) {
-        FilterAttribute filterValue = attributes.get(name);
+    public boolean isDefined() {
+        return attributes.values().stream().anyMatch(FilterValue::isDefined);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <V> void set(String name, V value) {
+        FilterValue<T, ?> filterValue = attributes.get(name);
         if (filterValue != null) {
-            filterValue.set(value);
+            FilterValue<T, V> tv = (FilterValue<T, V>) filterValue;
+            tv.set(value);
         }
     }
 
     public void reset(String name) {
-        FilterAttribute filterValue = attributes.get(name);
+        FilterValue<T, ?> filterValue = attributes.get(name);
         if (filterValue != null) {
             filterValue.reset();
         }
     }
 
     public void resetAll() {
-        attributes.values().forEach(FilterAttribute::reset);
+        attributes.values().forEach(FilterValue::reset);
     }
 
     @Override

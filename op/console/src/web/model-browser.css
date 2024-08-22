@@ -15,6 +15,7 @@
  */
 .hal-c-model-browser__tree, .hal-c-model-browser__detail {
     /* TODO Replace hard-coded value of 4.375rem */
+    height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     max-height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     overflow: scroll;
 }

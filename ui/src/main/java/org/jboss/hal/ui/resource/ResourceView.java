@@ -17,11 +17,9 @@ package org.jboss.hal.ui.resource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.elemento.By;
 import org.jboss.elemento.HasElement;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
@@ -31,8 +29,6 @@ import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.Property;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
-import org.jboss.hal.model.filter.Filter;
-import org.jboss.hal.model.filter.FilterAttribute;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
@@ -40,13 +36,10 @@ import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionList;
+import org.patternfly.component.list.DescriptionListGroup;
 import org.patternfly.component.list.DescriptionListTerm;
-import org.patternfly.component.menu.SingleSelect;
 import org.patternfly.component.switch_.Switch;
-import org.patternfly.component.textinputgroup.TextInputGroup;
-import org.patternfly.component.toolbar.Toolbar;
 import org.patternfly.core.Tuple;
-import org.patternfly.icon.IconSets.fas;
 import org.patternfly.style.Size;
 import org.patternfly.style.Variables;
 
@@ -56,13 +49,11 @@ import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
-import static org.jboss.elemento.Elements.findAll;
+import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.span;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
@@ -78,6 +69,7 @@ import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -92,27 +84,14 @@ import static org.patternfly.component.list.DescriptionListGroup.descriptionList
 import static org.patternfly.component.list.DescriptionListTerm.descriptionListTerm;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
-import static org.patternfly.component.menu.MenuContent.menuContent;
-import static org.patternfly.component.menu.MenuList.menuList;
-import static org.patternfly.component.menu.MenuToggle.menuToggle;
-import static org.patternfly.component.menu.SingleSelect.singleSelect;
-import static org.patternfly.component.menu.SingleSelectMenu.singleSelectMenu;
 import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.popover.PopoverBody.popoverBody;
-import static org.patternfly.component.textinputgroup.TextInputGroup.searchInputGroup;
-import static org.patternfly.component.toolbar.Toolbar.toolbar;
-import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
-import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
-import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.ban;
-import static org.patternfly.icon.IconSets.fas.edit;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.icon.IconSets.fas.search;
-import static org.patternfly.icon.IconSets.fas.undo;
-import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Breakpoint._2xl;
 import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoint.lg;
@@ -120,18 +99,14 @@ import static org.patternfly.style.Breakpoint.md;
 import static org.patternfly.style.Breakpoint.sm;
 import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
-import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
 import static org.patternfly.style.Variable.globalVar;
 import static org.patternfly.style.Variable.utilVar;
 
 // TODO Implement toolbar with filters/flags:
-//  Show/hide undefined
-//  Show/hides default values
-//  Show runtime/configuration
 //  Resolve all expressions
-//  Add reset/edit actions
+//  Implement reset/edit actions
 public class ResourceView implements HasElement<HTMLElement, ResourceView> {
 
     // ------------------------------------------------------ factory
@@ -149,17 +124,13 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(ResourceView.class.getName());
+    private static final String RESOURCE_ATTRIBUTE_KEY = "resourceView.ra";
     private final UIContext uic;
     private final Metadata metadata;
     private final LabelBuilder labelBuilder;
-    private final ResourceFilter filter;
     private final List<String> attributes;
     private final Map<String, UpdateValueFn> updateValueFunctions;
-    private final Toolbar toolbar;
-    private final TextInputGroup filterByName;
-    private final SingleSelect filterByDefined;
-    private final SingleSelect filterByStorage;
-    private final SingleSelect filterByAccessType;
+    private final ResourceToolbar toolbar;
     private final HTMLElement viewContainer;
     private final HTMLElement root;
     private DescriptionList dl;
@@ -170,88 +141,12 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         this.uic = uic;
         this.metadata = metadata;
         this.labelBuilder = new LabelBuilder();
-        this.filter = new ResourceFilter();
         this.attributes = new ArrayList<>();
         this.updateValueFunctions = new HashMap<>();
         this.shown = false;
-
-        String resetId = Id.unique("reset");
         this.root = div()
-                .add(toolbar = toolbar()
-                        .addContent(toolbarContent()
-                                .addItem(toolbarItem().css(modifier("search-filter"))
-                                        .add(filterByName = searchInputGroup("Filter by name")
-                                                .onChange((event, textInputGroup, value) -> {
-                                                    filter.set(ResourceFilter.NAME, value);
-                                                    filter();
-                                                })))
-                                .addGroup(toolbarGroup().css(modifier("filter-group"))
-                                        .addItem(toolbarItem()
-                                                .add(filterByDefined = singleSelect(menuToggle()
-                                                        .icon(fas.filter())
-                                                        .text("Defined"))
-                                                        .addMenu(singleSelectMenu()
-                                                                .onSingleSelect((event, menuItem, selected) -> {
-                                                                    if ("all".equals(menuItem.identifier())) {
-                                                                        filter.reset(ResourceFilter.UNDEFINED);
-                                                                    } else {
-                                                                        filter.set(ResourceFilter.UNDEFINED,
-                                                                                menuItem.identifier());
-                                                                    }
-                                                                    filter();
-                                                                })
-                                                                .addContent(menuContent()
-                                                                        .addList(menuList()
-                                                                                .addItem("all", "All defined")
-                                                                                .addItem("false", "Defined")
-                                                                                .addItem("true", "Undefined"))))))
-                                        .addItem(toolbarItem()
-                                                .add(filterByStorage = singleSelect(menuToggle()
-                                                        .icon(fas.filter())
-                                                        .text("Storage"))
-                                                        .addMenu(singleSelectMenu()
-                                                                .onSingleSelect((event, menuItem, selected) -> {
-                                                                    if ("all".equals(menuItem.identifier())) {
-                                                                        filter.reset(ResourceFilter.STORAGE);
-                                                                    } else {
-                                                                        filter.set(ResourceFilter.STORAGE,
-                                                                                menuItem.identifier());
-                                                                    }
-                                                                    filter();
-                                                                })
-                                                                .addContent(menuContent()
-                                                                        .addList(menuList()
-                                                                                .addItem("all", "All storage")
-                                                                                .addItem("configuration", "Configuration")
-                                                                                .addItem("runtime", "Runtime"))))))
-                                        .addItem(toolbarItem()
-                                                .add(filterByAccessType = singleSelect(menuToggle()
-                                                        .icon(fas.filter())
-                                                        .text("Access type"))
-                                                        .addMenu(singleSelectMenu()
-                                                                .onSingleSelect((event, menuItem, selected) -> {
-                                                                    if ("all".equals(menuItem.identifier())) {
-                                                                        filter.reset(ResourceFilter.ACCESS_TYPE);
-                                                                    } else {
-                                                                        filter.set(ResourceFilter.ACCESS_TYPE,
-                                                                                menuItem.identifier());
-                                                                    }
-                                                                    filter();
-                                                                })
-                                                                .addContent(menuContent()
-                                                                        .addList(menuList()
-                                                                                .addItem("all", "All access type")
-                                                                                .addItem("read-write", "Read-write")
-                                                                                .addItem("read-only", "Read-only")
-                                                                                .addItem("metric", "Metric")))))))
-                                .addGroup(toolbarGroup().css(modifier("icon-button-group"), modifier("align-right"))
-                                        .addItem(toolbarItem()
-                                                .add(button().link().iconAndText(edit(), "Edit")))
-                                        .addItem(toolbarItem()
-                                                .add(button().id(resetId).link().iconAndText(undo(), "Reset"))
-                                                .add(tooltip(By.id(resetId),
-                                                        "Resets attributes to their initial or default value. Applied only to nillable attributes without relationships to other attributes.")
-                                                        .placement(auto))))))
+                .add(toolbar = resourceToolbar()
+                        .onFilter(this::filter))
                 .add(viewContainer = div().element())
                 .element();
         setVisible(toolbar, false);
@@ -298,11 +193,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                     DescriptionListTerm term = label(ra, label);
                     Tuple<HTMLElement, UpdateValueFn> tuple = value(ra);
                     dl.addItem(descriptionListGroup(Id.build(ra.name, "group"))
-                            .data(Filter.DATA, "")
-                            .data(ResourceFilter.NAME, label.toLowerCase())
-                            .data(ResourceFilter.UNDEFINED, String.valueOf(!ra.value.isDefined()))
-                            .data(ResourceFilter.STORAGE, ra.description.get(STORAGE).asString())
-                            .data(ResourceFilter.ACCESS_TYPE, ra.description.get(ACCESS_TYPE).asString())
+                            .store(RESOURCE_ATTRIBUTE_KEY, ra)
                             .addTerm(term)
                             .addDescription(descriptionListDescription()
                                     .add(tuple.key)));
@@ -371,17 +262,21 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     }
 
     private void noAttributes() {
-        noAttributes = emptyState().size(Size.sm)
-                .addHeader(emptyStateHeader()
-                        .icon(search())
-                        .text("No results found"))
-                .addBody(emptyStateBody()
-                        .textContent("No results match the filter criteria. Clear all filters and try again."))
-                .addFooter(emptyStateFooter()
-                        .addActions(emptyStateActions()
-                                .add(button("Clear all filters").link()
-                                        .onClick((event, component) -> clearFilter()))));
-        viewContainer.append(noAttributes.element());
+        if (noAttributes == null) {
+            noAttributes = emptyState().size(Size.sm)
+                    .addHeader(emptyStateHeader()
+                            .icon(search())
+                            .text("No results found"))
+                    .addBody(emptyStateBody()
+                            .textContent("No results match the filter criteria. Clear all filters and try again."))
+                    .addFooter(emptyStateFooter()
+                            .addActions(emptyStateActions()
+                                    .add(button("Clear all filters").link()
+                                            .onClick((event, component) -> clearFilter()))));
+        }
+        if (!isAttached(noAttributes)) {
+            viewContainer.append(noAttributes.element());
+        }
     }
 
     private List<ResourceAttribute> resourceAttributes(ModelNode resource) {
@@ -392,7 +287,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 String name = property.getName();
                 ModelNode value = property.getValue();
                 AttributeDescription description = metadata.resourceDescription().attributes().get(name);
-                resourceAttributes.add(new ResourceAttribute(name, value, description));
                 if (description.simpleRecord()) {
                     List<Property> nestedTypes = description.get(VALUE_TYPE).asPropertyList();
                     for (Property nestedType : nestedTypes) {
@@ -401,6 +295,8 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         AttributeDescription nestedDescription = new AttributeDescription(nestedType);
                         resourceAttributes.add(new ResourceAttribute(nestedName, nestedValue, nestedDescription));
                     }
+                } else {
+                    resourceAttributes.add(new ResourceAttribute(name, value, description));
                 }
             }
         } else {
@@ -547,40 +443,39 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         return tuple(element, fn);
     }
 
-    private void filter() {
-        logger.debug("Filter for %s", filter);
-        if (filter.isDefined()) {
-            findAll(viewContainer, By.data(Filter.DATA)).forEach(e -> {
-                boolean visible = true;
-                for (Iterator<FilterAttribute> iterator = filter.iterator(); iterator.hasNext() && visible; ) {
-                    FilterAttribute filterAttribute = iterator.next();
-                    if (filterAttribute.isDefined()) {
-                        String attributeValue = e.dataset.get(filterAttribute.name);
-                        visible = filterAttribute.matches(attributeValue);
+    private void filter(ResourceFilter filter) {
+        logger.debug("Filter attributes: %s", filter);
+        if (dl != null) {
+            if (filter.isDefined()) {
+                int filteredItems = 0;
+                int items = dl.size();
+                for (DescriptionListGroup dlg : dl.items()) {
+                    ResourceAttribute ra = dlg.get(RESOURCE_ATTRIBUTE_KEY);
+                    if (ra != null) {
+                        boolean filtered = filter.filter(ra);
+                        dlg.classList().toggle(halModifier(HalClasses.filtered), filtered);
+                        if (filtered) {
+                            filteredItems++;
+                        }
                     }
                 }
-                e.classList.toggle(halModifier(filtered), !visible);
-            });
-            if (dl != null) {
-                int attributes = dl.items().size();
-                int filteredAttributes = viewContainer.querySelectorAll(By.classname(halModifier(filtered)).selector()).length;
-                if (attributes == filteredAttributes) {
+                if (items == filteredItems) {
                     noAttributes();
+                } else {
+                    failSafeRemoveFromParent(noAttributes);
                 }
+            } else {
+                failSafeRemoveFromParent(noAttributes);
+                dl.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
             }
         }
     }
 
     private void clearFilter() {
-        filter.resetAll();
-        filterByName.main().value("", false);
-        filterByDefined.menuToggle().text("All defined");
-        filterByStorage.menuToggle().text("All storage");
-        filterByAccessType.menuToggle().text("All access type");
-        filterByDefined.menu().select("all", true, false);
-        filterByStorage.menu().select("all", true, false);
-        filterByAccessType.menu().select("all", true, false);
+        toolbar.clearFilter();
         failSafeRemoveFromParent(noAttributes);
-        findAll(viewContainer, By.data(Filter.DATA)).forEach(e -> e.classList.remove(halModifier(filtered)));
+        if (dl != null) {
+            dl.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
+        }
     }
 }

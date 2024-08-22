@@ -26,7 +26,6 @@ import org.jboss.hal.meta.description.Deprecation;
 import org.jboss.hal.meta.description.Description;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.RestartMode;
-import org.patternfly.component.list.List;
 import org.patternfly.component.list.ListItem;
 import org.patternfly.icon.PredefinedIcon;
 import org.patternfly.layout.flex.Flex;
@@ -103,7 +102,7 @@ public class BuildingBlocks {
         Variable marginTop = componentVar(component(list), "li", "MarginTop");
         Variable marginLeft = componentVar(component(list), "nested", "MarginLeft");
 
-        List infos = list().plain()
+        org.patternfly.component.list.List infos = list().plain()
                 .css(util("mt-sm"))
                 .style(marginTop.name, 0)
                 .style(marginLeft.name, 0);

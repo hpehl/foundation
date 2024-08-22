@@ -16,6 +16,7 @@
 
 .hal-c-resource-view {
     padding: var(--pf-v5-global--spacer--md);
+    --pf-v5-c-description-list__group--ColumnGap: var(--pf-v5-global--spacer--md);
 }
 
 .hal-c-resource-view__unit {

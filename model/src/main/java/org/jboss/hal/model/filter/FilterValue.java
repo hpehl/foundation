@@ -15,21 +15,17 @@
  */
 package org.jboss.hal.model.filter;
 
-public class FilterAttribute {
+import java.util.Objects;
 
-    /**
-     * The filter name must apply to element dataset rules
-     *
-     * @see <a
-     * href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset#name_conversion">https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset#name_conversion</a>
-     */
-    public final String name;
-    private final String initialValue;
-    private final FilterCondition condition;
-    private String value;
+public class FilterValue<T, V> {
+
+    final String name;
+    private final V initialValue;
+    private final FilterCondition<T, V> condition;
+    private V value;
     private boolean defined;
 
-    public FilterAttribute(String name, String initialValue, FilterCondition condition) {
+    public FilterValue(String name, V initialValue, FilterCondition<T, V> condition) {
         this.name = name;
         this.initialValue = initialValue;
         this.condition = condition;
@@ -40,13 +36,13 @@ public class FilterAttribute {
         return defined;
     }
 
-    public boolean matches(String attributeValue) {
-        return condition.matches(attributeValue, this.value);
+    public boolean matches(T object) {
+        return condition.matches(object, this.value);
     }
 
-    void set(String value) {
+    void set(V value) {
         this.value = value;
-        this.defined = !this.value.equals(initialValue);
+        this.defined = !Objects.equals(initialValue, this.value);
     }
 
     void reset() {

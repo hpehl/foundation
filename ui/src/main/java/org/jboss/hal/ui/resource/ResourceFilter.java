@@ -15,28 +15,30 @@
  */
 package org.jboss.hal.ui.resource;
 
-import java.util.List;
-
 import org.jboss.hal.model.filter.Filter;
-import org.jboss.hal.model.filter.FilterAttribute;
+import org.jboss.hal.model.filter.FilterValue;
 
-import static org.jboss.hal.model.filter.FilterCondition.booleanEquals;
-import static org.jboss.hal.model.filter.FilterCondition.containsIgnoreCase;
-import static org.jboss.hal.model.filter.FilterCondition.equalsIgnoreCase;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 
-public class ResourceFilter extends Filter {
+class ResourceFilter extends Filter<ResourceAttribute> {
 
-    public static final String NAME = "filterName";
-    public static final String UNDEFINED = "filterUndefined";
-    public static final String STORAGE = "filterStorage";
-    public static final String ACCESS_TYPE = "filterAccessType";
+    static final String NAME_FILTER = "name-filter";
+    static final String UNDEFINED_FILTER = "undefined-filter";
+    static final String DEPRECATED_FILTER = "deprecated-filter";
+    static final String STORAGE_FILTER = "storage-filter";
+    static final String ACCESS_TYPE_FILTER = "access-type-filter";
 
     ResourceFilter() {
-        super(List.of(
-                new FilterAttribute(NAME, "", containsIgnoreCase()),
-                new FilterAttribute(UNDEFINED, "", booleanEquals()),
-                new FilterAttribute(STORAGE, "", equalsIgnoreCase()),
-                new FilterAttribute(ACCESS_TYPE, "", equalsIgnoreCase())
-        ));
+        add(new FilterValue<>(NAME_FILTER, "",
+                (ra, name) -> ra.name.toLowerCase().contains(name.toLowerCase())));
+        add(new FilterValue<>(UNDEFINED_FILTER, (Boolean) null,
+                (ra, defined) -> defined == null || defined == ra.value.isDefined()));
+        add(new FilterValue<>(DEPRECATED_FILTER, (Boolean) null,
+                (ra, deprecated) -> deprecated == null || deprecated == ra.description.deprecation().isDefined()));
+        add(new FilterValue<>(STORAGE_FILTER, "",
+                (ra, storage) -> storage.equals(ra.description.get(STORAGE).asString())));
+        add(new FilterValue<>(ACCESS_TYPE_FILTER, "",
+                (ra, accessType) -> accessType.equals(ra.description.get(ACCESS_TYPE).asString())));
     }
 }

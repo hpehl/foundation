@@ -46,5 +46,9 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>hal-resources</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.patternfly</groupId>
+            <artifactId>patternfly-java-components</artifactId>
+        </dependency>
     </dependencies>
 </project>

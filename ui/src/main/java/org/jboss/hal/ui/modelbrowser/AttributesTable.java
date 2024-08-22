@@ -19,17 +19,25 @@ import org.gwtproject.safehtml.shared.SafeHtmlUtils;
 import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.table.Table;
+import org.jboss.hal.ui.resource.ResourceView;
+import org.patternfly.component.table.Tbody;
 import org.patternfly.component.table.Td;
+import org.patternfly.component.table.Tr;
+import org.patternfly.style.Size;
 import org.patternfly.style.Variable;
 import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
+import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
+import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CONFIGURATION;
@@ -38,8 +46,17 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_WRITE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+import static org.jboss.hal.resources.HalClasses.filtered;
+import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.BuildingBlocks.attributeName;
+import static org.jboss.hal.ui.modelbrowser.AttributesToolbar.attributesToolbar;
+import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.table.Tbody.tbody;
 import static org.patternfly.component.table.Td.td;
@@ -51,39 +68,52 @@ import static org.patternfly.icon.IconSets.fas.database;
 import static org.patternfly.icon.IconSets.fas.edit;
 import static org.patternfly.icon.IconSets.fas.lock;
 import static org.patternfly.icon.IconSets.fas.memory;
+import static org.patternfly.icon.IconSets.fas.search;
 import static org.patternfly.icon.IconSets.patternfly.trendUp;
+import static org.patternfly.layout.bullseye.Bullseye.bullseye;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Variable.utilVar;
 import static org.patternfly.style.Width.width10;
 import static org.patternfly.style.Width.width20;
 import static org.patternfly.style.Width.width60;
 
-// TODO Implement toolbar with filters/flags:
-//  Find an attribute
-//  Filter type/storage/access type
 class AttributesTable implements IsElement<HTMLElement> {
 
-    private static final String ATTRIBUTE = "modelbrowser.attribute";
-    private final Table table;
+    private static final Logger logger = Logger.getLogger(ResourceView.class.getName());
+    private static final String ATTRIBUTE_KEY = "modelbrowser.attribute";
+    private static final String EMPTY_ROW = "modelbrowser.no-attribute";
+    private final AttributesToolbar toolbar;
+    private final Tbody tbody;
+    private final HTMLElement root;
+    private Tr noAttributes;
 
     AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
-        table = table()
-                .addHead(thead().css(util("mt-sm"))
-                        .addRow(tr("attributes-head")
-                                .addItem(th("name").width(width60).textContent("Name"))
-                                .addItem(th("type").width(width20).textContent("Type"))
-                                .addItem(th("storage").width(width10).textContent("Storage"))
-                                .addItem(th("access-type").width(width10).textContent("Access"))))
-                .addBody(tbody()
-                        .addRows(attributes, attribute -> tr(attribute.name())
-                                .store(ATTRIBUTE, attribute)
-                                .addItem(td("Name")
-                                        .add(attributeName(attribute, () -> uic.environment()
-                                                .highlightStability(resource.stability(), attribute.stability())))
-                                        .add(attributeDescription(attribute).css(util("mt-sm"))))
-                                .addItem(td("Type").textContent(attribute.formatType()))
-                                .addItem(td("Storage").run(td -> storage(td, attribute)))
-                                .addItem(td("Access type").run(td -> accessType(td, attribute)))));
+        root = div()
+                .add(toolbar = attributesToolbar()
+                        .onFilter(this::filter))
+                .add(table()
+                        .addHead(thead().css(util("mt-sm"))
+                                .addRow(tr("attributes-head")
+                                        .addItem(th("name").width(width60).textContent("Name"))
+                                        .addItem(th("type").width(width20).textContent("Type"))
+                                        .addItem(th("storage").width(width10).textContent("Storage"))
+                                        .addItem(th("access-type").width(width10).textContent("Access"))))
+                        .addBody(tbody = tbody()
+                                .addRows(attributes, attribute -> tr(attribute.name())
+                                        .store(ATTRIBUTE_KEY, attribute)
+                                        .addItem(td("Name")
+                                                .add(attributeName(attribute, () -> uic.environment()
+                                                        .highlightStability(resource.stability(), attribute.stability())))
+                                                .add(attributeDescription(attribute).css(util("mt-sm"))))
+                                        .addItem(td("Type").textContent(attribute.formatType()))
+                                        .addItem(td("Storage").run(td -> storage(td, attribute)))
+                                        .addItem(td("Access type").run(td -> accessType(td, attribute))))))
+                .element();
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
     }
 
     private void storage(Td td, AttributeDescription attribute) {
@@ -148,8 +178,57 @@ class AttributesTable implements IsElement<HTMLElement> {
         }
     }
 
-    @Override
-    public HTMLElement element() {
-        return table.element();
+    private void noAttributes() {
+        if (noAttributes == null) {
+            noAttributes = tr(EMPTY_ROW)
+                    .addItem(td().colSpan(4)
+                            .add(bullseye()
+                                    .add(emptyState().size(Size.sm)
+                                            .addHeader(emptyStateHeader()
+                                                    .icon(search())
+                                                    .text("No results found"))
+                                            .addBody(emptyStateBody()
+                                                    .textContent(
+                                                            "No results match the filter criteria. Clear all filters and try again."))
+                                            .addFooter(emptyStateFooter()
+                                                    .addActions(emptyStateActions()
+                                                            .add(button("Clear all filters").link()
+                                                                    .onClick((event, component) -> clearFilter())))))));
+        }
+        if (!isAttached(noAttributes)) {
+            tbody.addRow(noAttributes);
+        }
+    }
+
+    private void filter(AttributesFilter filter) {
+        logger.debug("Filter attributes: %s", filter);
+        if (filter.isDefined()) {
+            int filteredItems = 0;
+            int items = (int) tbody.items().stream().filter(tr -> !EMPTY_ROW.equals(tr.identifier())).count();
+            for (Tr tr : tbody.items()) {
+                AttributeDescription ad = tr.get(ATTRIBUTE_KEY);
+                if (ad != null) {
+                    boolean filtered = filter.filter(ad);
+                    tr.classList().toggle(halModifier(HalClasses.filtered), filtered);
+                    if (filtered) {
+                        filteredItems++;
+                    }
+                }
+            }
+            if (items == filteredItems) {
+                noAttributes();
+            } else {
+                failSafeRemoveFromParent(noAttributes);
+            }
+        } else {
+            failSafeRemoveFromParent(noAttributes);
+            tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
+        }
+    }
+
+    private void clearFilter() {
+        toolbar.clearFilter();
+        failSafeRemoveFromParent(noAttributes);
+        tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
     }
 }

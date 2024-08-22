@@ -15,8 +15,23 @@
  */
 package org.jboss.hal.model.filter;
 
-@FunctionalInterface
-public interface FilterCondition<T, V> {
+import static java.lang.Boolean.parseBoolean;
 
-    boolean matches(T object, V value);
+@FunctionalInterface
+public interface OldFilterCondition {
+
+    static OldFilterCondition containsIgnoreCase() {
+        return (value, filterValue) -> value != null && filterValue != null &&
+                value.toLowerCase().contains(filterValue.toLowerCase());
+    }
+
+    static OldFilterCondition equalsIgnoreCase() {
+        return (value, filterValue) -> value != null && value.equalsIgnoreCase(filterValue);
+    }
+
+    static OldFilterCondition booleanEquals() {
+        return (value, filterValue) -> parseBoolean(value) == parseBoolean(filterValue);
+    }
+
+    boolean matches(String value, String filterValue);
 }

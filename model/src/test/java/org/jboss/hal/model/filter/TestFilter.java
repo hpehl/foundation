@@ -15,11 +15,9 @@
  */
 package org.jboss.hal.model.filter;
 
-import static java.util.Collections.emptyList;
-
 class TestFilter extends Filter {
 
     TestFilter() {
-        super(emptyList());
+        super();
     }
 }
