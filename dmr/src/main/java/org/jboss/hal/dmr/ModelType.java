@@ -48,7 +48,7 @@ public enum ModelType {
 
     UNDEFINED('u');
 
-    static ModelType forChar(char c) {
+    public static ModelType forChar(char c) {
         switch (c) {
             case 'J':
                 return LONG;
@@ -89,7 +89,7 @@ public enum ModelType {
         this.typeChar = typeChar;
     }
 
-    char getTypeChar() {
+    public char getTypeChar() {
         return typeChar;
     }
 

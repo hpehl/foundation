@@ -25,7 +25,6 @@ import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.resource.ResourceView;
 import org.patternfly.component.table.Tbody;
 import org.patternfly.component.table.Td;
 import org.patternfly.component.table.Tr;
@@ -79,7 +78,7 @@ import static org.patternfly.style.Width.width60;
 
 class AttributesTable implements IsElement<HTMLElement> {
 
-    private static final Logger logger = Logger.getLogger(ResourceView.class.getName());
+    private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
     private static final String ATTRIBUTE_KEY = "modelbrowser.attribute";
     private static final String EMPTY_ROW = "modelbrowser.no-attribute";
     private final AttributesToolbar toolbar;
@@ -202,7 +201,7 @@ class AttributesTable implements IsElement<HTMLElement> {
 
     private void filter(AttributesFilter filter) {
         logger.debug("Filter attributes: %s", filter);
-        if (filter.isDefined()) {
+        if (filter.defined()) {
             int filteredItems = 0;
             int items = (int) tbody.items().stream().filter(tr -> !EMPTY_ROW.equals(tr.identifier())).count();
             for (Tr tr : tbody.items()) {

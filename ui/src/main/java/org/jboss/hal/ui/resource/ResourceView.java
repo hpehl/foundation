@@ -127,6 +127,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     private static final String RESOURCE_ATTRIBUTE_KEY = "resourceView.ra";
     private final UIContext uic;
     private final Metadata metadata;
+    private final ResourceFilter filter;
     private final LabelBuilder labelBuilder;
     private final List<String> attributes;
     private final Map<String, UpdateValueFn> updateValueFunctions;
@@ -140,12 +141,13 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     ResourceView(UIContext uic, Metadata metadata) {
         this.uic = uic;
         this.metadata = metadata;
+        this.filter = new ResourceFilter();
         this.labelBuilder = new LabelBuilder();
         this.attributes = new ArrayList<>();
         this.updateValueFunctions = new HashMap<>();
         this.shown = false;
         this.root = div()
-                .add(toolbar = resourceToolbar()
+                .add(toolbar = resourceToolbar(filter)
                         .onFilter(this::filter))
                 .add(viewContainer = div().element())
                 .element();
@@ -446,7 +448,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     private void filter(ResourceFilter filter) {
         logger.debug("Filter attributes: %s", filter);
         if (dl != null) {
-            if (filter.isDefined()) {
+            if (filter.defined()) {
                 int filteredItems = 0;
                 int items = dl.size();
                 for (DescriptionListGroup dlg : dl.items()) {

@@ -15,30 +15,20 @@
  */
 package org.jboss.hal.ui.resource;
 
-import org.jboss.hal.model.filter.Filter;
-import org.jboss.hal.model.filter.FilterValue;
+import org.jboss.hal.meta.filter.AccessTypeFilterValue;
+import org.jboss.hal.meta.filter.DeprecatedFilterValue;
+import org.jboss.hal.meta.filter.Filter;
+import org.jboss.hal.meta.filter.NameFilterValue;
+import org.jboss.hal.meta.filter.StorageFilterValue;
+import org.jboss.hal.meta.filter.UndefinedFilterValue;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+public class ResourceFilter extends Filter<ResourceAttribute> {
 
-class ResourceFilter extends Filter<ResourceAttribute> {
-
-    static final String NAME_FILTER = "name-filter";
-    static final String UNDEFINED_FILTER = "undefined-filter";
-    static final String DEPRECATED_FILTER = "deprecated-filter";
-    static final String STORAGE_FILTER = "storage-filter";
-    static final String ACCESS_TYPE_FILTER = "access-type-filter";
-
-    ResourceFilter() {
-        add(new FilterValue<>(NAME_FILTER, "",
-                (ra, name) -> ra.name.toLowerCase().contains(name.toLowerCase())));
-        add(new FilterValue<>(UNDEFINED_FILTER, (Boolean) null,
-                (ra, defined) -> defined == null || defined == ra.value.isDefined()));
-        add(new FilterValue<>(DEPRECATED_FILTER, (Boolean) null,
-                (ra, deprecated) -> deprecated == null || deprecated == ra.description.deprecation().isDefined()));
-        add(new FilterValue<>(STORAGE_FILTER, "",
-                (ra, storage) -> storage.equals(ra.description.get(STORAGE).asString())));
-        add(new FilterValue<>(ACCESS_TYPE_FILTER, "",
-                (ra, accessType) -> accessType.equals(ra.description.get(ACCESS_TYPE).asString())));
+    public ResourceFilter() {
+        add(new NameFilterValue<>(ra -> ra.name));
+        add(new UndefinedFilterValue<>(ra -> ra.value));
+        add(new DeprecatedFilterValue<>(ra -> ra.description));
+        add(new StorageFilterValue<>(ra -> ra.description));
+        add(new AccessTypeFilterValue<>(ra -> ra.description));
     }
 }

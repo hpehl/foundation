@@ -13,19 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.model.filter;
+package org.jboss.hal.meta.filter;
 
-import org.junit.jupiter.api.Test;
+import java.util.List;
 
-class FilterTest {
+class TestData {
 
-    @Test
-    void initial() {
-        TestFilter filter = new TestFilter();
-    }
-
-    @Test
-    void set() {
-        TestFilter filter = new TestFilter();
-    }
+    boolean booleanValue;
+    String stringValue;
+    List<String> listValue;
 }

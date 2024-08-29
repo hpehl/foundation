@@ -32,12 +32,7 @@ import static java.util.stream.Collectors.joining;
 @ApplicationScoped
 public class Settings {
 
-    public static final boolean DEFAULT_COLLECT_USER_DATA = true;
     public static final String DEFAULT_LOCALE = "en";
-    public static final int DEFAULT_PAGE_SIZE = 10;
-    // keep in sync with the poll-time attribute of settings.dmr
-    public static final int DEFAULT_POLL_TIME = 10;
-    public static final int[] PAGE_SIZE_VALUES = new int[]{10, 20, 50};
     private static final int EXPIRES = 365; // days
 
     private final Map<Key, Value> values;
@@ -84,19 +79,12 @@ public class Settings {
         return Id.build(Ids.COOKIE, key.key);
     }
 
-    @SuppressWarnings("DuplicateStringLiteralInspection")
     public enum Key {
         TITLE("title", true),
 
-        COLLECT_USER_DATA("collect-user-data", true),
-
         LOCALE("locale", true),
 
-        PAGE_SIZE("page-size", true),
-
-        POLL("poll", true),
-
-        POLL_TIME("poll-time", true),
+        OMIT_GLOBAL_OPERATIONS("omit-global-operations", true),
 
         RUN_AS("run-as", false); // can contain multiple roles
         // separated by ","
@@ -105,16 +93,10 @@ public class Settings {
             switch (key) {
                 case "title":
                     return TITLE;
-                case "collect-user-data":
-                    return COLLECT_USER_DATA;
                 case "locale":
                     return LOCALE;
-                case "page-size":
-                    return PAGE_SIZE;
-                case "poll":
-                    return POLL;
-                case "poll-time":
-                    return POLL_TIME;
+                case "omit-global-operations":
+                    return OMIT_GLOBAL_OPERATIONS;
                 case "run-as":
                     return RUN_AS;
                 default:
@@ -138,7 +120,7 @@ public class Settings {
     public static class Value {
 
         private static final Value EMPTY = new Value(null);
-        private static final String SEPARATOR = "|";
+        private static final String SEPARATOR_REGEX = "\\|";
 
         private final String value;
 
@@ -162,13 +144,8 @@ public class Settings {
         }
 
         public Set<String> asSet() {
-            return asSet(SEPARATOR);
-        }
-
-        Set<String> asSet(String separator) {
             if (value != null) {
-                String regex = new StringBuilder().append("\\").append(separator).toString();
-                String[] values = value.split(regex);
+                String[] values = value.split(SEPARATOR_REGEX);
                 return new HashSet<>(asList(values));
             }
             return Collections.emptySet();

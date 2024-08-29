@@ -13,10 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.model.filter;
+package org.jboss.hal.meta.filter;
 
-@FunctionalInterface
-public interface FilterCondition<T, V> {
+public class StringFilterValue<T> extends FilterValue<T, String> {
 
-    boolean matches(T object, V value);
+    public StringFilterValue(String name, String initialValue, boolean persistent, FilterCondition<T, String> condition) {
+        super(name, initialValue, persistent, condition);
+    }
+
+    @Override
+    protected void load(String value) {
+        set(value);
+    }
 }

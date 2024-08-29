@@ -23,6 +23,7 @@ import jakarta.inject.Inject;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 
@@ -47,16 +48,19 @@ public class UIContext {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(UIContext.class.getName());
+    private final Settings settings;
     private final Environment environment;
     private final Dispatcher dispatcher;
     private final MetadataRepository metadataRepository;
     private final StatementContext statementContext;
 
     @Inject
-    public UIContext(Environment environment,
+    public UIContext(Settings settings,
+            Environment environment,
             Dispatcher dispatcher,
             MetadataRepository metadataRepository,
             StatementContext statementContext) {
+        this.settings = settings;
         this.environment = environment;
         this.dispatcher = dispatcher;
         this.metadataRepository = metadataRepository;
@@ -66,6 +70,10 @@ public class UIContext {
     @PostConstruct
     void init() {
         UIContext.instance = this;
+    }
+
+    public Settings settings() {
+        return settings;
     }
 
     public Environment environment() {

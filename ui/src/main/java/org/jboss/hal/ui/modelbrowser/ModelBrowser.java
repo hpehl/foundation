@@ -44,6 +44,8 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
+    private static final int TREE_COLUMNS = 3;
+    private static final int DETAIL_COLUMNS = 9;
     private final UIContext uic;
     private final HTMLElement root;
     private final ModelBrowserTree tree;
@@ -55,8 +57,8 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         this.detail = new ModelBrowserDetail(uic);
         this.root = grid().span(12)
                 .css(halComponent(modelBrowser))
-                .addItem(gridItem().span(4).add(tree))
-                .addItem(gridItem().span(8).add(detail))
+                .addItem(gridItem().span(TREE_COLUMNS).add(tree))
+                .addItem(gridItem().span(DETAIL_COLUMNS).add(detail))
                 .element();
         tree.detail = detail;
         detail.tree = tree;

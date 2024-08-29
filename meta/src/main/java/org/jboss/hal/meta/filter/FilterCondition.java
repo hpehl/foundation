@@ -13,21 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.resource;
+package org.jboss.hal.meta.filter;
 
-import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.meta.description.AttributeDescription;
+@FunctionalInterface
+public interface FilterCondition<T, V> {
 
-/** Simple record for an attribute name/value/description triple in {@link ResourceView} and {@link ResourceForm}. */
-public class ResourceAttribute {
-
-    public final String name;
-    public final ModelNode value;
-    public final AttributeDescription description;
-
-    ResourceAttribute(String name, ModelNode value, AttributeDescription description) {
-        this.name = name;
-        this.value = value;
-        this.description = description;
-    }
+    boolean matches(T object, V value);
 }

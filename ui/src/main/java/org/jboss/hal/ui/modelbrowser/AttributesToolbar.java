@@ -21,6 +21,11 @@ import java.util.function.Consumer;
 
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.dmr.ModelType;
+import org.jboss.hal.meta.filter.AccessTypeFilterValue;
+import org.jboss.hal.meta.filter.DeprecatedFilterValue;
+import org.jboss.hal.meta.filter.NameFilterValue;
+import org.jboss.hal.meta.filter.StorageFilterValue;
+import org.jboss.hal.meta.filter.TypesFilterValue;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.component.menu.SingleSelect;
@@ -70,20 +75,25 @@ class AttributesToolbar implements IsElement<HTMLElement> {
 
     private AttributesToolbar() {
         filter = new AttributesFilter();
+        filterByName = searchInputGroup("Filter by name")
+                .onChange((event, textInputGroup, value) -> {
+                    filter.set(NameFilterValue.NAME, value);
+                    filter();
+                });
         filterByType = multiSelect(menuToggle("Types")
                 .icon(fas.filter())
                 .addBadge(badge(0).read()))
                 .addMenu(multiSelectMenu()
                         .onMultiSelect((event, menuItem, selected) -> {
                             if (selected.isEmpty()) {
-                                filter.reset(AttributesFilter.TYPE_FILTER);
+                                filter.reset(TypesFilterValue.NAME);
                             } else {
                                 List<ModelType> modelTypes = new ArrayList<>();
                                 for (MenuItem item : selected) {
                                     List<ModelType> types = item.get(MODEL_TYPE_KEY);
                                     modelTypes.addAll(types);
                                 }
-                                filter.set(AttributesFilter.TYPE_FILTER, modelTypes);
+                                filter.set(TypesFilterValue.NAME, modelTypes);
                             }
                             filter();
                         })
@@ -113,10 +123,9 @@ class AttributesToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(AttributesFilter.DEPRECATED_FILTER);
+                                filter.reset(DeprecatedFilterValue.NAME);
                             } else {
-                                filter.set(AttributesFilter.DEPRECATED_FILTER,
-                                        parseBoolean(menuItem.identifier()));
+                                filter.set(DeprecatedFilterValue.NAME, parseBoolean(menuItem.identifier()));
                             }
                             filter();
                         })
@@ -131,10 +140,9 @@ class AttributesToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(AttributesFilter.STORAGE_FILTER);
+                                filter.reset(StorageFilterValue.NAME);
                             } else {
-                                filter.set(AttributesFilter.STORAGE_FILTER,
-                                        menuItem.identifier());
+                                filter.set(StorageFilterValue.NAME, menuItem.identifier());
                             }
                             filter();
                         })
@@ -149,10 +157,9 @@ class AttributesToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(AttributesFilter.ACCESS_TYPE_FILTER);
+                                filter.reset(AccessTypeFilterValue.NAME);
                             } else {
-                                filter.set(AttributesFilter.ACCESS_TYPE_FILTER,
-                                        menuItem.identifier());
+                                filter.set(AccessTypeFilterValue.NAME, menuItem.identifier());
                             }
                             filter();
                         })
@@ -165,11 +172,7 @@ class AttributesToolbar implements IsElement<HTMLElement> {
         toolbar = toolbar()
                 .addContent(toolbarContent()
                         .addItem(toolbarItem().css(modifier("search-filter"))
-                                .add(filterByName = searchInputGroup("Filter by name")
-                                        .onChange((event, textInputGroup, value) -> {
-                                            filter.set(AttributesFilter.NAME_FILTER, value);
-                                            filter();
-                                        })))
+                                .add(filterByName))
                         .addGroup(toolbarGroup().css(modifier("filter-group"))
                                 .addItem(toolbarItem().add(filterByType))
                                 .addItem(toolbarItem().add(filterByDeprecated))

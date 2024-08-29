@@ -13,11 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.model.filter;
+package org.jboss.hal.meta.filter;
 
-class TestFilter extends Filter {
+import java.util.function.Function;
 
-    TestFilter() {
-        super();
+import org.jboss.hal.dmr.ModelNode;
+
+import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+
+public class StorageFilterValue<T> extends StringFilterValue<T> {
+
+    public static final String NAME = "storage";
+
+    public StorageFilterValue(Function<T, ModelNode> modelNodeFn) {
+        super(STORAGE, "", true,
+                (object, storage) -> storage.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
     }
 }

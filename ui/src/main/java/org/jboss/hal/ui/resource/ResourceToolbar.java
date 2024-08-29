@@ -20,6 +20,11 @@ import java.util.function.Consumer;
 import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.meta.filter.AccessTypeFilterValue;
+import org.jboss.hal.meta.filter.DeprecatedFilterValue;
+import org.jboss.hal.meta.filter.NameFilterValue;
+import org.jboss.hal.meta.filter.StorageFilterValue;
+import org.jboss.hal.meta.filter.UndefinedFilterValue;
 import org.patternfly.component.menu.SingleSelect;
 import org.patternfly.component.textinputgroup.TextInputGroup;
 import org.patternfly.component.toolbar.Toolbar;
@@ -50,8 +55,8 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static ResourceToolbar resourceToolbar() {
-        return new ResourceToolbar();
+    static ResourceToolbar resourceToolbar(ResourceFilter filter) {
+        return new ResourceToolbar(filter);
     }
 
     // ------------------------------------------------------ instance
@@ -65,25 +70,46 @@ class ResourceToolbar implements IsElement<HTMLElement> {
     private final SingleSelect filterByAccessType;
     private Consumer<ResourceFilter> onFilter;
 
-    private ResourceToolbar() {
+    private ResourceToolbar(ResourceFilter filter) {
+        this.filter = filter;
+
         String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
         String editId = Id.unique("edit");
 
-        filter = new ResourceFilter();
+        // TODO Refactor to two single selects with groups:
+        //  1. Status:
+        //    Defined
+        //      a) All
+        //      b) Defined
+        //      c) Undefined
+        //    Deprecation
+        //      a) All
+        //      b) Deprecated
+        //      c) Not deprecated
+        //  2. Mode
+        //    Storage
+        //      a) All
+        //      b) Configuration
+        //      c) Runtime
+        //    Access type
+        //      a) All
+        //      b) Read-write
+        //      c) Read-only
+        //      c) Metric
+
         filterByName = searchInputGroup("Filter by name")
                 .onChange((event, textInputGroup, value) -> {
-                    filter.set(ResourceFilter.NAME_FILTER, value);
+                    filter.set(NameFilterValue.NAME, value);
                     filter();
                 });
         filterByDefined = singleSelect(menuToggle().icon(fas.filter()))
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(ResourceFilter.UNDEFINED_FILTER);
+                                filter.reset(UndefinedFilterValue.NAME);
                             } else {
-                                filter.set(ResourceFilter.UNDEFINED_FILTER,
-                                        parseBoolean(menuItem.identifier()));
+                                filter.set(UndefinedFilterValue.NAME, parseBoolean(menuItem.identifier()));
                             }
                             filter();
                         })
@@ -96,10 +122,9 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(ResourceFilter.DEPRECATED_FILTER);
+                                filter.reset(DeprecatedFilterValue.NAME);
                             } else {
-                                filter.set(ResourceFilter.DEPRECATED_FILTER,
-                                        parseBoolean(menuItem.identifier()));
+                                filter.set(DeprecatedFilterValue.NAME, parseBoolean(menuItem.identifier()));
                             }
                             filter();
                         })
@@ -112,10 +137,9 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(ResourceFilter.STORAGE_FILTER);
+                                filter.reset(StorageFilterValue.NAME);
                             } else {
-                                filter.set(ResourceFilter.STORAGE_FILTER,
-                                        menuItem.identifier());
+                                filter.set(StorageFilterValue.NAME, menuItem.identifier());
                             }
                             filter();
                         })
@@ -130,10 +154,9 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .addMenu(singleSelectMenu()
                         .onSingleSelect((event, menuItem, selected) -> {
                             if ("all".equals(menuItem.identifier())) {
-                                filter.reset(ResourceFilter.ACCESS_TYPE_FILTER);
+                                filter.reset(AccessTypeFilterValue.NAME);
                             } else {
-                                filter.set(ResourceFilter.ACCESS_TYPE_FILTER,
-                                        menuItem.identifier());
+                                filter.set(AccessTypeFilterValue.NAME, menuItem.identifier());
                             }
                             filter();
                         })

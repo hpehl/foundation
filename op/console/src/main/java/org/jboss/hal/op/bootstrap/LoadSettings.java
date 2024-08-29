@@ -25,15 +25,9 @@ import org.jboss.hal.resources.Names;
 
 import elemental2.promise.Promise;
 
-import static org.jboss.hal.env.Settings.DEFAULT_COLLECT_USER_DATA;
 import static org.jboss.hal.env.Settings.DEFAULT_LOCALE;
-import static org.jboss.hal.env.Settings.DEFAULT_PAGE_SIZE;
-import static org.jboss.hal.env.Settings.DEFAULT_POLL_TIME;
-import static org.jboss.hal.env.Settings.Key.COLLECT_USER_DATA;
 import static org.jboss.hal.env.Settings.Key.LOCALE;
-import static org.jboss.hal.env.Settings.Key.PAGE_SIZE;
-import static org.jboss.hal.env.Settings.Key.POLL;
-import static org.jboss.hal.env.Settings.Key.POLL_TIME;
+import static org.jboss.hal.env.Settings.Key.OMIT_GLOBAL_OPERATIONS;
 import static org.jboss.hal.env.Settings.Key.RUN_AS;
 import static org.jboss.hal.env.Settings.Key.TITLE;
 
@@ -54,11 +48,8 @@ public final class LoadSettings implements Task<FlowContext> {
     @Override
     public Promise<FlowContext> apply(final FlowContext context) {
         settings.load(TITLE, Names.BROWSER_DEFAULT_TITLE);
-        settings.load(COLLECT_USER_DATA, DEFAULT_COLLECT_USER_DATA);
         settings.load(LOCALE, DEFAULT_LOCALE);
-        settings.load(PAGE_SIZE, DEFAULT_PAGE_SIZE);
-        settings.load(POLL, true);
-        settings.load(POLL_TIME, DEFAULT_POLL_TIME);
+        settings.load(OMIT_GLOBAL_OPERATIONS, false);
         settings.load(RUN_AS, null);
         logger.info("Settings: %s", settings);
         return Promise.resolve(context);
