@@ -13,18 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelType;
+import org.patternfly.filter.FilterAttribute;
 
-public class UndefinedFilterValue<T> extends BooleanFilterValue<T> {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 
-    public static final String NAME = "undefined";
+public class TypesFilterAttribute<T> extends FilterAttribute<T, List<ModelType>> {
 
-    public UndefinedFilterValue(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, null, true,
-                (object, defined) -> defined == null || defined == modelNodeFn.apply(object).isDefined());
+    public static final String NAME = "types";
+
+    public TypesFilterAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, types) -> {
+            ModelType attributeType = modelNodeFn.apply(object).get(TYPE).asType();
+            return types.contains(attributeType);
+        });
     }
 }

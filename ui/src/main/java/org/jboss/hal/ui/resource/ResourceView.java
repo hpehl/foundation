@@ -40,6 +40,7 @@ import org.patternfly.component.list.DescriptionListGroup;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Tuple;
+import org.patternfly.filter.Filter;
 import org.patternfly.style.Size;
 import org.patternfly.style.Variables;
 
@@ -104,9 +105,7 @@ import static org.patternfly.style.Color.grey;
 import static org.patternfly.style.Variable.globalVar;
 import static org.patternfly.style.Variable.utilVar;
 
-// TODO Implement toolbar with filters/flags:
-//  Resolve all expressions
-//  Implement reset/edit actions
+// TODO Implement resolve all expressions, reset, and edit actions
 public class ResourceView implements HasElement<HTMLElement, ResourceView> {
 
     // ------------------------------------------------------ factory
@@ -127,10 +126,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     private static final String RESOURCE_ATTRIBUTE_KEY = "resourceView.ra";
     private final UIContext uic;
     private final Metadata metadata;
-    private final ResourceFilter filter;
     private final LabelBuilder labelBuilder;
     private final List<String> attributes;
     private final Map<String, UpdateValueFn> updateValueFunctions;
+    private final Filter<ResourceAttribute> filter;
     private final ResourceToolbar toolbar;
     private final HTMLElement viewContainer;
     private final HTMLElement root;
@@ -141,14 +140,14 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     ResourceView(UIContext uic, Metadata metadata) {
         this.uic = uic;
         this.metadata = metadata;
-        this.filter = new ResourceFilter();
         this.labelBuilder = new LabelBuilder();
         this.attributes = new ArrayList<>();
         this.updateValueFunctions = new HashMap<>();
+        this.filter = new ResourceFilter().onChange(this::onFilterChanged);
         this.shown = false;
+
         this.root = div()
-                .add(toolbar = resourceToolbar(filter)
-                        .onFilter(this::filter))
+                .add(toolbar = resourceToolbar(filter))
                 .add(viewContainer = div().element())
                 .element();
         setVisible(toolbar, false);
@@ -233,7 +232,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         }
     }
 
-    // ------------------------------------------------------ internal
+    // ------------------------------------------------------ internal / status
 
     private boolean valid(ModelNode resource) {
         return resource != null && resource.isDefined() && !resource.asPropertyList().isEmpty();
@@ -274,12 +273,14 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                     .addFooter(emptyStateFooter()
                             .addActions(emptyStateActions()
                                     .add(button("Clear all filters").link()
-                                            .onClick((event, component) -> clearFilter()))));
+                                            .onClick((event, component) -> filter.resetAll()))));
         }
         if (!isAttached(noAttributes)) {
             viewContainer.append(noAttributes.element());
         }
     }
+
+    // ------------------------------------------------------ internal / resource attributes
 
     private List<ResourceAttribute> resourceAttributes(ModelNode resource) {
         List<ResourceAttribute> resourceAttributes = new ArrayList<>();
@@ -445,23 +446,24 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         return tuple(element, fn);
     }
 
-    private void filter(ResourceFilter filter) {
+    // ------------------------------------------------------ internal / filter
+
+    private void onFilterChanged(Filter<ResourceAttribute> filter, String origin) {
         logger.debug("Filter attributes: %s", filter);
         if (dl != null) {
             if (filter.defined()) {
-                int filteredItems = 0;
-                int items = dl.size();
+                int matchingItems = 0;
                 for (DescriptionListGroup dlg : dl.items()) {
                     ResourceAttribute ra = dlg.get(RESOURCE_ATTRIBUTE_KEY);
                     if (ra != null) {
-                        boolean filtered = filter.filter(ra);
-                        dlg.classList().toggle(halModifier(HalClasses.filtered), filtered);
-                        if (filtered) {
-                            filteredItems++;
+                        boolean match = filter.match(ra);
+                        dlg.classList().toggle(halModifier(filtered), !match);
+                        if (match) {
+                            matchingItems++;
                         }
                     }
                 }
-                if (items == filteredItems) {
+                if (matchingItems == 0) {
                     noAttributes();
                 } else {
                     failSafeRemoveFromParent(noAttributes);
@@ -470,14 +472,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 failSafeRemoveFromParent(noAttributes);
                 dl.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
             }
-        }
-    }
-
-    private void clearFilter() {
-        toolbar.clearFilter();
-        failSafeRemoveFromParent(noAttributes);
-        if (dl != null) {
-            dl.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
         }
     }
 }

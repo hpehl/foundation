@@ -23,11 +23,11 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Tbody;
 import org.patternfly.component.table.Td;
 import org.patternfly.component.table.Tr;
+import org.patternfly.filter.Filter;
 import org.patternfly.style.Size;
 import org.patternfly.style.Variable;
 import org.patternfly.style.Variables;
@@ -81,15 +81,15 @@ class AttributesTable implements IsElement<HTMLElement> {
     private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
     private static final String ATTRIBUTE_KEY = "modelbrowser.attribute";
     private static final String EMPTY_ROW = "modelbrowser.no-attribute";
-    private final AttributesToolbar toolbar;
+    private final Filter<AttributeDescription> filter;
     private final Tbody tbody;
     private final HTMLElement root;
     private Tr noAttributes;
 
     AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
+        filter = new AttributesFilter().onChange(this::onFilterChanged);
         root = div()
-                .add(toolbar = attributesToolbar()
-                        .onFilter(this::filter))
+                .add(attributesToolbar(filter))
                 .add(table()
                         .addHead(thead().css(util("mt-sm"))
                                 .addRow(tr("attributes-head")
@@ -192,29 +192,28 @@ class AttributesTable implements IsElement<HTMLElement> {
                                             .addFooter(emptyStateFooter()
                                                     .addActions(emptyStateActions()
                                                             .add(button("Clear all filters").link()
-                                                                    .onClick((event, component) -> clearFilter())))))));
+                                                                    .onClick((event, component) -> filter.resetAll())))))));
         }
         if (!isAttached(noAttributes)) {
             tbody.addRow(noAttributes);
         }
     }
 
-    private void filter(AttributesFilter filter) {
+    private void onFilterChanged(Filter<AttributeDescription> filter, String origin) {
         logger.debug("Filter attributes: %s", filter);
         if (filter.defined()) {
-            int filteredItems = 0;
-            int items = (int) tbody.items().stream().filter(tr -> !EMPTY_ROW.equals(tr.identifier())).count();
+            int matchingItems = 0;
             for (Tr tr : tbody.items()) {
                 AttributeDescription ad = tr.get(ATTRIBUTE_KEY);
                 if (ad != null) {
-                    boolean filtered = filter.filter(ad);
-                    tr.classList().toggle(halModifier(HalClasses.filtered), filtered);
-                    if (filtered) {
-                        filteredItems++;
+                    boolean match = filter.match(ad);
+                    tr.classList().toggle(halModifier(filtered), !match);
+                    if (match) {
+                        matchingItems++;
                     }
                 }
             }
-            if (items == filteredItems) {
+            if (matchingItems == 0) {
                 noAttributes();
             } else {
                 failSafeRemoveFromParent(noAttributes);
@@ -223,11 +222,5 @@ class AttributesTable implements IsElement<HTMLElement> {
             failSafeRemoveFromParent(noAttributes);
             tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
         }
-    }
-
-    private void clearFilter() {
-        toolbar.clearFilter();
-        failSafeRemoveFromParent(noAttributes);
-        tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
     }
 }

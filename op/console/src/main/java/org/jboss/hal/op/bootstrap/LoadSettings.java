@@ -27,8 +27,8 @@ import elemental2.promise.Promise;
 
 import static org.jboss.hal.env.Settings.DEFAULT_LOCALE;
 import static org.jboss.hal.env.Settings.Key.LOCALE;
-import static org.jboss.hal.env.Settings.Key.OMIT_GLOBAL_OPERATIONS;
 import static org.jboss.hal.env.Settings.Key.RUN_AS;
+import static org.jboss.hal.env.Settings.Key.SHOW_GLOBAL_OPERATIONS;
 import static org.jboss.hal.env.Settings.Key.TITLE;
 
 /**
@@ -49,7 +49,7 @@ public final class LoadSettings implements Task<FlowContext> {
     public Promise<FlowContext> apply(final FlowContext context) {
         settings.load(TITLE, Names.BROWSER_DEFAULT_TITLE);
         settings.load(LOCALE, DEFAULT_LOCALE);
-        settings.load(OMIT_GLOBAL_OPERATIONS, false);
+        settings.load(SHOW_GLOBAL_OPERATIONS, false);
         settings.load(RUN_AS, null);
         logger.info("Settings: %s", settings);
         return Promise.resolve(context);

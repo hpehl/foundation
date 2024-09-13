@@ -13,20 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.meta.description.Description;
+import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+public class DeprecatedFilterAttribute<T> extends FilterAttribute<T, Boolean> {
 
-public class AccessTypeFilterValue<T> extends StringFilterValue<T> {
+    public static final String NAME = "deprecated";
 
-    public static final String NAME = "access-type";
-
-    public AccessTypeFilterValue(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, "", true,
-                (object, accessType) -> accessType.equals(modelNodeFn.apply(object).get(ACCESS_TYPE).asString()));
+    public DeprecatedFilterAttribute(Function<T, Description> descriptionFn) {
+        super(NAME, (object, deprecated) -> deprecated == descriptionFn.apply(object).deprecation().isDefined());
     }
 }

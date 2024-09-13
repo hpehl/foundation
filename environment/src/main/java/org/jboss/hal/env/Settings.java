@@ -84,7 +84,7 @@ public class Settings {
 
         LOCALE("locale", true),
 
-        OMIT_GLOBAL_OPERATIONS("omit-global-operations", true),
+        SHOW_GLOBAL_OPERATIONS("show-global-operations", true),
 
         RUN_AS("run-as", false); // can contain multiple roles
         // separated by ","
@@ -95,8 +95,8 @@ public class Settings {
                     return TITLE;
                 case "locale":
                     return LOCALE;
-                case "omit-global-operations":
-                    return OMIT_GLOBAL_OPERATIONS;
+                case "show-global-operations":
+                    return SHOW_GLOBAL_OPERATIONS;
                 case "run-as":
                     return RUN_AS;
                 default:

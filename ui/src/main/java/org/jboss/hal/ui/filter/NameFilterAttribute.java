@@ -13,20 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+public class NameFilterAttribute<T> extends FilterAttribute<T, String> {
 
-public class StorageFilterValue<T> extends StringFilterValue<T> {
+    public static final String NAME = "name";
 
-    public static final String NAME = "storage";
-
-    public StorageFilterValue(Function<T, ModelNode> modelNodeFn) {
-        super(STORAGE, "", true,
-                (object, storage) -> storage.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
+    public NameFilterAttribute(Function<T, String> nameFn) {
+        super(NAME, (object, name) -> nameFn.apply(object).toLowerCase().contains(name.toLowerCase()));
     }
 }

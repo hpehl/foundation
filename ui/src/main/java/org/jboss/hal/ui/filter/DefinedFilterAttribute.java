@@ -13,13 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
-import java.util.List;
+import java.util.function.Function;
 
-class TestData {
+import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.filter.FilterAttribute;
 
-    boolean booleanValue;
-    String stringValue;
-    List<String> listValue;
+public class DefinedFilterAttribute<T> extends FilterAttribute<T, Boolean> {
+
+    public static final String NAME = "defined";
+
+    public DefinedFilterAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, defined) -> defined == null || defined == modelNodeFn.apply(object).isDefined());
+    }
 }

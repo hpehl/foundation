@@ -15,20 +15,22 @@
  */
 package org.jboss.hal.ui.resource;
 
-import org.jboss.hal.meta.filter.AccessTypeFilterValue;
-import org.jboss.hal.meta.filter.DeprecatedFilterValue;
-import org.jboss.hal.meta.filter.Filter;
-import org.jboss.hal.meta.filter.NameFilterValue;
-import org.jboss.hal.meta.filter.StorageFilterValue;
-import org.jboss.hal.meta.filter.UndefinedFilterValue;
+import org.jboss.hal.ui.filter.AccessTypeFilterAttribute;
+import org.jboss.hal.ui.filter.DefinedFilterAttribute;
+import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
+import org.jboss.hal.ui.filter.NameFilterAttribute;
+import org.jboss.hal.ui.filter.StorageFilterAttribute;
+import org.patternfly.filter.Filter;
+import org.patternfly.filter.FilterOperator;
 
-public class ResourceFilter extends Filter<ResourceAttribute> {
+class ResourceFilter extends Filter<ResourceAttribute> {
 
-    public ResourceFilter() {
-        add(new NameFilterValue<>(ra -> ra.name));
-        add(new UndefinedFilterValue<>(ra -> ra.value));
-        add(new DeprecatedFilterValue<>(ra -> ra.description));
-        add(new StorageFilterValue<>(ra -> ra.description));
-        add(new AccessTypeFilterValue<>(ra -> ra.description));
+    ResourceFilter() {
+        super(FilterOperator.AND);
+        add(new NameFilterAttribute<>(ra -> ra.name));
+        add(new DefinedFilterAttribute<>(ra -> ra.value));
+        add(new DeprecatedFilterAttribute<>(ra -> ra.description));
+        add(new StorageFilterAttribute<>(ra -> ra.description));
+        add(new AccessTypeFilterAttribute<>(ra -> ra.description));
     }
 }

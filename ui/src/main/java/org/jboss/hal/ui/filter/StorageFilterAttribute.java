@@ -13,16 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
-public class StringFilterValue<T> extends FilterValue<T, String> {
+import java.util.function.Function;
 
-    public StringFilterValue(String name, String initialValue, boolean persistent, FilterCondition<T, String> condition) {
-        super(name, initialValue, persistent, condition);
-    }
+import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.filter.FilterAttribute;
 
-    @Override
-    protected void load(String value) {
-        set(value);
+import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+
+public class StorageFilterAttribute<T> extends FilterAttribute<T, String> {
+
+    public static final String NAME = "storage";
+
+    public StorageFilterAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, storage) -> storage.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
     }
 }

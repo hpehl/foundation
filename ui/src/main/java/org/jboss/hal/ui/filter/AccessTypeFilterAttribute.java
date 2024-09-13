@@ -13,11 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.meta.filter;
+package org.jboss.hal.ui.filter;
 
-class TestFilter extends Filter<TestData> {
+import java.util.function.Function;
 
-    TestFilter() {
-        super();
+import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.filter.FilterAttribute;
+
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+
+public class AccessTypeFilterAttribute<T> extends FilterAttribute<T, String> {
+
+    public static final String NAME = "access-type";
+
+    public AccessTypeFilterAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, accessType) -> accessType.equals(modelNodeFn.apply(object).get(ACCESS_TYPE).asString()));
     }
 }
