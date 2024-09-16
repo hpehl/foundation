@@ -15,6 +15,9 @@
  */
 package org.jboss.hal.ui.resource;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
@@ -23,23 +26,19 @@ import org.jboss.hal.ui.filter.DefinedFilterAttribute;
 import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
 import org.jboss.hal.ui.filter.NameFilterAttribute;
 import org.jboss.hal.ui.filter.StorageFilterAttribute;
-import org.patternfly.component.chip.ChipGroup;
+import org.patternfly.component.chip.Chip;
 import org.patternfly.component.textinputgroup.TextInputGroup;
 import org.patternfly.component.toolbar.Toolbar;
-import org.patternfly.component.toolbar.ToolbarFilterContent;
-import org.patternfly.component.toolbar.ToolbarGroup;
 import org.patternfly.component.toolbar.ToolbarGroupType;
-import org.patternfly.component.toolbar.ToolbarItem;
 import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.ui.filter.ModeFilterMultiSelect.modeFilterMultiSelect;
 import static org.jboss.hal.ui.filter.StatusFilterMultiSelect.statusFilterMultiSelect;
+import static org.jboss.hal.ui.filter.ToolbarFilterChipGroup.toolbarFilterChipGroup;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.chip.Chip.chip;
-import static org.patternfly.component.chip.ChipGroup.chipGroup;
 import static org.patternfly.component.textinputgroup.TextInputGroup.searchInputGroup;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
@@ -47,7 +46,6 @@ import static org.patternfly.component.toolbar.ToolbarFilterContent.toolbarFilte
 import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
 import static org.patternfly.component.toolbar.ToolbarGroupType.iconButtonGroup;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
-import static org.patternfly.component.toolbar.ToolbarItemType.chipGroup;
 import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.icon.IconSets.fas.edit;
@@ -66,25 +64,14 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ instance
 
-    private final Filter<ResourceAttribute> filter;
     private final Toolbar toolbar;
-    private final TextInputGroup filterByName;
-    private ToolbarFilterContent filterContent;
-    private ToolbarGroup filterGroup;
-    private ToolbarItem statusToolbarItem;
-    private ToolbarItem modeToolbarItem;
-    private ChipGroup statusChipGroup;
-    private ChipGroup modeChipGroup;
 
     private ResourceToolbar(Filter<ResourceAttribute> filter) {
-        this.filter = filter;
-        this.filter.onChange(this::onFilterChanged);
-
         String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
         String editId = Id.unique("edit");
 
-        filterByName = searchInputGroup("Filter by name")
+        TextInputGroup filterByName = searchInputGroup("Filter by name")
                 .onChange((event, textInputGroup, value) -> filter.set(NameFilterAttribute.NAME, value));
         toolbar = toolbar()
                 .addContent(toolbarContent()
@@ -106,7 +93,19 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                                 .addItem(toolbarItem()
                                         .add(button().id(editId).link().icon(edit()))
                                         .add(tooltip(By.id(editId), "Edit resource")
-                                                .placement(auto)))));
+                                                .placement(auto)))))
+                .addFilterContent(toolbarFilterContent()
+                        .bindVisibility(filter)
+                        .addGroup(toolbarGroup()
+                                .add(toolbarFilterChipGroup(filter, "Status")
+                                        .filterAttributes(DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME)
+                                        .filterToChips(this::statusChips))
+                                .add(toolbarFilterChipGroup(filter, "Mode")
+                                        .filterAttributes(StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
+                                        .filterToChips(this::modeChips))
+                                .addItem(toolbarItem()
+                                        .add(button("Clear all filters").link().inline()
+                                                .onClick((event, component) -> filter.resetAll())))));
     }
 
     @Override
@@ -116,100 +115,32 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void onFilterChanged(Filter<ResourceAttribute> filter, String origin) {
-        if (filter.defined()) {
-            boolean definedFa = filter.defined(DefinedFilterAttribute.NAME);
-            boolean deprecatedFa = filter.defined(DeprecatedFilterAttribute.NAME);
-            boolean storageFa = filter.defined(StorageFilterAttribute.NAME);
-            boolean accessFa = filter.defined(AccessTypeFilterAttribute.NAME);
-
-            if (definedFa || deprecatedFa) {
-                failSafeStatusChipGroup().clear();
-                if (definedFa) {
-                    Boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
-                    failSafeStatusChipGroup().addItem(chip(value ? "defined" : "undefined")
-                            .onClose((event, chip) -> filter.reset(DefinedFilterAttribute.NAME)));
-                }
-                if (deprecatedFa) {
-                    Boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-                    failSafeStatusChipGroup().addItem(chip(value ? "deprecated" : "not deprecated")
-                            .onClose((event, chip) -> filter.reset(DeprecatedFilterAttribute.NAME)));
-                }
-            } else {
-                failSafeRemoveFromParent(statusToolbarItem);
-                statusToolbarItem = null;
-                statusChipGroup = null;
-            }
-            if (storageFa || accessFa) {
-                failSafeModeChipGroup().clear();
-                if (storageFa) {
-                    String value = filter.<String>get(StorageFilterAttribute.NAME).value();
-                    failSafeModeChipGroup().addItem(chip(value)
-                            .onClose((event, chip) -> filter.reset(StorageFilterAttribute.NAME)));
-                }
-                if (accessFa) {
-                    String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
-                    failSafeModeChipGroup().addItem(chip(value)
-                            .onClose((event, chip) -> filter.reset(AccessTypeFilterAttribute.NAME)));
-                }
-            } else {
-                failSafeRemoveFromParent(modeToolbarItem);
-                modeToolbarItem = null;
-                modeChipGroup = null;
-            }
-        } else {
-            filterByName.clear(false);
-            failSafeRemoveFromParent(filterContent);
-            filterContent = null;
-            filterGroup = null;
-            statusToolbarItem = null;
-            statusChipGroup = null;
-            modeToolbarItem = null;
-            modeChipGroup = null;
+    private List<Chip> statusChips(Filter<ResourceAttribute> filter) {
+        List<Chip> chips = new ArrayList<>();
+        if (filter.defined(DefinedFilterAttribute.NAME)) {
+            Boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
+            chips.add(chip(value ? "defined" : "undefined")
+                    .onClose((event, chip) -> filter.reset(DefinedFilterAttribute.NAME)));
         }
+        if (filter.defined(DeprecatedFilterAttribute.NAME)) {
+            Boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
+            chips.add(chip(value ? "deprecated" : "not deprecated")
+                    .onClose((event, chip) -> filter.reset(DeprecatedFilterAttribute.NAME)));
+        }
+        return chips;
     }
 
-    private void failSafeToolbarFilterContent() {
-        if (filterContent == null) {
-            toolbar.addFilterContent(filterContent = toolbarFilterContent()
-                    .addGroup(filterGroup = toolbarGroup())
-                    .addItem(toolbarItem()
-                            .add(button("Clear all filters").link().inline()
-                                    .onClick((event, component) -> filter.resetAll()))));
-        }
-    }
+    private List<Chip> modeChips(Filter<ResourceAttribute> filter) {
+        List<Chip> chips = new ArrayList<>();
 
-    private ChipGroup failSafeStatusChipGroup() {
-        if (filterGroup == null) {
-            failSafeToolbarFilterContent();
+        if (filter.defined(StorageFilterAttribute.NAME)) {
+            String value = filter.<String>get(StorageFilterAttribute.NAME).value();
+            chips.add(chip(value).onClose((event, chip) -> filter.reset(StorageFilterAttribute.NAME)));
         }
-        if (statusChipGroup == null) {
-            filterGroup.addItem(statusToolbarItem = toolbarItem().type(chipGroup)
-                    .add(statusChipGroup = chipGroup("Status")
-                            .closable((event, component) -> {
-                                filter.reset(DefinedFilterAttribute.NAME);
-                                filter.reset(DeprecatedFilterAttribute.NAME);
-                            })));
-            if (modeToolbarItem != null) {
-                // status should be first
-                modeToolbarItem.element().before(statusToolbarItem.element());
-            }
+        if (filter.defined(AccessTypeFilterAttribute.NAME)) {
+            String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
+            chips.add(chip(value).onClose((event, chip) -> filter.reset(AccessTypeFilterAttribute.NAME)));
         }
-        return statusChipGroup;
-    }
-
-    private ChipGroup failSafeModeChipGroup() {
-        if (filterGroup == null) {
-            failSafeToolbarFilterContent();
-        }
-        if (modeChipGroup == null) {
-            filterGroup.addItem(modeToolbarItem = toolbarItem().type(chipGroup)
-                    .add(modeChipGroup = chipGroup("Mode")
-                            .closable((event, component) -> {
-                                filter.reset(StorageFilterAttribute.NAME);
-                                filter.reset(AccessTypeFilterAttribute.NAME);
-                            })));
-        }
-        return modeChipGroup;
+        return chips;
     }
 }

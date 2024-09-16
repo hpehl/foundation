@@ -53,8 +53,8 @@ public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> {
-                            setFilterAttributeValue(filter, menuItems, DefinedFilterAttribute.NAME);
-                            setFilterAttributeValue(filter, menuItems, DeprecatedFilterAttribute.NAME);
+                            changeFilter(filter, menuItems, DefinedFilterAttribute.NAME);
+                            changeFilter(filter, menuItems, DeprecatedFilterAttribute.NAME);
                         })
                         .addContent(menuContent()
                                 .addGroup(menuGroup("Defined")
@@ -75,7 +75,7 @@ public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void setFilterAttributeValue(Filter<T> filter, List<MenuItem> menuItems, String name) {
+    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems, String name) {
         String prefix = name + "-";
         List<MenuItem> selected = menuItems.stream()
                 .filter(menuItem -> menuItem.identifier().startsWith(prefix))
@@ -91,23 +91,18 @@ public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
     }
 
     private void onFilterChanged(Filter<T> filter, String origin) {
-        if (!ORIGIN.equals(origin)) {
+        if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
-            if (filter.defined()) {
-                List<String> selectIds = new ArrayList<>();
-                boolean definedFa = filter.defined(DefinedFilterAttribute.NAME);
-                boolean deprecatedFa = filter.defined(DeprecatedFilterAttribute.NAME);
-
-                if (definedFa) {
-                    boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
-                    selectIds.add(DefinedFilterAttribute.NAME + "-" + value);
-                }
-                if (deprecatedFa) {
-                    boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-                    selectIds.add(DeprecatedFilterAttribute.NAME + "-" + value);
-                }
-                multiSelect.selectIds(selectIds, false);
+            List<String> selectIds = new ArrayList<>();
+            if (filter.defined(DefinedFilterAttribute.NAME)) {
+                boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
+                selectIds.add(DefinedFilterAttribute.NAME + "-" + value);
             }
+            if (filter.defined(DeprecatedFilterAttribute.NAME)) {
+                boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
+                selectIds.add(DeprecatedFilterAttribute.NAME + "-" + value);
+            }
+            multiSelect.selectIds(selectIds, false);
         }
     }
 }

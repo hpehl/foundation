@@ -38,8 +38,8 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> DeprecatedFilterMultiSelect<T> deprecatedFilterMultiSelect(Filter<T> filter) {
-        return new DeprecatedFilterMultiSelect<>(filter);
+    public static <T> DeprecatedFilterMultiSelect<T> deprecatedFilterMultiSelect(String text, Filter<T> filter) {
+        return new DeprecatedFilterMultiSelect<>(text, filter);
     }
 
     // ------------------------------------------------------ instance
@@ -47,12 +47,12 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
     private static final String ORIGIN = "DeprecatedFilterMultiSelect";
     private final MultiSelect multiSelect;
 
-    DeprecatedFilterMultiSelect(Filter<T> filter) {
+    DeprecatedFilterMultiSelect(String text, Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().icon(IconSets.fas.filter()).text("Deprecated"))
+        this.multiSelect = multiSelect(menuToggle().icon(IconSets.fas.filter()).text(text))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
-                        .onMultiSelect((e, c, menuItems) -> setFilterAttributeValue(filter, menuItems))
+                        .onMultiSelect((e, c, menuItems) -> changeFilter(filter, menuItems))
                         .addContent(menuContent()
                                 .addGroup(menuGroup()
                                         .addList(menuList()
@@ -67,7 +67,7 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void setFilterAttributeValue(Filter<T> filter, List<MenuItem> menuItems) {
+    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems) {
         String prefix = DeprecatedFilterAttribute.NAME + "-";
         List<MenuItem> selected = menuItems.stream()
                 .filter(menuItem -> menuItem.identifier().startsWith(prefix))
@@ -83,15 +83,12 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
     }
 
     private void onFilterChanged(Filter<T> filter, String origin) {
-        if (!ORIGIN.equals(origin)) {
+        if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
-            if (filter.defined()) {
+            if (filter.defined(DeprecatedFilterAttribute.NAME)) {
                 List<String> selectIds = new ArrayList<>();
-                boolean deprecatedFa = filter.defined(DeprecatedFilterAttribute.NAME);
-                if (deprecatedFa) {
-                    boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-                    selectIds.add(DeprecatedFilterAttribute.NAME + "-" + value);
-                }
+                boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
+                selectIds.add(DeprecatedFilterAttribute.NAME + "-" + value);
                 multiSelect.selectIds(selectIds, false);
             }
         }

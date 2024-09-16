@@ -53,8 +53,8 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> {
-                            setFilterAttributeValue(filter, menuItems, StorageFilterAttribute.NAME);
-                            setFilterAttributeValue(filter, menuItems, AccessTypeFilterAttribute.NAME);
+                            changeFilter(filter, menuItems, StorageFilterAttribute.NAME);
+                            changeFilter(filter, menuItems, AccessTypeFilterAttribute.NAME);
                         })
                         .addContent(menuContent()
                                 .addGroup(menuGroup("Storage")
@@ -76,7 +76,7 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void setFilterAttributeValue(Filter<T> filter, List<MenuItem> menuItems, String name) {
+    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems, String name) {
         String prefix = name + "-";
         List<MenuItem> selected = menuItems.stream()
                 .filter(menuItem -> menuItem.identifier().startsWith(prefix))
@@ -92,23 +92,18 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
     }
 
     private void onFilterChanged(Filter<T> filter, String origin) {
-        if (!ORIGIN.equals(origin)) {
+        if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
-            if (filter.defined()) {
-                boolean storageFa = filter.defined(StorageFilterAttribute.NAME);
-                boolean accessFa = filter.defined(AccessTypeFilterAttribute.NAME);
-
-                List<String> selectIds = new ArrayList<>();
-                if (storageFa) {
-                    String value = filter.<String>get(StorageFilterAttribute.NAME).value();
-                    selectIds.add(StorageFilterAttribute.NAME + "-" + value);
-                }
-                if (accessFa) {
-                    String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
-                    selectIds.add(AccessTypeFilterAttribute.NAME + "-" + value);
-                }
-                multiSelect.selectIds(selectIds, false);
+            List<String> selectIds = new ArrayList<>();
+            if (filter.defined(StorageFilterAttribute.NAME)) {
+                String value = filter.<String>get(StorageFilterAttribute.NAME).value();
+                selectIds.add(StorageFilterAttribute.NAME + "-" + value);
             }
+            if (filter.defined(AccessTypeFilterAttribute.NAME)) {
+                String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
+                selectIds.add(AccessTypeFilterAttribute.NAME + "-" + value);
+            }
+            multiSelect.selectIds(selectIds, false);
         }
     }
 }
