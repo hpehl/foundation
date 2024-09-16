@@ -22,11 +22,11 @@ import org.patternfly.filter.FilterAttribute;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
 
-public class AccessTypeFilterAttribute<T> extends FilterAttribute<T, String> {
+public class AccessTypeFilterAttribute<T> extends FilterAttribute<T, AccessTypeValue> {
 
     public static final String NAME = "access-type";
 
     public AccessTypeFilterAttribute(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, (object, accessType) -> accessType.equals(modelNodeFn.apply(object).get(ACCESS_TYPE).asString()));
+        super(NAME, (object, accessType) -> accessType.value.equals(modelNodeFn.apply(object).get(ACCESS_TYPE).asString()));
     }
 }

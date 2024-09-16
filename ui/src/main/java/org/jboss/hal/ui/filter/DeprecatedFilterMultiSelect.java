@@ -22,7 +22,6 @@ import org.jboss.elemento.IsElement;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
-import org.patternfly.icon.IconSets;
 
 import elemental2.dom.HTMLElement;
 
@@ -38,8 +37,8 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> DeprecatedFilterMultiSelect<T> deprecatedFilterMultiSelect(String text, Filter<T> filter) {
-        return new DeprecatedFilterMultiSelect<>(text, filter);
+    public static <T> DeprecatedFilterMultiSelect<T> deprecatedFilterMultiSelect(Filter<T> filter, String text) {
+        return new DeprecatedFilterMultiSelect<>(filter, text);
     }
 
     // ------------------------------------------------------ instance
@@ -47,9 +46,9 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
     private static final String ORIGIN = "DeprecatedFilterMultiSelect";
     private final MultiSelect multiSelect;
 
-    DeprecatedFilterMultiSelect(String text, Filter<T> filter) {
+    DeprecatedFilterMultiSelect(Filter<T> filter, String text) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().icon(IconSets.fas.filter()).text(text))
+        this.multiSelect = multiSelect(menuToggle().text(text))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> changeFilter(filter, menuItems))

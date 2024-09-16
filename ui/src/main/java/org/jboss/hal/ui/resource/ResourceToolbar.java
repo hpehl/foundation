@@ -15,35 +15,29 @@
  */
 package org.jboss.hal.ui.resource;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.ui.filter.AccessTypeFilterAttribute;
 import org.jboss.hal.ui.filter.DefinedFilterAttribute;
 import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
-import org.jboss.hal.ui.filter.NameFilterAttribute;
+import org.jboss.hal.ui.filter.FilterChips;
 import org.jboss.hal.ui.filter.StorageFilterAttribute;
-import org.patternfly.component.chip.Chip;
-import org.patternfly.component.textinputgroup.TextInputGroup;
 import org.patternfly.component.toolbar.Toolbar;
-import org.patternfly.component.toolbar.ToolbarGroupType;
 import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.ui.filter.ModeFilterMultiSelect.modeFilterMultiSelect;
+import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.filter.StatusFilterMultiSelect.statusFilterMultiSelect;
-import static org.jboss.hal.ui.filter.ToolbarFilterChipGroup.toolbarFilterChipGroup;
 import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.chip.Chip.chip;
-import static org.patternfly.component.textinputgroup.TextInputGroup.searchInputGroup;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
+import static org.patternfly.component.toolbar.ToolbarFilterChipGroup.toolbarFilterChipGroup;
 import static org.patternfly.component.toolbar.ToolbarFilterContent.toolbarFilterContent;
 import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
+import static org.patternfly.component.toolbar.ToolbarGroupType.filterGroup;
 import static org.patternfly.component.toolbar.ToolbarGroupType.iconButtonGroup;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
@@ -71,16 +65,13 @@ class ResourceToolbar implements IsElement<HTMLElement> {
         String resetId = Id.unique("reset");
         String editId = Id.unique("edit");
 
-        TextInputGroup filterByName = searchInputGroup("Filter by name")
-                .onChange((event, textInputGroup, value) -> filter.set(NameFilterAttribute.NAME, value));
         toolbar = toolbar()
                 .addContent(toolbarContent()
-                        .addItem(toolbarItem().type(searchFilter)
-                                .add(filterByName))
-                        .addGroup(toolbarGroup().type(ToolbarGroupType.filterGroup)
+                        .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
+                        .addGroup(toolbarGroup(filterGroup)
                                 .addItem(toolbarItem().add(statusFilterMultiSelect(filter)))
                                 .addItem(toolbarItem().add(modeFilterMultiSelect(filter))))
-                        .addGroup(toolbarGroup().type(iconButtonGroup).css(modifier("align-right"))
+                        .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
                                 .addItem(toolbarItem()
                                         .add(button().id(resolveId).link().icon(link()))
                                         .add(tooltip(By.id(resolveId), "Resolve all expressions")
@@ -95,52 +86,21 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                                         .add(tooltip(By.id(editId), "Edit resource")
                                                 .placement(auto)))))
                 .addFilterContent(toolbarFilterContent()
-                        .bindVisibility(filter)
+                        .bindVisibility(filter, DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME,
+                                StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
                         .addGroup(toolbarGroup()
                                 .add(toolbarFilterChipGroup(filter, "Status")
                                         .filterAttributes(DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME)
-                                        .filterToChips(this::statusChips))
+                                        .filterToChips(FilterChips::statusChips))
                                 .add(toolbarFilterChipGroup(filter, "Mode")
                                         .filterAttributes(StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
-                                        .filterToChips(this::modeChips))
-                                .addItem(toolbarItem()
-                                        .add(button("Clear all filters").link().inline()
-                                                .onClick((event, component) -> filter.resetAll())))));
+                                        .filterToChips(FilterChips::modeChips)))
+                        .addItem(toolbarItem()
+                                .add(button("Clear all filters").link().inline().onClick((e, c) -> filter.resetAll()))));
     }
 
     @Override
     public HTMLElement element() {
         return toolbar.element();
-    }
-
-    // ------------------------------------------------------ internal
-
-    private List<Chip> statusChips(Filter<ResourceAttribute> filter) {
-        List<Chip> chips = new ArrayList<>();
-        if (filter.defined(DefinedFilterAttribute.NAME)) {
-            Boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
-            chips.add(chip(value ? "defined" : "undefined")
-                    .onClose((event, chip) -> filter.reset(DefinedFilterAttribute.NAME)));
-        }
-        if (filter.defined(DeprecatedFilterAttribute.NAME)) {
-            Boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-            chips.add(chip(value ? "deprecated" : "not deprecated")
-                    .onClose((event, chip) -> filter.reset(DeprecatedFilterAttribute.NAME)));
-        }
-        return chips;
-    }
-
-    private List<Chip> modeChips(Filter<ResourceAttribute> filter) {
-        List<Chip> chips = new ArrayList<>();
-
-        if (filter.defined(StorageFilterAttribute.NAME)) {
-            String value = filter.<String>get(StorageFilterAttribute.NAME).value();
-            chips.add(chip(value).onClose((event, chip) -> filter.reset(StorageFilterAttribute.NAME)));
-        }
-        if (filter.defined(AccessTypeFilterAttribute.NAME)) {
-            String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
-            chips.add(chip(value).onClose((event, chip) -> filter.reset(AccessTypeFilterAttribute.NAME)));
-        }
-        return chips;
     }
 }

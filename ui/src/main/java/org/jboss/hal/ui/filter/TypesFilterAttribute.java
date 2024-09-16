@@ -15,6 +15,7 @@
  */
 package org.jboss.hal.ui.filter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -24,14 +25,18 @@ import org.patternfly.filter.FilterAttribute;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 
-public class TypesFilterAttribute<T> extends FilterAttribute<T, List<ModelType>> {
+public class TypesFilterAttribute<T> extends FilterAttribute<T, List<TypeValues>> {
 
     public static final String NAME = "types";
 
     public TypesFilterAttribute(Function<T, ModelNode> modelNodeFn) {
         super(NAME, (object, types) -> {
             ModelType attributeType = modelNodeFn.apply(object).get(TYPE).asType();
-            return types.contains(attributeType);
+            List<ModelType> modelTypes = new ArrayList<>();
+            for (TypeValues type : types) {
+                modelTypes.addAll(type.types);
+            }
+            return modelTypes.contains(attributeType);
         });
     }
 }

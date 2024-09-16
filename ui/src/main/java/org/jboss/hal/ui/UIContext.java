@@ -48,20 +48,20 @@ public class UIContext {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(UIContext.class.getName());
-    private final Settings settings;
     private final Environment environment;
+    private final Settings settings;
     private final Dispatcher dispatcher;
     private final MetadataRepository metadataRepository;
     private final StatementContext statementContext;
 
     @Inject
-    public UIContext(Settings settings,
-            Environment environment,
+    public UIContext(Environment environment,
+            Settings settings,
             Dispatcher dispatcher,
             MetadataRepository metadataRepository,
             StatementContext statementContext) {
-        this.settings = settings;
         this.environment = environment;
+        this.settings = settings;
         this.dispatcher = dispatcher;
         this.metadataRepository = metadataRepository;
         this.statementContext = statementContext;
@@ -72,12 +72,12 @@ public class UIContext {
         UIContext.instance = this;
     }
 
-    public Settings settings() {
-        return settings;
-    }
-
     public Environment environment() {
         return environment;
+    }
+
+    public Settings settings() {
+        return settings;
     }
 
     public Dispatcher dispatcher() {

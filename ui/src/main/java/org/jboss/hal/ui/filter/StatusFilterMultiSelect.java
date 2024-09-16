@@ -32,7 +32,6 @@ import static org.patternfly.component.menu.MenuList.menuList;
 import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
-import static org.patternfly.icon.IconSets.fas.filter;
 
 public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
@@ -49,7 +48,7 @@ public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     StatusFilterMultiSelect(Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().icon(filter()).text("Status"))
+        this.multiSelect = multiSelect(menuToggle().text("Status"))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> {

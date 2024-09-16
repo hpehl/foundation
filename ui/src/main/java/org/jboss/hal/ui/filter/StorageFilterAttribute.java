@@ -22,11 +22,11 @@ import org.patternfly.filter.FilterAttribute;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 
-public class StorageFilterAttribute<T> extends FilterAttribute<T, String> {
+public class StorageFilterAttribute<T> extends FilterAttribute<T, StorageValue> {
 
     public static final String NAME = "storage";
 
     public StorageFilterAttribute(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, (object, storage) -> storage.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
+        super(NAME, (object, storage) -> storage.value.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
     }
 }

@@ -17,6 +17,7 @@ package org.jboss.hal.ui.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.jboss.elemento.IsElement;
 import org.patternfly.component.menu.MenuItem;
@@ -25,14 +26,15 @@ import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
-import static java.util.stream.Collectors.toList;
+import static org.jboss.hal.ui.filter.AccessTypeValue.accessTypeValues;
+import static org.jboss.hal.ui.filter.StorageValue.storageValues;
 import static org.patternfly.component.menu.MenuContent.menuContent;
 import static org.patternfly.component.menu.MenuGroup.menuGroup;
+import static org.patternfly.component.menu.MenuItem.menuItem;
 import static org.patternfly.component.menu.MenuList.menuList;
 import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
-import static org.patternfly.icon.IconSets.fas.filter;
 
 public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
@@ -45,28 +47,26 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final String ORIGIN = "ModeFilterMultiSelect";
+    private static final String STORAGE_ITEM_KEY = "storageItem";
+    private static final String ACCESS_TYPE_ITEM_KEY = "accessTypeItem";
     private final MultiSelect multiSelect;
 
     ModeFilterMultiSelect(Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().icon(filter()).text("Mode"))
+        this.multiSelect = multiSelect(menuToggle().text("Mode"))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
-                        .onMultiSelect((e, c, menuItems) -> {
-                            changeFilter(filter, menuItems, StorageFilterAttribute.NAME);
-                            changeFilter(filter, menuItems, AccessTypeFilterAttribute.NAME);
-                        })
+                        .onMultiSelect((e, c, menuItems) -> changeFilter(filter, menuItems))
                         .addContent(menuContent()
                                 .addGroup(menuGroup("Storage")
                                         .addList(menuList()
-                                                .addItem(StorageFilterAttribute.NAME + "-configuration", "Configuration")
-                                                .addItem(StorageFilterAttribute.NAME + "-runtime", "Runtime")))
+                                                .addItems(storageValues(), sv -> menuItem(sv.identifier, sv.text)
+                                                        .store(STORAGE_ITEM_KEY, sv))))
                                 .addDivider()
                                 .addGroup(menuGroup("Access type")
                                         .addList(menuList()
-                                                .addItem(AccessTypeFilterAttribute.NAME + "-read-write", "Read-write")
-                                                .addItem(AccessTypeFilterAttribute.NAME + "-read-only", "Read-only")
-                                                .addItem(AccessTypeFilterAttribute.NAME + "-metric", "Metric")))));
+                                                .addItems(accessTypeValues(), atv -> menuItem(atv.identifier, atv.text)
+                                                        .store(ACCESS_TYPE_ITEM_KEY, atv))))));
     }
 
     @Override
@@ -76,18 +76,24 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems, String name) {
-        String prefix = name + "-";
-        List<MenuItem> selected = menuItems.stream()
-                .filter(menuItem -> menuItem.identifier().startsWith(prefix))
-                .collect(toList());
-        if (selected.isEmpty()) {
-            filter.reset(name, ORIGIN);
+    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems) {
+        Optional<StorageValue> storageValue = menuItems.stream()
+                .filter(menuItem -> menuItem.has(STORAGE_ITEM_KEY))
+                .map(menuItem -> menuItem.<StorageValue>get(STORAGE_ITEM_KEY))
+                .findFirst();
+        if (storageValue.isPresent()) {
+            filter.set(StorageFilterAttribute.NAME, storageValue.get(), ORIGIN);
         } else {
-            for (MenuItem menuItem : selected) {
-                String selection = menuItem.identifier().substring(prefix.length());
-                filter.set(name, selection, ORIGIN);
-            }
+            filter.reset(StorageFilterAttribute.NAME, ORIGIN);
+        }
+        Optional<AccessTypeValue> accessTypeValue = menuItems.stream()
+                .filter(menuItem -> menuItem.has(ACCESS_TYPE_ITEM_KEY))
+                .map(menuItem -> menuItem.<AccessTypeValue>get(ACCESS_TYPE_ITEM_KEY))
+                .findFirst();
+        if (accessTypeValue.isPresent()) {
+            filter.set(AccessTypeFilterAttribute.NAME, accessTypeValue.get(), ORIGIN);
+        } else {
+            filter.reset(AccessTypeFilterAttribute.NAME, ORIGIN);
         }
     }
 
@@ -96,12 +102,12 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
             multiSelect.clear(false);
             List<String> selectIds = new ArrayList<>();
             if (filter.defined(StorageFilterAttribute.NAME)) {
-                String value = filter.<String>get(StorageFilterAttribute.NAME).value();
-                selectIds.add(StorageFilterAttribute.NAME + "-" + value);
+                StorageValue storageValue = filter.<StorageValue>get(StorageFilterAttribute.NAME).value();
+                selectIds.add(storageValue.identifier);
             }
             if (filter.defined(AccessTypeFilterAttribute.NAME)) {
-                String value = filter.<String>get(AccessTypeFilterAttribute.NAME).value();
-                selectIds.add(AccessTypeFilterAttribute.NAME + "-" + value);
+                AccessTypeValue accessTypeValue = filter.<AccessTypeValue>get(AccessTypeFilterAttribute.NAME).value();
+                selectIds.add(accessTypeValue.identifier);
             }
             multiSelect.selectIds(selectIds, false);
         }
