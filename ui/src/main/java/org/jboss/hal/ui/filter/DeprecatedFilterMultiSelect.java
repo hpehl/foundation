@@ -19,13 +19,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
-import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
-import static java.util.stream.Collectors.toList;
+import static org.jboss.hal.ui.filter.MultiSelects.setBooleanFilter;
 import static org.patternfly.component.menu.MenuContent.menuContent;
 import static org.patternfly.component.menu.MenuGroup.menuGroup;
 import static org.patternfly.component.menu.MenuList.menuList;
@@ -51,7 +50,8 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
         this.multiSelect = multiSelect(menuToggle().text(text))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
-                        .onMultiSelect((e, c, menuItems) -> changeFilter(filter, menuItems))
+                        .onMultiSelect((e, c, menuItems) -> setBooleanFilter(filter, DeprecatedFilterAttribute.NAME, menuItems,
+                                ORIGIN))
                         .addContent(menuContent()
                                 .addGroup(menuGroup()
                                         .addList(menuList()
@@ -66,30 +66,13 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems) {
-        String prefix = DeprecatedFilterAttribute.NAME + "-";
-        List<MenuItem> selected = menuItems.stream()
-                .filter(menuItem -> menuItem.identifier().startsWith(prefix))
-                .collect(toList());
-        if (selected.isEmpty()) {
-            filter.reset(DeprecatedFilterAttribute.NAME, ORIGIN);
-        } else {
-            for (MenuItem menuItem : selected) {
-                String selection = menuItem.identifier().substring(prefix.length());
-                filter.set(DeprecatedFilterAttribute.NAME, Boolean.parseBoolean(selection), ORIGIN);
-            }
-        }
-    }
-
     private void onFilterChanged(Filter<T> filter, String origin) {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
-            if (filter.defined(DeprecatedFilterAttribute.NAME)) {
-                List<String> selectIds = new ArrayList<>();
-                boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-                selectIds.add(DeprecatedFilterAttribute.NAME + "-" + value);
-                multiSelect.selectIds(selectIds, false);
-            }
+            List<String> identifiers = new ArrayList<>();
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DeprecatedFilterAttribute.NAME,
+                    value -> DeprecatedFilterAttribute.NAME + "-" + value);
+            multiSelect.selectIdentifiers(identifiers, false);
         }
     }
 }

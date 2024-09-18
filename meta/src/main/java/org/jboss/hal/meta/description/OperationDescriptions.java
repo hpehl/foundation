@@ -56,4 +56,8 @@ public class OperationDescriptions implements Iterable<OperationDescription> {
     public boolean isEmpty() {
         return operations.isEmpty();
     }
+
+    public int size() {
+        return operations.size();
+    }
 }

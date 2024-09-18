@@ -20,7 +20,6 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.table.Table;
 import org.patternfly.component.tabs.Tabs;
 
 import elemental2.dom.HTMLElement;
@@ -30,9 +29,9 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.hal.ui.resource.ResourceView.resourceView;
-import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
+import static org.patternfly.component.tabs.Tabs.tabs;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
@@ -55,33 +54,28 @@ class ResourceElement implements IsElement<HTMLElement> {
     }
 
     private void details(ModelNode resource, Metadata metadata) {
-        root.append(Tabs.tabs()
+        Tabs tabs = tabs()
+                .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
                         .addContent(tabContent()
                                 .add(resourceView(uic, metadata, resource))))
-                .run(tabs -> {
+                .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
-                        tabs.addItem(tab("attributes", "Attributes")
+                        tbs.addItem(tab("attributes", "Attributes")
                                 .addContent(tabContent()
                                         .add(new AttributesTable(uic, metadata.resourceDescription(),
                                                 metadata.resourceDescription().attributes()))));
                     }
                 })
-                .run(tabs -> {
-                    if (!metadata.resourceDescription().operations().isEmpty()) {
-                        tabs.addItem(tab("operations", "Operations")
-                                .addContent(tabContent()
-                                        .add(new OperationsTable(uic, metadata.resourceDescription(),
-                                                metadata.resourceDescription().operations()))));
-                    }
-                })
+                .addItem(tab("operations", "Operations")
+                        .addContent(tabContent()
+                                .add(new OperationsTable(uic, metadata.resourceDescription(),
+                                        metadata.resourceDescription().operations()))))
                 .addItem(tab("capabilities", "Capabilities")
                         .addContent(tabContent()
-                                .add(capabilities(metadata))))
-                .element());
-    }
-
-    private Table capabilities(Metadata metadata) {
-        return table();
+                                .add(new CapabilitiesTable(uic, metadata.resourceDescription(),
+                                        metadata.resourceDescription().capabilities()))))
+                .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier());
+        root.append(tabs.element());
     }
 }

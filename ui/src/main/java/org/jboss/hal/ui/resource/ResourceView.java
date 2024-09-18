@@ -39,6 +39,7 @@ import org.patternfly.component.list.DescriptionList;
 import org.patternfly.component.list.DescriptionListGroup;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.component.switch_.Switch;
+import org.patternfly.core.ObservableValue;
 import org.patternfly.core.Tuple;
 import org.patternfly.filter.Filter;
 import org.patternfly.style.Size;
@@ -88,6 +89,7 @@ import static org.patternfly.component.list.ListItem.listItem;
 import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
+import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
@@ -130,6 +132,8 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
     private final List<String> attributes;
     private final Map<String, UpdateValueFn> updateValueFunctions;
     private final Filter<ResourceAttribute> filter;
+    private final ObservableValue<Integer> visible;
+    private final ObservableValue<Integer> total;
     private final ResourceToolbar toolbar;
     private final HTMLElement viewContainer;
     private final HTMLElement root;
@@ -144,10 +148,12 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         this.attributes = new ArrayList<>();
         this.updateValueFunctions = new HashMap<>();
         this.filter = new ResourceFilter().onChange(this::onFilterChanged);
+        this.visible = ov(0);
+        this.total = ov(0);
         this.shown = false;
 
         this.root = div()
-                .add(toolbar = resourceToolbar(filter))
+                .add(toolbar = resourceToolbar(filter, visible, total))
                 .add(viewContainer = div().element())
                 .element();
         setVisible(toolbar, false);
@@ -189,7 +195,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                 lg, "23ch",
                                 xl, "25ch",
                                 _2xl, "28ch"));
-                for (ResourceAttribute ra : resourceAttributes(resource)) {
+                List<ResourceAttribute> resourceAttributes = resourceAttributes(resource);
+                visible.set(resourceAttributes.size());
+                total.set(resourceAttributes.size());
+                for (ResourceAttribute ra : resourceAttributes) {
                     String label = labelBuilder.label(ra.name);
                     DescriptionListTerm term = label(ra, label);
                     Tuple<HTMLElement, UpdateValueFn> tuple = value(ra);
@@ -216,7 +225,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
             if (!shown) {
                 show(resource);
             } else if (valid(resource)) {
-                for (ResourceAttribute ra : resourceAttributes(resource)) {
+                List<ResourceAttribute> resourceAttributes = resourceAttributes(resource);
+                visible.set(resourceAttributes.size());
+                total.set(resourceAttributes.size());
+                for (ResourceAttribute ra : resourceAttributes) {
                     UpdateValueFn updateAttribute = updateValueFunctions.get(ra.name);
                     if (updateAttribute != null) {
                         updateAttribute.update(ra.value);
@@ -258,7 +270,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         .icon(ban())
                         .text("No attributes"))
                 .addBody(emptyStateBody()
-                        .textContent("This resource has no attributes."))
+                        .textContent("This resource contains no attributes."))
                 .element());
     }
 
@@ -450,9 +462,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
 
     private void onFilterChanged(Filter<ResourceAttribute> filter, String origin) {
         logger.debug("Filter attributes: %s", filter);
+        int matchingItems;
         if (dl != null) {
             if (filter.defined()) {
-                int matchingItems = 0;
+                matchingItems = 0;
                 for (DescriptionListGroup dlg : dl.items()) {
                     ResourceAttribute ra = dlg.get(RESOURCE_ATTRIBUTE_KEY);
                     if (ra != null) {
@@ -469,9 +482,11 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                     failSafeRemoveFromParent(noAttributes);
                 }
             } else {
+                matchingItems = total.get();
                 failSafeRemoveFromParent(noAttributes);
                 dl.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
             }
+            visible.set(matchingItems);
         }
     }
 }

@@ -32,38 +32,38 @@ import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
 
-public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
+public class SignatureFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> StatusFilterMultiSelect<T> statusFilterMultiSelect(Filter<T> filter) {
-        return new StatusFilterMultiSelect<>(filter);
+    public static <T> SignatureFilterMultiSelect<T> signatureFilterMultiSelect(Filter<T> filter) {
+        return new SignatureFilterMultiSelect<>(filter);
     }
 
     // ------------------------------------------------------ instance
 
-    private static final String ORIGIN = "StatusFilterMultiSelect";
+    private static final String ORIGIN = "SignatureFilterMultiSelect";
     private final MultiSelect multiSelect;
 
-    StatusFilterMultiSelect(Filter<T> filter) {
+    SignatureFilterMultiSelect(Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().text("Status"))
+        this.multiSelect = multiSelect(menuToggle().text("Signature"))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> {
-                            setBooleanFilter(filter, DefinedFilterAttribute.NAME, menuItems, ORIGIN);
-                            setBooleanFilter(filter, DeprecatedFilterAttribute.NAME, menuItems, ORIGIN);
+                            setBooleanFilter(filter, ParametersFilterAttribute.NAME, menuItems, ORIGIN);
+                            setBooleanFilter(filter, ReturnValueFilterAttribute.NAME, menuItems, ORIGIN);
                         })
                         .addContent(menuContent()
-                                .addGroup(menuGroup("Defined")
+                                .addGroup(menuGroup("Parameters")
                                         .addList(menuList()
-                                                .addItem(DefinedFilterAttribute.NAME + "-true", "Defined")
-                                                .addItem(DefinedFilterAttribute.NAME + "-false", "Undefined")))
+                                                .addItem(ParametersFilterAttribute.NAME + "-true", "Parameters")
+                                                .addItem(ParametersFilterAttribute.NAME + "-false", "No parameters")))
                                 .addDivider()
-                                .addGroup(menuGroup("Deprecated")
+                                .addGroup(menuGroup("Return value")
                                         .addList(menuList()
-                                                .addItem(DeprecatedFilterAttribute.NAME + "-true", "Deprecated")
-                                                .addItem(DeprecatedFilterAttribute.NAME + "-false", "Not deprecated")))));
+                                                .addItem(ReturnValueFilterAttribute.NAME + "-true", "Return value")
+                                                .addItem(ReturnValueFilterAttribute.NAME + "-false", "No return value")))));
     }
 
     @Override
@@ -77,10 +77,10 @@ public class StatusFilterMultiSelect<T> implements IsElement<HTMLElement> {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
             List<String> identifiers = new ArrayList<>();
-            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DefinedFilterAttribute.NAME,
-                    value -> DefinedFilterAttribute.NAME + "-" + value);
-            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DeprecatedFilterAttribute.NAME,
-                    value -> DeprecatedFilterAttribute.NAME + "-" + value);
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, ParametersFilterAttribute.NAME,
+                    value -> ParametersFilterAttribute.NAME + "-" + value);
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, ReturnValueFilterAttribute.NAME,
+                    value -> ReturnValueFilterAttribute.NAME + "-" + value);
             multiSelect.selectIdentifiers(identifiers, false);
         }
     }

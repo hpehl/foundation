@@ -15,22 +15,14 @@
  */
 package org.jboss.hal.ui.filter;
 
-import java.util.List;
+import org.jboss.hal.meta.description.OperationDescription;
+import org.patternfly.filter.FilterAttribute;
 
-public class StorageValue {
+public class ParametersFilterAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
 
-    public static List<StorageValue> storageValues() {
-        return List.of(new StorageValue(StorageFilterAttribute.NAME, "Configuration", "configuration"),
-                new StorageValue(StorageFilterAttribute.NAME, "Runtime", "runtime"));
-    }
+    public static final String NAME = "parameters";
 
-    public final String identifier;
-    public final String text;
-    public final String value;
-
-    public StorageValue(String filterAttribute, String text, String value) {
-        this.identifier = filterAttribute + "-" + value;
-        this.text = text;
-        this.value = value;
+    public ParametersFilterAttribute() {
+        super(NAME, (operation, parameter) -> parameter == !operation.parameters().isEmpty());
     }
 }

@@ -56,4 +56,8 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
     public boolean isEmpty() {
         return attributes.isEmpty();
     }
+
+    public int size() {
+        return attributes.size();
+    }
 }

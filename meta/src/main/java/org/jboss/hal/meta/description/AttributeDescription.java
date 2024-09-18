@@ -70,8 +70,8 @@ public class AttributeDescription extends NamedNode implements Description {
 
     /**
      * Checks if the current attribute description represents a simple record. A simple record is of type
-     * {@link ModelType#OBJECT} and has nested {@linkplain ModelType#simple() simple attributes} inside its
-     * {@value org.jboss.hal.dmr.ModelDescriptionConstants#VALUE_TYPE}.
+     * {@link ModelType#OBJECT} and has nested {@linkplain ModelType#simple() simple attributes} or lists of simple attributes
+     * inside its {@value org.jboss.hal.dmr.ModelDescriptionConstants#VALUE_TYPE}.
      *
      * @return {@code true} if the attribute description represents a simple record, {@code false} otherwise.
      */
@@ -84,7 +84,14 @@ public class AttributeDescription extends NamedNode implements Description {
                     List<Property> properties = get(VALUE_TYPE).asPropertyList();
                     for (Property property : properties) {
                         ModelType propertyType = property.getValue().get(TYPE).asType();
-                        if (!propertyType.simple()) {
+                        if (propertyType == ModelType.LIST) {
+                            ModelType listValueType = property.getValue().has(VALUE_TYPE)
+                                    ? property.getValue().get(VALUE_TYPE).asType()
+                                    : null;
+                            if (listValueType == null || !listValueType.simple()) {
+                                return false;
+                            }
+                        } else if (!propertyType.simple()) {
                             return false;
                         }
                     }

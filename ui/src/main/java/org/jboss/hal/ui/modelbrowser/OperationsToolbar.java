@@ -15,13 +15,17 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
+import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
-import org.jboss.hal.meta.description.AttributeDescription;
-import org.jboss.hal.ui.filter.AccessTypeFilterAttribute;
+import org.jboss.hal.env.Settings;
+import org.jboss.hal.meta.description.OperationDescription;
+import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
-import org.jboss.hal.ui.filter.StorageFilterAttribute;
-import org.jboss.hal.ui.filter.TypesFilterAttribute;
+import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
+import org.jboss.hal.ui.filter.ParametersFilterAttribute;
+import org.jboss.hal.ui.filter.ReturnValueFilterAttribute;
+import org.patternfly.component.switch_.Switch;
 import org.patternfly.component.toolbar.Toolbar;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
@@ -30,10 +34,10 @@ import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.ui.filter.DeprecatedFilterMultiSelect.deprecatedFilterMultiSelect;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
-import static org.jboss.hal.ui.filter.ModeFilterMultiSelect.modeFilterMultiSelect;
 import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
-import static org.jboss.hal.ui.filter.TypesFilterMultiSelect.typesFilterMultiSelect;
+import static org.jboss.hal.ui.filter.SignatureFilterMultiSelect.signatureFilterMultiSelect;
 import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.switch_.Switch.switch_;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
 import static org.patternfly.component.toolbar.ToolbarFilterChipGroup.toolbarFilterChipGroup;
@@ -44,47 +48,61 @@ import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
 import static org.patternfly.style.Classes.modifier;
 
-class AttributesToolbar implements IsElement<HTMLElement> {
+class OperationsToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static AttributesToolbar attributesToolbar(Filter<AttributeDescription> filter,
+    static OperationsToolbar operationsToolbar(UIContext uic, Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        return new AttributesToolbar(filter, visible, total);
+        return new OperationsToolbar(uic, filter, visible, total);
     }
 
     // ------------------------------------------------------ instance
 
+    private static final String ORIGIN = "OperationsToolbar";
+    private final Switch globalOperationsSwitch;
     private final Toolbar toolbar;
 
-    private AttributesToolbar(Filter<AttributeDescription> filter,
+    private OperationsToolbar(UIContext uic, Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
         toolbar = toolbar()
                 .addContent(toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
                         .addGroup(toolbarGroup(filterGroup)
-                                .addItem(toolbarItem().add(typesFilterMultiSelect(filter)))
-                                .addItem(toolbarItem().add(deprecatedFilterMultiSelect(filter, "Status")))
-                                .addItem(toolbarItem().add(modeFilterMultiSelect(filter))))
+                                .addItem(toolbarItem().add(signatureFilterMultiSelect(filter)))
+                                .addItem(toolbarItem().add(deprecatedFilterMultiSelect(filter, "Status"))))
+                        .addItem(toolbarItem().style("align-self", "center")
+                                .add(globalOperationsSwitch = switch_(Id.unique("global-operations"), "global-operations")
+                                        .label("Show global operations", "Omit global operations")
+                                        .onChange((e, c, v) -> {
+                                            uic.settings().set(Settings.Key.SHOW_GLOBAL_OPERATIONS, v);
+                                            filter.set(GlobalOperationsFilterAttribute.NAME, v, ORIGIN);
+                                        })))
                         .addItem(toolbarItem()
                                 .style("align-self", "center")
                                 .css(modifier("align-right"))
-                                .add(itemCount(visible, total, "attribute", "attributes"))))
+                                .add(itemCount(visible, total, "operation", "operations"))))
                 .addFilterContent(toolbarFilterContent()
-                        .bindVisibility(filter, TypesFilterAttribute.NAME, DeprecatedFilterAttribute.NAME,
-                                StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
+                        .bindVisibility(filter, ParametersFilterAttribute.NAME, ReturnValueFilterAttribute.NAME,
+                                DeprecatedFilterAttribute.NAME)
                         .addGroup(toolbarGroup()
-                                .add(toolbarFilterChipGroup(filter, "Type")
-                                        .filterAttributes(TypesFilterAttribute.NAME)
-                                        .filterToChips(FilterChips::typeChips))
+                                .add(toolbarFilterChipGroup(filter, "Signature")
+                                        .filterAttributes(ParametersFilterAttribute.NAME, ReturnValueFilterAttribute.NAME)
+                                        .filterToChips(FilterChips::signatureChips))
                                 .add(toolbarFilterChipGroup(filter, "Status")
                                         .filterAttributes(DeprecatedFilterAttribute.NAME)
-                                        .filterToChips(FilterChips::deprecatedChips))
-                                .add(toolbarFilterChipGroup(filter, "Mode")
-                                        .filterAttributes(StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
-                                        .filterToChips(FilterChips::modeChips)))
+                                        .filterToChips(FilterChips::deprecatedChips)))
                         .addItem(toolbarItem()
                                 .add(button("Clear all filters").link().inline().onClick((e, c) -> filter.resetAll()))));
+
+        filter.onChange((f, origin) -> {
+            if (!origin.equals(ORIGIN)) {
+                if (f.defined(GlobalOperationsFilterAttribute.NAME)) {
+                    boolean showGlobalOperations = f.<Boolean>get(GlobalOperationsFilterAttribute.NAME).value();
+                    globalOperationsSwitch.value(showGlobalOperations, false);
+                }
+            }
+        });
     }
 
     @Override

@@ -35,6 +35,7 @@ public class NamedNode extends ModelNode {
             if (node.hasDefined(NAME)) {
                 this.name = node.get(NAME).asString();
                 this.node = node;
+                set(node);
             } else {
                 this.name = undefinedName();
                 this.node = node;

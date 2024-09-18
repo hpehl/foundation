@@ -24,10 +24,12 @@ import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
 import org.jboss.hal.ui.filter.StorageFilterAttribute;
 import org.patternfly.component.toolbar.Toolbar;
+import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
+import static org.jboss.hal.ui.filter.ItemCount.itemCount;
 import static org.jboss.hal.ui.filter.ModeFilterMultiSelect.modeFilterMultiSelect;
 import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.filter.StatusFilterMultiSelect.statusFilterMultiSelect;
@@ -52,15 +54,17 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static ResourceToolbar resourceToolbar(Filter<ResourceAttribute> filter) {
-        return new ResourceToolbar(filter);
+    static ResourceToolbar resourceToolbar(Filter<ResourceAttribute> filter,
+            ObservableValue<Integer> visible, ObservableValue<Integer> total) {
+        return new ResourceToolbar(filter, visible, total);
     }
 
     // ------------------------------------------------------ instance
 
     private final Toolbar toolbar;
 
-    private ResourceToolbar(Filter<ResourceAttribute> filter) {
+    private ResourceToolbar(Filter<ResourceAttribute> filter,
+            ObservableValue<Integer> visible, ObservableValue<Integer> total) {
         String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
         String editId = Id.unique("edit");
@@ -71,6 +75,9 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                         .addGroup(toolbarGroup(filterGroup)
                                 .addItem(toolbarItem().add(statusFilterMultiSelect(filter)))
                                 .addItem(toolbarItem().add(modeFilterMultiSelect(filter))))
+                        .addItem(toolbarItem()
+                                .style("align-self", "center")
+                                .add(itemCount(visible, total, "attribute", "attributes")))
                         .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
                                 .addItem(toolbarItem()
                                         .add(button().id(resolveId).link().icon(link()))

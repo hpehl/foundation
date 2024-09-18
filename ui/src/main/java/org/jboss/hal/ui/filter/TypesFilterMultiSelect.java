@@ -53,7 +53,7 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
         filter.onChange(this::onFilterChanged);
         this.multiSelect = multiSelect(menuToggle("Type").addBadge(badge(0).read()))
                 .addMenu(multiSelectCheckboxMenu()
-                        .onMultiSelect((event, menuItem, selected) -> changeFilter(filter, selected))
+                        .onMultiSelect((event, menuItem, selected) -> setFilter(filter, selected))
                         .addContent(menuContent()
                                 .addList(menuList()
                                         .addItems(typeValues(), tv -> checkboxMenuItem(tv.identifier, tv.name)
@@ -67,7 +67,7 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void changeFilter(Filter<T> filter, List<MenuItem> selected) {
+    private void setFilter(Filter<T> filter, List<MenuItem> selected) {
         if (selected.isEmpty()) {
             filter.reset(TypesFilterAttribute.NAME, ORIGIN);
         } else {
@@ -84,10 +84,10 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
             if (filter.defined(TypesFilterAttribute.NAME)) {
-                List<String> selectIds = filter.<List<TypeValues>>get(TypesFilterAttribute.NAME).value().stream()
+                List<String> identifiers = filter.<List<TypeValues>>get(TypesFilterAttribute.NAME).value().stream()
                         .map(tv -> tv.identifier)
                         .collect(toList());
-                multiSelect.selectIds(selectIds, false);
+                multiSelect.selectIdentifiers(identifiers, false);
             }
         }
     }

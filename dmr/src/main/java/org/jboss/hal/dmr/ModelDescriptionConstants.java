@@ -127,6 +127,7 @@ public interface ModelDescriptionConstants {
     String CANCEL_NON_PROGRESSING_OPERATION = "cancel-non-progressing-operation";
     String CANCEL_OPERATION = "cancel";
     String CANCELLED = "cancelled";
+    String CAPABILITIES = "capabilities";
     String CAPABILITY_REFERENCE = "capability-reference";
     String CERTIFICATE_AUTHORITY = "certificate-authority";
     String CERTIFICATE_AUTHORITY_ACCOUNT = "certificate-authority-account";
@@ -304,6 +305,8 @@ public interface ModelDescriptionConstants {
     String DURABLE = "durable";
     String DURABLE_MESSAGE_COUNT = "durable-message-count";
     String DURABLE_SUBSCRIPTION_COUNT = "durable-subscription-count";
+    String DYNAMIC = "dynamic";
+    String DYNAMIC_ELEMENTS = "dynamic-elements";
     String EE = "ee";
     String EJB3 = "ejb3";
     String ELYTRON = "elytron";

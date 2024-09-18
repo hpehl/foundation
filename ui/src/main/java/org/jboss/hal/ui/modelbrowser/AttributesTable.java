@@ -23,12 +23,13 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Tbody;
 import org.patternfly.component.table.Td;
 import org.patternfly.component.table.Tr;
+import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
-import org.patternfly.style.Size;
 import org.patternfly.style.Variable;
 import org.patternfly.style.Variables;
 
@@ -45,17 +46,11 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_WRITE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
-import static org.jboss.hal.resources.HalClasses.filtered;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.BuildingBlocks.attributeName;
+import static org.jboss.hal.ui.BuildingBlocks.emptyRow;
 import static org.jboss.hal.ui.modelbrowser.AttributesToolbar.attributesToolbar;
-import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.emptystate.EmptyState.emptyState;
-import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
-import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
-import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
-import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.table.Tbody.tbody;
 import static org.patternfly.component.table.Td.td;
@@ -63,13 +58,12 @@ import static org.patternfly.component.table.Th.th;
 import static org.patternfly.component.table.Thead.thead;
 import static org.patternfly.component.table.Tr.tr;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
+import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.database;
 import static org.patternfly.icon.IconSets.fas.edit;
 import static org.patternfly.icon.IconSets.fas.lock;
 import static org.patternfly.icon.IconSets.fas.memory;
-import static org.patternfly.icon.IconSets.fas.search;
 import static org.patternfly.icon.IconSets.patternfly.trendUp;
-import static org.patternfly.layout.bullseye.Bullseye.bullseye;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Variable.utilVar;
 import static org.patternfly.style.Width.width10;
@@ -80,16 +74,19 @@ class AttributesTable implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
     private static final String ATTRIBUTE_KEY = "modelbrowser.attribute";
-    private static final String EMPTY_ROW = "modelbrowser.no-attribute";
     private final Filter<AttributeDescription> filter;
+    private final ObservableValue<Integer> visible;
+    private final ObservableValue<Integer> total;
     private final Tbody tbody;
     private final HTMLElement root;
     private Tr noAttributes;
 
     AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
         filter = new AttributesFilter().onChange(this::onFilterChanged);
+        visible = ov(attributes.size());
+        total = ov(attributes.size());
         root = div()
-                .add(attributesToolbar(filter))
+                .add(attributesToolbar(filter, visible, total))
                 .add(table()
                         .addHead(thead().css(util("mt-sm"))
                                 .addRow(tr("attributes-head")
@@ -179,20 +176,7 @@ class AttributesTable implements IsElement<HTMLElement> {
 
     private void noAttributes() {
         if (noAttributes == null) {
-            noAttributes = tr(EMPTY_ROW)
-                    .addItem(td().colSpan(4)
-                            .add(bullseye()
-                                    .add(emptyState().size(Size.sm)
-                                            .addHeader(emptyStateHeader()
-                                                    .icon(search())
-                                                    .text("No results found"))
-                                            .addBody(emptyStateBody()
-                                                    .textContent(
-                                                            "No results match the filter criteria. Clear all filters and try again."))
-                                            .addFooter(emptyStateFooter()
-                                                    .addActions(emptyStateActions()
-                                                            .add(button("Clear all filters").link()
-                                                                    .onClick((event, component) -> filter.resetAll())))))));
+            noAttributes = emptyRow(4, filter);
         }
         if (!isAttached(noAttributes)) {
             tbody.addRow(noAttributes);
@@ -201,13 +185,14 @@ class AttributesTable implements IsElement<HTMLElement> {
 
     private void onFilterChanged(Filter<AttributeDescription> filter, String origin) {
         logger.debug("Filter attributes: %s", filter);
+        int matchingItems;
         if (filter.defined()) {
-            int matchingItems = 0;
+            matchingItems = 0;
             for (Tr tr : tbody.items()) {
                 AttributeDescription ad = tr.get(ATTRIBUTE_KEY);
                 if (ad != null) {
                     boolean match = filter.match(ad);
-                    tr.classList().toggle(halModifier(filtered), !match);
+                    tr.classList().toggle(halModifier(HalClasses.filtered), !match);
                     if (match) {
                         matchingItems++;
                     }
@@ -219,8 +204,10 @@ class AttributesTable implements IsElement<HTMLElement> {
                 failSafeRemoveFromParent(noAttributes);
             }
         } else {
+            matchingItems = total.get();
             failSafeRemoveFromParent(noAttributes);
-            tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
+            tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(HalClasses.filtered)));
         }
+        visible.set(matchingItems);
     }
 }

@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.function.Supplier;
 
 import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.elemento.Id;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.description.AttributeDescription;
@@ -27,9 +28,12 @@ import org.jboss.hal.meta.description.Description;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.RestartMode;
 import org.patternfly.component.list.ListItem;
+import org.patternfly.component.table.Tr;
+import org.patternfly.filter.Filter;
 import org.patternfly.icon.PredefinedIcon;
 import org.patternfly.layout.flex.Flex;
 import org.patternfly.style.Color;
+import org.patternfly.style.Size;
 import org.patternfly.style.Variable;
 
 import elemental2.dom.HTMLDivElement;
@@ -55,11 +59,21 @@ import static org.jboss.hal.meta.description.RestartMode.UNKNOWN;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
+import static org.patternfly.component.table.Td.td;
+import static org.patternfly.component.table.Tr.tr;
 import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
 import static org.patternfly.icon.IconSets.fas.flask;
 import static org.patternfly.icon.IconSets.fas.infoCircle;
+import static org.patternfly.icon.IconSets.fas.search;
+import static org.patternfly.layout.bullseye.Bullseye.bullseye;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
@@ -191,6 +205,25 @@ public class BuildingBlocks {
 
     public static HTMLContainerBuilder<HTMLDivElement> operationDescription(OperationDescription operation) {
         return description(operation);
+    }
+
+    // ------------------------------------------------------ empty
+
+    public static <T> Tr emptyRow(int colspan, Filter<T> filter) {
+        return tr(Id.unique("empty"))
+                .addItem(td().colSpan(colspan)
+                        .add(bullseye()
+                                .add(emptyState().size(Size.sm)
+                                        .addHeader(emptyStateHeader()
+                                                .icon(search())
+                                                .text("No results found"))
+                                        .addBody(emptyStateBody()
+                                                .textContent(
+                                                        "No results match the filter criteria. Clear all filters and try again."))
+                                        .addFooter(emptyStateFooter()
+                                                .addActions(emptyStateActions()
+                                                        .add(button("Clear all filters").link()
+                                                                .onClick((event, component) -> filter.resetAll())))))));
     }
 
     // ------------------------------------------------------ stability

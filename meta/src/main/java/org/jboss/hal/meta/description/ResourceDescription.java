@@ -19,6 +19,7 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.CAPABILITIES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.OPERATIONS;
 
 /** Wrapper around the result of the read-resource-description operation. */
@@ -27,17 +28,20 @@ public class ResourceDescription extends ModelNode implements Description {
     private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
     private final AttributeDescriptions attributeDescriptions;
     private final OperationDescriptions operationDescriptions;
+    private final CapabilityDescriptions capabilityDescriptions;
 
     public ResourceDescription() {
         super();
         attributeDescriptions = new AttributeDescriptions();
         operationDescriptions = new OperationDescriptions();
+        capabilityDescriptions = new CapabilityDescriptions();
     }
 
     public ResourceDescription(ModelNode payload) {
         set(payload);
         attributeDescriptions = new AttributeDescriptions(get(ATTRIBUTES));
         operationDescriptions = new OperationDescriptions(get(OPERATIONS));
+        capabilityDescriptions = new CapabilityDescriptions(get(CAPABILITIES));
     }
 
     @Override
@@ -51,6 +55,10 @@ public class ResourceDescription extends ModelNode implements Description {
 
     public OperationDescriptions operations() {
         return operationDescriptions;
+    }
+
+    public CapabilityDescriptions capabilities() {
+        return capabilityDescriptions;
     }
 
     @Override

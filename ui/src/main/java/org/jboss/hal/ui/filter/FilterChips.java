@@ -1,3 +1,18 @@
+/*
+ *  Copyright 2024 Red Hat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.jboss.hal.ui.filter;
 
 import java.util.ArrayList;
@@ -13,29 +28,13 @@ public class FilterChips {
 
     public static <T> List<Chip> statusChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        chips.addAll(definedChips(filter));
+        chips.addAll(booleanChips(filter, DefinedFilterAttribute.NAME, "Defined", "Undefined"));
         chips.addAll(deprecatedChips(filter));
         return chips;
     }
 
-    public static <T> List<Chip> definedChips(Filter<T> filter) {
-        List<Chip> chips = new ArrayList<>();
-        if (filter.defined(DefinedFilterAttribute.NAME)) {
-            Boolean value = filter.<Boolean>get(DefinedFilterAttribute.NAME).value();
-            chips.add(chip(value ? "Defined" : "Undefined")
-                    .onClose((e, c) -> filter.reset(DefinedFilterAttribute.NAME)));
-        }
-        return chips;
-    }
-
     public static <T> List<Chip> deprecatedChips(Filter<T> filter) {
-        List<Chip> chips = new ArrayList<>();
-        if (filter.defined(DeprecatedFilterAttribute.NAME)) {
-            Boolean value = filter.<Boolean>get(DeprecatedFilterAttribute.NAME).value();
-            chips.add(chip(value ? "Deprecated" : "Not deprecated")
-                    .onClose((e, c) -> filter.reset(DeprecatedFilterAttribute.NAME)));
-        }
-        return chips;
+        return booleanChips(filter, DeprecatedFilterAttribute.NAME, "Deprecated", "Not deprecated");
     }
 
     public static <T> List<Chip> modeChips(Filter<T> filter) {
@@ -73,6 +72,24 @@ public class FilterChips {
                 chips.add(chip(type.name).onClose((event, chip) ->
                         filter.set(TypesFilterAttribute.NAME, List.of(type), collectionRemove(ArrayList::new))));
             }
+        }
+        return chips;
+    }
+
+    public static <T> List<Chip> signatureChips(Filter<T> filter) {
+        List<Chip> chips = new ArrayList<>();
+        chips.addAll(booleanChips(filter, ParametersFilterAttribute.NAME, "Parameters", "No parameters"));
+        chips.addAll(booleanChips(filter, ReturnValueFilterAttribute.NAME, "Return value", "No return value"));
+        return chips;
+    }
+
+    // ------------------------------------------------------ internal
+
+    private static <T> List<Chip> booleanChips(Filter<T> filter, String filterAttribute, String true_, String false_) {
+        List<Chip> chips = new ArrayList<>();
+        if (filter.defined(filterAttribute)) {
+            Boolean value = filter.<Boolean>get(filterAttribute).value();
+            chips.add(chip(value ? true_ : false_).onClose((e, c) -> filter.reset(filterAttribute)));
         }
         return chips;
     }

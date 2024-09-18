@@ -56,7 +56,7 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
         this.multiSelect = multiSelect(menuToggle().text("Mode"))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
-                        .onMultiSelect((e, c, menuItems) -> changeFilter(filter, menuItems))
+                        .onMultiSelect((e, c, menuItems) -> setFilter(filter, menuItems))
                         .addContent(menuContent()
                                 .addGroup(menuGroup("Storage")
                                         .addList(menuList()
@@ -76,7 +76,7 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ internal
 
-    private void changeFilter(Filter<T> filter, List<MenuItem> menuItems) {
+    private void setFilter(Filter<T> filter, List<MenuItem> menuItems) {
         Optional<StorageValue> storageValue = menuItems.stream()
                 .filter(menuItem -> menuItem.has(STORAGE_ITEM_KEY))
                 .map(menuItem -> menuItem.<StorageValue>get(STORAGE_ITEM_KEY))
@@ -100,16 +100,12 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
     private void onFilterChanged(Filter<T> filter, String origin) {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
-            List<String> selectIds = new ArrayList<>();
-            if (filter.defined(StorageFilterAttribute.NAME)) {
-                StorageValue storageValue = filter.<StorageValue>get(StorageFilterAttribute.NAME).value();
-                selectIds.add(storageValue.identifier);
-            }
-            if (filter.defined(AccessTypeFilterAttribute.NAME)) {
-                AccessTypeValue accessTypeValue = filter.<AccessTypeValue>get(AccessTypeFilterAttribute.NAME).value();
-                selectIds.add(accessTypeValue.identifier);
-            }
-            multiSelect.selectIds(selectIds, false);
+            List<String> identifiers = new ArrayList<>();
+            MultiSelects.<T, StorageValue>collectIdentifiers(identifiers, filter, StorageFilterAttribute.NAME,
+                    value -> value.identifier);
+            MultiSelects.<T, AccessTypeValue>collectIdentifiers(identifiers, filter, AccessTypeFilterAttribute.NAME,
+                    value -> value.identifier);
+            multiSelect.selectIdentifiers(identifiers, false);
         }
     }
 }
