@@ -302,7 +302,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 String name = property.getName();
                 ModelNode value = property.getValue();
                 AttributeDescription description = metadata.resourceDescription().attributes().get(name);
-                if (description.simpleRecord()) {
+                if (description.simpleValueType()) {
                     List<Property> nestedTypes = description.get(VALUE_TYPE).asPropertyList();
                     for (Property nestedType : nestedTypes) {
                         String nestedName = name + "." + nestedType.getName();

@@ -17,6 +17,7 @@ package org.jboss.hal.meta.description;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.stream.Stream;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
@@ -59,5 +60,9 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
     public int size() {
         return attributes.size();
+    }
+
+    public Stream<AttributeDescription> stream() {
+        return attributes.values().stream();
     }
 }

@@ -15,9 +15,6 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
-import org.gwtproject.safehtml.shared.SafeHtmlUtils;
-import org.jboss.elemento.By;
-import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.description.AttributeDescription;
@@ -25,47 +22,28 @@ import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
+import org.patternfly.component.emptystate.EmptyState;
+import org.patternfly.component.table.TableType;
 import org.patternfly.component.table.Tbody;
-import org.patternfly.component.table.Td;
 import org.patternfly.component.table.Tr;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
-import org.patternfly.style.Variable;
-import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.elemento.Elements.isAttached;
-import static org.jboss.elemento.Elements.span;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.CONFIGURATION;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.METRIC;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_WRITE;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.RUNTIME;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 import static org.jboss.hal.resources.HalClasses.halModifier;
-import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
-import static org.jboss.hal.ui.BuildingBlocks.attributeName;
 import static org.jboss.hal.ui.BuildingBlocks.emptyRow;
 import static org.jboss.hal.ui.modelbrowser.AttributesToolbar.attributesToolbar;
 import static org.patternfly.component.table.Table.table;
 import static org.patternfly.component.table.Tbody.tbody;
-import static org.patternfly.component.table.Td.td;
 import static org.patternfly.component.table.Th.th;
 import static org.patternfly.component.table.Thead.thead;
 import static org.patternfly.component.table.Tr.tr;
-import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.ObservableValue.ov;
-import static org.patternfly.icon.IconSets.fas.database;
-import static org.patternfly.icon.IconSets.fas.edit;
-import static org.patternfly.icon.IconSets.fas.lock;
-import static org.patternfly.icon.IconSets.fas.memory;
-import static org.patternfly.icon.IconSets.patternfly.trendUp;
 import static org.patternfly.style.Classes.util;
-import static org.patternfly.style.Variable.utilVar;
 import static org.patternfly.style.Width.width10;
 import static org.patternfly.style.Width.width20;
 import static org.patternfly.style.Width.width60;
@@ -79,15 +57,16 @@ class AttributesTable implements IsElement<HTMLElement> {
     private final ObservableValue<Integer> total;
     private final Tbody tbody;
     private final HTMLElement root;
-    private Tr noAttributes;
+    private EmptyState noAttributes;
 
     AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
         filter = new AttributesFilter().onChange(this::onFilterChanged);
         visible = ov(attributes.size());
         total = ov(attributes.size());
+        boolean anyComplexAttributes = attributes.stream().anyMatch(AttributeDescription::listOrObjectValueType);
         root = div()
                 .add(attributesToolbar(filter, visible, total))
-                .add(table()
+                .add(table(anyComplexAttributes ? TableType.treeTable : TableType.table)
                         .addHead(thead().css(util("mt-sm"))
                                 .addRow(tr("attributes-head")
                                         .addItem(th("name").width(width60).textContent("Name"))
@@ -95,15 +74,9 @@ class AttributesTable implements IsElement<HTMLElement> {
                                         .addItem(th("storage").width(width10).textContent("Storage"))
                                         .addItem(th("access-type").width(width10).textContent("Access"))))
                         .addBody(tbody = tbody()
-                                .addRows(attributes, attribute -> tr(attribute.name())
-                                        .store(ATTRIBUTE_KEY, attribute)
-                                        .addItem(td("Name")
-                                                .add(attributeName(attribute, () -> uic.environment()
-                                                        .highlightStability(resource.stability(), attribute.stability())))
-                                                .add(attributeDescription(attribute).css(util("mt-sm"))))
-                                        .addItem(td("Type").textContent(attribute.formatType()))
-                                        .addItem(td("Storage").run(td -> storage(td, attribute)))
-                                        .addItem(td("Access type").run(td -> accessType(td, attribute))))))
+                                .addRows(attributes, attribute -> new AttributeRow(uic, resource, anyComplexAttributes)
+                                        .apply(attribute)
+                                        .store(ATTRIBUTE_KEY, attribute))))
                 .element();
     }
 
@@ -112,74 +85,12 @@ class AttributesTable implements IsElement<HTMLElement> {
         return root;
     }
 
-    private void storage(Td td, AttributeDescription attribute) {
-        if (attribute.hasDefined(STORAGE)) {
-            String storageId = Id.unique(attribute.name(), STORAGE);
-            String storage = attribute.get(STORAGE).asString();
-            Variable minWidth = utilVar("min-width", Variables.MinWidth);
-            if (CONFIGURATION.equals(storage)) {
-                td.add(span().id(storageId)
-                        .add(database())
-                        .add(tooltip(By.id(storageId))
-                                .css(util("min-width"))
-                                .style(minWidth.name, "10ch")
-                                .text("Configuration")));
-            } else if (RUNTIME.equals(storage)) {
-                td.add(span().id(storageId)
-                        .add(memory())
-                        .add(tooltip(By.id(storageId))
-                                .css(util("min-width"))
-                                .style(minWidth.name, "10ch")
-                                .text("Memory")));
-            } else {
-                td.innerHtml(SafeHtmlUtils.fromString("&nbsp;"));
-            }
-        } else {
-            td.innerHtml(SafeHtmlUtils.fromString("&nbsp;"));
-        }
-    }
-
-    private void accessType(Td td, AttributeDescription attribute) {
-        if (attribute.hasDefined(ACCESS_TYPE)) {
-            String accessTypeId = Id.unique(attribute.name(), ACCESS_TYPE);
-            String accessType = attribute.get(ACCESS_TYPE).asString();
-            switch (accessType) {
-                case READ_WRITE:
-                    td.add(span().id(accessTypeId)
-                            .add(edit())
-                            .add(tooltip(By.id(accessTypeId))
-                                    .style("min-width", "7ch")
-                                    .text("read-write")));
-                    break;
-                case READ_ONLY:
-                    td.add(span().id(accessTypeId)
-                            .add(lock())
-                            .add(tooltip(By.id(accessTypeId))
-                                    .style("min-width", "7ch")
-                                    .text("read-only")));
-                    break;
-                case METRIC:
-                    td.add(span().id(accessTypeId)
-                            .add(trendUp())
-                            .add(tooltip(By.id(accessTypeId))
-                                    .style("min-width", "7ch")
-                                    .text("metric")));
-                    break;
-                default:
-                    td.innerHtml(SafeHtmlUtils.fromString("&nbsp;"));
-                    break;
-            }
-        } else {
-            td.innerHtml(SafeHtmlUtils.fromString("&nbsp;"));
-        }
-    }
-
     private void noAttributes() {
         if (noAttributes == null) {
-            noAttributes = emptyRow(4, filter);
+            noAttributes = emptyRow(filter);
         }
         if (!isAttached(noAttributes)) {
-            tbody.addRow(noAttributes);
+            tbody.empty(4, noAttributes);
         }
     }
 

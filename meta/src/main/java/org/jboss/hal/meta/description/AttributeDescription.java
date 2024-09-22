@@ -25,6 +25,7 @@ import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
+import static org.jboss.hal.dmr.ModelType.LIST;
 import static org.jboss.hal.dmr.ModelType.OBJECT;
 
 public class AttributeDescription extends NamedNode implements Description {
@@ -62,6 +63,8 @@ public class AttributeDescription extends NamedNode implements Description {
                 ModelNode node = get(VALUE_TYPE);
                 if (ModelType.TYPE.equals(node.getType())) {
                     builder.append("<").append(node.asString()).append(">");
+                } else {
+                    builder.append("<").append("T").append(">");
                 }
             }
         }
@@ -69,13 +72,28 @@ public class AttributeDescription extends NamedNode implements Description {
     }
 
     /**
-     * Checks if the current attribute description represents a simple record. A simple record is of type
-     * {@link ModelType#OBJECT} and has nested {@linkplain ModelType#simple() simple attributes} or lists of simple attributes
-     * inside its {@value org.jboss.hal.dmr.ModelDescriptionConstants#VALUE_TYPE}.
-     *
-     * @return {@code true} if the attribute description represents a simple record, {@code false} otherwise.
+     * Checks if the attribute description is either of type {@link ModelType#LIST} or {@link ModelType#OBJECT} with an object
+     * value-type.
      */
-    public boolean simpleRecord() {
+    public boolean listOrObjectValueType() {
+        try {
+            ModelType type = get(TYPE).asType();
+            if (type == LIST || type == OBJECT) {
+                ModelType valueType = get(VALUE_TYPE).getType();
+                return valueType == OBJECT;
+            } else {
+                return false;
+            }
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if the attribute description is of type {@link ModelType#OBJECT} with an object value-type that only contains
+     * {@linkplain ModelType#simple() simple attributes} or lists of simple attributes.
+     */
+    public boolean simpleValueType() {
         try {
             ModelType type = get(TYPE).asType();
             if (type == OBJECT) {
@@ -102,5 +120,23 @@ public class AttributeDescription extends NamedNode implements Description {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    /**
+     * Returns the attribute descriptions of the value-type, if {@link #listOrObjectValueType()} is true or an empty
+     * {@link AttributeDescriptions} otherwise.
+     */
+    public AttributeDescriptions valueTypeAttributeDescriptions() {
+        ModelNode modelNode = new ModelNode();
+        try {
+            ModelType type = get(TYPE).asType();
+            if (type == LIST || type == OBJECT) {
+                ModelType valueType = get(VALUE_TYPE).getType();
+                if (valueType == OBJECT) {
+                    modelNode = get(VALUE_TYPE);
+                }
+            }
+        } catch (IllegalArgumentException ignored) {}
+        return new AttributeDescriptions(modelNode);
     }
 }

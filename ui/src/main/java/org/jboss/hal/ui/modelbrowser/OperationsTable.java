@@ -25,6 +25,7 @@ import org.jboss.hal.meta.description.OperationDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
+import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Tbody;
 import org.patternfly.component.table.Tr;
@@ -81,7 +82,7 @@ class OperationsTable implements IsElement<HTMLElement> {
     private final ObservableValue<Integer> total;
     private final Tbody tbody;
     private final HTMLElement root;
-    private Tr noAttributes;
+    private EmptyState noAttributes;
 
     OperationsTable(UIContext uic, ResourceDescription resource, OperationDescriptions operations) {
         this.uic = uic;
@@ -175,10 +176,10 @@ class OperationsTable implements IsElement<HTMLElement> {
 
     private void noOperations() {
         if (noAttributes == null) {
-            noAttributes = emptyRow(4, filter);
+            noAttributes = emptyRow(filter);
         }
         if (!isAttached(noAttributes)) {
-            tbody.addRow(noAttributes);
+            tbody.empty(4, noAttributes);
         }
     }
 

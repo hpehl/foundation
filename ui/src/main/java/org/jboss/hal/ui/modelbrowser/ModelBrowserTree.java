@@ -29,8 +29,8 @@ import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
 import static org.patternfly.component.tree.TreeView.treeView;
-import static org.patternfly.component.tree.TreeViewItemStatus.pending;
 import static org.patternfly.component.tree.TreeViewType.selectableItems;
+import static org.patternfly.core.AsyncStatus.pending;
 import static org.patternfly.core.Roles.tree;
 
 class ModelBrowserTree implements IsElement<HTMLElement> {
