@@ -81,9 +81,9 @@ class ModelBrowserNode {
         this.exists = true;
     }
 
-    ModelBrowserNode copy(Consumer<ModelBrowserNode> fn) {
+    ModelBrowserNode copy(Consumer<ModelBrowserNode> modifyCopy) {
         ModelBrowserNode copy = new ModelBrowserNode(template, name, type);
-        fn.accept(copy);
+        modifyCopy.accept(copy);
         return copy;
     }
 }

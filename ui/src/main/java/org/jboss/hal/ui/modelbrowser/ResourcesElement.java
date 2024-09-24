@@ -34,6 +34,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -99,6 +100,12 @@ class ResourcesElement implements IsElement<HTMLElement> {
                     return dataListItem(childId)
                             .addCell(nameCell(childId, child, childMetadata))
                             .addAction(dataListAction()
+                                    .run(dataListAction -> {
+                                        if (parent.type == FOLDER) {
+                                            // There are no descriptions, so center the button horizontally
+                                            dataListAction.style("align-items", "center");
+                                        }
+                                    })
                                     .add(button("View")
                                             .secondary()
                                             .onClick((e, c) -> tree.select(parent, child))));

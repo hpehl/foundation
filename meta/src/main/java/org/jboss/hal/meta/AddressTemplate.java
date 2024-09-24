@@ -15,7 +15,6 @@
  */
 package org.jboss.hal.meta;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,6 +23,7 @@ import java.util.function.Predicate;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.ValueEncoder;
+import org.jboss.hal.meta.WildcardResolver.Direction;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -106,6 +106,10 @@ public final class AddressTemplate implements Iterable<Segment> {
      */
     public static AddressTemplate of(List<Segment> segments) {
         return segments != null ? new AddressTemplate(segments) : new AddressTemplate(emptyList());
+    }
+
+    public static AddressTemplate of(ResourceAddress address) {
+        return of(address.toString());
     }
 
     // ------------------------------------------------------ instance
@@ -280,8 +284,8 @@ public final class AddressTemplate implements Iterable<Segment> {
     }
 
     /** Resolve this template using the {@link WildcardResolver} */
-    public ResourceAddress resolve(String first, String... more) {
-        return resolve(new WildcardResolver(first, more));
+    public ResourceAddress resolve(Direction direction, String first, String... more) {
+        return resolve(new WildcardResolver(direction, first, more));
     }
 
     /** Resolve this template using the {@link StatementContextResolver} */
@@ -327,7 +331,7 @@ public final class AddressTemplate implements Iterable<Segment> {
                 // split template by '/'
                 int current = 0;
                 boolean backslash = false;
-                List<String> unparsedSegments = new ArrayList<>();
+                LinkedList<String> unparsedSegments = new LinkedList<>();
                 for (int i = 0; i < trimmed.length(); i++) {
                     char c = trimmed.charAt(i);
                     if (c == '\\') {
@@ -344,19 +348,32 @@ public final class AddressTemplate implements Iterable<Segment> {
                 }
                 unparsedSegments.add(trimmed.substring(current));
 
+                // pre-validate segments
+                LinkedList<String> preValidatedSegments = new LinkedList<>();
+                for (String us : unparsedSegments) {
+                    if (us == null || us.isEmpty() || "{}".equals(us) ||
+                            us.startsWith("=") || (us.endsWith("=") && !us.endsWith("\\=")) ||
+                            (us.contains("{") && !us.contains("}")) ||
+                            (us.contains("}") && !us.contains("{")) ||
+                            (!us.contains("=") && !us.contains("{") && !us.contains("}"))) {
+                        break; // stop after the first invalid segment
+                    }
+                    preValidatedSegments.add(us);
+                }
+
                 // split segments by '='
-                for (String unparsedSegment : unparsedSegments) {
+                for (String pvs : preValidatedSegments) {
                     String key = null;
                     String value;
                     backslash = false;
-                    for (int i = 0; i < unparsedSegment.length(); i++) {
-                        char c = unparsedSegment.charAt(i);
+                    for (int i = 0; i < pvs.length(); i++) {
+                        char c = pvs.charAt(i);
                         if (c == '\\') {
                             backslash = true;
                         } else if (c == '=') {
                             if (!backslash) {
-                                key = unparsedSegment.substring(0, i);
-                                value = unparsedSegment.substring(i + 1);
+                                key = pvs.substring(0, i);
+                                value = pvs.substring(i + 1);
                                 segments.add(new Segment(key, ValueEncoder.decode(value)));
                             }
                             backslash = false;
@@ -365,9 +382,23 @@ public final class AddressTemplate implements Iterable<Segment> {
                         }
                     }
                     if (key == null) {
-                        segments.add(new Segment(unparsedSegment));
+                        segments.add(new Segment(pvs));
                     }
                 }
+            }
+        }
+
+        // 2. post-validate segments and remove everything after the first invalid segment
+        boolean invalid = false;
+        for (Iterator<Segment> iterator = segments.iterator(); iterator.hasNext(); ) {
+            Segment segment = iterator.next();
+            boolean emptyKey = segment.key == null || segment.key.isEmpty() || "{}".equals(segment.key);
+            boolean emptyValue = segment.value == null || segment.value.isEmpty() || "{}".equals(segment.value);
+            boolean placeholder = segment.containsPlaceholder();
+            invalid = invalid ||
+                    ((emptyKey && emptyValue) || ((emptyKey || emptyValue) && !placeholder));
+            if (invalid) {
+                iterator.remove();
             }
         }
         return segments;

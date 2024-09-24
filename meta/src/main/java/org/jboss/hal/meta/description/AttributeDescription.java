@@ -15,6 +15,8 @@
  */
 package org.jboss.hal.meta.description;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.hal.dmr.ModelNode;
@@ -30,18 +32,58 @@ import static org.jboss.hal.dmr.ModelType.OBJECT;
 
 public class AttributeDescription extends NamedNode implements Description {
 
+    private final AttributeDescription parent;
     private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
-
-    public AttributeDescription() {
-        super();
-    }
-
-    public AttributeDescription(String name, ModelNode modelNode) {
-        super(name, modelNode);
-    }
 
     public AttributeDescription(Property property) {
         super(property);
+        this.parent = null;
+    }
+
+    AttributeDescription() {
+        super();
+        this.parent = null;
+    }
+
+    AttributeDescription(String name, ModelNode modelNode) {
+        super(name, modelNode);
+        this.parent = null;
+    }
+
+    AttributeDescription(AttributeDescription parent, Property property) {
+        super(property);
+        this.parent = parent;
+    }
+
+    public String fullyQualifiedName() {
+        if (parent != null) {
+            List<String> names = new ArrayList<>();
+            names.add(name());
+            AttributeDescription p = this.parent;
+            while (p != null) {
+                names.add(p.name());
+                p = p.parent();
+            }
+            Collections.reverse(names);
+            return String.join(".", names);
+        }
+        return name();
+    }
+
+    /**
+     * Same as {@link #get(String)}, but finds {@code name} upwards (if {@link #nested()}).
+     */
+    public ModelNode find(String name) {
+        if (parent != null) {
+            AttributeDescription current = this;
+            ModelNode modelNode = current.get(name);
+            while (!modelNode.isDefined() || !modelNode.isDefined()) {
+                current = current.parent;
+                modelNode = current.get(name);
+            }
+            return modelNode;
+        }
+        return get(name);
     }
 
     @Override
@@ -53,6 +95,14 @@ public class AttributeDescription extends NamedNode implements Description {
     // TODO Remove pseudo stability code
     public Stability stability() {
         return stability;
+    }
+
+    public boolean nested() {
+        return parent != null;
+    }
+
+    public AttributeDescription parent() {
+        return parent;
     }
 
     public String formatType() {
@@ -133,7 +183,11 @@ public class AttributeDescription extends NamedNode implements Description {
             if (type == LIST || type == OBJECT) {
                 ModelType valueType = get(VALUE_TYPE).getType();
                 if (valueType == OBJECT) {
-                    modelNode = get(VALUE_TYPE);
+                    List<AttributeDescription> nestedDescriptions = new ArrayList<>();
+                    for (Property property : get(VALUE_TYPE).asPropertyList()) {
+                        nestedDescriptions.add(new AttributeDescription(this, property));
+                    }
+                    return new AttributeDescriptions(this, nestedDescriptions);
                 }
             }
         } catch (IllegalArgumentException ignored) {}

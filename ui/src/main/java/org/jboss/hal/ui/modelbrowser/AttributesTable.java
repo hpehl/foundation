@@ -17,9 +17,8 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
-import org.jboss.hal.meta.description.AttributeDescriptions;
-import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.emptystate.EmptyState;
@@ -32,7 +31,6 @@ import org.patternfly.filter.Filter;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.BuildingBlocks.emptyRow;
@@ -59,11 +57,14 @@ class AttributesTable implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private EmptyState noAttributes;
 
-    AttributesTable(UIContext uic, ResourceDescription resource, AttributeDescriptions attributes) {
+    AttributesTable(UIContext uic, Metadata metadata) {
         filter = new AttributesFilter().onChange(this::onFilterChanged);
-        visible = ov(attributes.size());
-        total = ov(attributes.size());
-        boolean anyComplexAttributes = attributes.stream().anyMatch(AttributeDescription::listOrObjectValueType);
+        visible = ov(metadata.resourceDescription().attributes().size());
+        total = ov(metadata.resourceDescription().attributes().size());
+        boolean anyComplexAttributes = metadata.resourceDescription()
+                .attributes()
+                .stream()
+                .anyMatch(AttributeDescription::listOrObjectValueType);
         root = div()
                 .add(attributesToolbar(filter, visible, total))
                 .add(table(anyComplexAttributes ? TableType.treeTable : TableType.table)
@@ -74,9 +75,10 @@ class AttributesTable implements IsElement<HTMLElement> {
                                         .addItem(th("storage").width(width10).textContent("Storage"))
                                         .addItem(th("access-type").width(width10).textContent("Access"))))
                         .addBody(tbody = tbody()
-                                .addRows(attributes, attribute -> new AttributeRow(uic, resource, anyComplexAttributes)
-                                        .apply(attribute)
-                                        .store(ATTRIBUTE_KEY, attribute))))
+                                .addRows(metadata.resourceDescription().attributes(), attribute ->
+                                        new AttributeRow(uic, metadata.resourceDescription(), anyComplexAttributes)
+                                                .apply(attribute)
+                                                .store(ATTRIBUTE_KEY, attribute))))
                 .element();
     }
 
@@ -112,11 +114,11 @@ class AttributesTable implements IsElement<HTMLElement> {
             if (matchingItems == 0) {
                 noAttributes();
             } else {
-                failSafeRemoveFromParent(noAttributes);
+                tbody.clearEmpty();
             }
         } else {
             matchingItems = total.get();
-            failSafeRemoveFromParent(noAttributes);
+            tbody.clearEmpty();
             tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(HalClasses.filtered)));
         }
         visible.set(matchingItems);

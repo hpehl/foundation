@@ -30,3 +30,7 @@
     text-underline-offset: var(--pf-v5-c-description-list__text--m-help-text--TextDecorationOffset);
     cursor: pointer;
 }
+
+.hal-m-rbac-hidden {
+    display: none !important;
+}

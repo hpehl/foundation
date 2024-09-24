@@ -17,6 +17,7 @@ package org.jboss.hal.meta.description;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.jboss.hal.dmr.ModelNode;
@@ -29,13 +30,22 @@ import static java.util.stream.Collectors.toMap;
 /** Wrapper around the attributes of a {@link ResourceDescription} */
 public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
+    private final AttributeDescription parent;
     private final LinkedHashMap<String, AttributeDescription> attributes;
 
     AttributeDescriptions() {
+        this.parent = null;
         this.attributes = new LinkedHashMap<>();
     }
 
+    AttributeDescriptions(AttributeDescription parent, List<AttributeDescription> attributes) {
+        this.parent = parent;
+        this.attributes = new LinkedHashMap<>();
+        attributes.forEach(ad -> this.attributes.put(ad.name(), ad));
+    }
+
     AttributeDescriptions(ModelNode modelNode) {
+        this.parent = null;
         this.attributes = modelNode.isDefined()
                 ? modelNode.asPropertyList()
                 .stream()
@@ -64,5 +74,13 @@ public class AttributeDescriptions implements Iterable<AttributeDescription> {
 
     public Stream<AttributeDescription> stream() {
         return attributes.values().stream();
+    }
+
+    public boolean nested() {
+        return parent != null;
+    }
+
+    public AttributeDescription parent() {
+        return parent;
     }
 }

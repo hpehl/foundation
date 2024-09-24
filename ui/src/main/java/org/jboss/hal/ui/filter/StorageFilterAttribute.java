@@ -17,7 +17,7 @@ package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.meta.description.AttributeDescription;
 import org.patternfly.filter.FilterAttribute;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
@@ -26,7 +26,7 @@ public class StorageFilterAttribute<T> extends FilterAttribute<T, StorageValue> 
 
     public static final String NAME = "storage";
 
-    public StorageFilterAttribute(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, (object, storage) -> storage.value.equals(modelNodeFn.apply(object).get(STORAGE).asString()));
+    public StorageFilterAttribute(Function<T, AttributeDescription> adf) {
+        super(NAME, (object, storage) -> storage.value.equals(adf.apply(object).find(STORAGE).asString()));
     }
 }

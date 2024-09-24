@@ -56,7 +56,7 @@ public class ElementGuard {
 
     private static void processElements(AuthorisationDecision authorisationDecision, Iterable<HTMLElement> elements) {
         stream(elements.spliterator(), false)
-                .filter(new Visible()) // prevent that hidden elements become visible by Toggle()
+                .filter(new Visible()) // prevents that hidden elements become visible by Toggle()
                 .forEach(new Toggle(authorisationDecision));
     }
 

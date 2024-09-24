@@ -17,13 +17,12 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.CapabilityDescription;
-import org.jboss.hal.meta.description.CapabilityDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Table;
-import org.patternfly.component.table.Tr;
 import org.patternfly.layout.flex.Flex;
 import org.patternfly.style.Size;
 
@@ -55,9 +54,8 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
 
     private final UIContext uic;
     private final Table table;
-    private Tr noAttributes;
 
-    CapabilitiesTable(UIContext uic, ResourceDescription resource, CapabilityDescriptions capabilities) {
+    CapabilitiesTable(UIContext uic, Metadata metadata) {
         this.uic = uic;
         this.table = table()
                 .addHead(thead().css(util("mt-sm"))
@@ -67,7 +65,7 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
                                 .addItem(th("dynamic-elements").width(width30).textContent("Dynamic elements"))))
                 .addBody(tbody()
                         .run(tbody -> {
-                            if (capabilities.isEmpty()) {
+                            if (metadata.resourceDescription().capabilities().isEmpty()) {
                                 tbody.addRow(tr(Id.unique("empty"))
                                         .addItem(td().colSpan(3)
                                                 .add(bullseye()
@@ -79,9 +77,9 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
                                                                         .textContent(
                                                                                 "This resource contains no capabilities."))))));
                             } else {
-                                tbody.addRows(capabilities, capability -> tr(capability.name())
+                                tbody.addRows(metadata.resourceDescription().capabilities(), capability -> tr(capability.name())
                                         .addItem(td("Name")
-                                                .add(capabilityName(resource, capability)))
+                                                .add(capabilityName(metadata.resourceDescription(), capability)))
                                         .addItem(td("Dynamic").textContent(String.valueOf(capability.dynamic())))
                                         .addItem(td("Dynamic elements").add(dynamicElements(capability))));
                             }

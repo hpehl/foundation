@@ -53,7 +53,7 @@ public class Segment {
     }
 
     public boolean containsPlaceholder() {
-        return value != null && value.startsWith("{") && value.endsWith("}");
+        return value != null && value.startsWith("{") && value.endsWith("}") && value.length() > 2;
     }
 
     public Placeholder placeholder() {

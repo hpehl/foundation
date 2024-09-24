@@ -19,9 +19,9 @@ import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.env.Settings;
+import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.OperationDescription;
-import org.jboss.hal.meta.description.OperationDescriptions;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
@@ -32,12 +32,12 @@ import org.patternfly.component.table.Tr;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 import org.patternfly.layout.flex.Flex;
+import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
@@ -51,6 +51,7 @@ import static org.jboss.hal.ui.BuildingBlocks.emptyRow;
 import static org.jboss.hal.ui.BuildingBlocks.operationDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.OperationsToolbar.operationsToolbar;
+import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.label.Label.label;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
@@ -66,6 +67,11 @@ import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.SpaceItems.sm;
 import static org.patternfly.layout.flex.SpaceItems.xs;
+import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Classes.fitContent;
+import static org.patternfly.style.Classes.modifier;
+import static org.patternfly.style.Classes.screenReader;
+import static org.patternfly.style.Classes.text;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.blue;
 import static org.patternfly.style.Width.width20;
@@ -84,11 +90,11 @@ class OperationsTable implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private EmptyState noAttributes;
 
-    OperationsTable(UIContext uic, ResourceDescription resource, OperationDescriptions operations) {
+    OperationsTable(UIContext uic, Metadata metadata) {
         this.uic = uic;
         this.filter = new OperationsFilter().onChange(this::onFilterChanged);
-        this.visible = ov(operations.size());
-        this.total = ov(operations.size());
+        this.visible = ov(metadata.resourceDescription().operations().size());
+        this.total = ov(metadata.resourceDescription().operations().size());
         this.root = div()
                 .add(operationsToolbar(uic, filter, visible, total))
                 .add(table()
@@ -96,26 +102,37 @@ class OperationsTable implements IsElement<HTMLElement> {
                                 .addRow(tr("operations-head")
                                         .addItem(th("name").width(width35).textContent("Name"))
                                         .addItem(th("parameters").width(width45).textContent("Parameters"))
-                                        .addItem(th("return-value").width(width20).textContent("Return value"))))
+                                        .addItem(th("return-value").width(width20).textContent("Return value"))
+                                        .addItem(th("execute")
+                                                .add(span().css(screenReader).textContent("Execute operation")))))
                         .addBody(tbody = tbody()
-                                .addRows(operations, operation -> {
+                                .addRows(metadata.resourceDescription().operations(), operation -> {
+                                    boolean executable = metadata.securityContext().executable(operation.name());
                                     AttributeDescription returnValue = operation.returnValue();
                                     return tr(operation.name())
                                             .store(OPERATION_KEY, operation)
                                             .addItem(td("Name")
-                                                    .add(operationName(resource, operation))
+                                                    .add(operationName(metadata.resourceDescription(), operation))
                                                     .add(operationDescription(operation)))
-                                            .addItem(td("Parameters")
+                                            .run(tableRow -> {
+                                                if (returnValue.isDefined()) {
+                                                    tableRow.addItem(td("Parameters")
+                                                                    .add(parameters(metadata.resourceDescription(), operation)))
+                                                            .addItem(td("Return value")
+                                                                    .add(returnValue(returnValue)));
+                                                } else {
+                                                    tableRow.addItem(td("Parameters")
+                                                            .colSpan(2)
+                                                            .add(parameters(metadata.resourceDescription(), operation)));
+                                                }
+                                            })
+                                            .addItem(td("Execute operation").css(modifier(fitContent))
                                                     .run(td -> {
-                                                        if (!returnValue.isDefined()) {
-                                                            td.colSpan(2);
-                                                        }
-                                                    })
-                                                    .add(parameters(resource, operation)))
-                                            .addItem(td("Return value")
-                                                    .run(td -> {
-                                                        if (returnValue.isDefined()) {
-                                                            td.add(returnValue(returnValue));
+                                                        if (executable) {
+                                                            td.add(span().css(component(Classes.table, text))
+                                                                    // .add(button().plain().icon(play())
+                                                                    .add(button("Execute").secondary()
+                                                                            .onClick((e, c) -> execute(operation))));
                                                         }
                                                     }));
                                 })))
@@ -123,6 +140,10 @@ class OperationsTable implements IsElement<HTMLElement> {
 
         boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         filter.set(GlobalOperationsFilterAttribute.NAME, showGlobalOperations);
+    }
+
+    private void execute(OperationDescription operation) {
+        // TODO Implement me!
     }
 
     @Override
@@ -179,7 +200,7 @@ class OperationsTable implements IsElement<HTMLElement> {
             noAttributes = emptyRow(filter);
         }
         if (!isAttached(noAttributes)) {
-            tbody.empty(4, noAttributes);
+            tbody.empty(5, noAttributes);
         }
     }
 
@@ -201,11 +222,11 @@ class OperationsTable implements IsElement<HTMLElement> {
             if (matchingItems == 0) {
                 noOperations();
             } else {
-                failSafeRemoveFromParent(noAttributes);
+                tbody.clearEmpty();
             }
         } else {
             matchingItems = total.get();
-            failSafeRemoveFromParent(noAttributes);
+            tbody.clearEmpty();
             tbody.items().forEach(dlg -> dlg.classList().remove(halModifier(filtered)));
         }
         visible.set(matchingItems);

@@ -19,11 +19,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static java.util.Collections.reverse;
+import static org.jboss.hal.meta.WildcardResolver.Direction.RTL;
+
 public class WildcardResolver implements TemplateResolver {
 
+    public enum Direction {
+        LTR, RTL
+    }
+
+    private final Direction direction;
     private final Iterator<String> iterator;
 
-    public WildcardResolver(String first, String... more) {
+    public WildcardResolver(Direction direction, String first, String... more) {
+        this.direction = direction;
         List<String> values = new ArrayList<>();
         if (valid(first)) {
             values.add(first);
@@ -45,7 +54,11 @@ public class WildcardResolver implements TemplateResolver {
     @Override
     public AddressTemplate resolve(AddressTemplate template) {
         List<Segment> resolved = new ArrayList<>();
-        for (Segment segment : template) {
+        List<Segment> segments = new ArrayList<>(template.segments());
+        if (direction == RTL) {
+            reverse(segments);
+        }
+        for (Segment segment : segments) {
             if (!segment.containsPlaceholder() && segment.hasKey() && "*".equals(segment.value)) {
                 if (iterator.hasNext()) {
                     resolved.add(new Segment(segment.key, iterator.next()));
@@ -55,6 +68,9 @@ public class WildcardResolver implements TemplateResolver {
             } else {
                 resolved.add(segment);
             }
+        }
+        if (direction == RTL) {
+            reverse(resolved);
         }
         return AddressTemplate.of(resolved);
     }

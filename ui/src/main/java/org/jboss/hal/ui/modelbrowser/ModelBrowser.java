@@ -22,6 +22,8 @@ import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
 
+import elemental2.dom.CustomEvent;
+import elemental2.dom.CustomEventInit;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
@@ -41,8 +43,27 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         return new ModelBrowser(uic);
     }
 
+    /**
+     * Creates and returns a custom event to select a resource for the provided address template in the model browser. The event
+     * can only be used by elements which are part of the model browser DOM.
+     *
+     * @param template the address template used to create the event's detail.
+     * @return a custom event initialized with the provided address template
+     * @see <a
+     * href="https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events">https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events</a>
+     */
+    public static CustomEvent<String> selectEvent(AddressTemplate template) {
+        //noinspection unchecked
+        CustomEventInit<String> init = CustomEventInit.create();
+        init.setBubbles(true);
+        init.setCancelable(true);
+        init.setDetail(template == null ? "" : template.toString());
+        return new CustomEvent<>(SELECT_TEMPLATE_EVENT, init);
+    }
+
     // ------------------------------------------------------ instance
 
+    public static final String SELECT_TEMPLATE_EVENT = "select-template";
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
     private static final int TREE_COLUMNS = 3;
     private static final int DETAIL_COLUMNS = 9;
@@ -50,6 +71,7 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private final ModelBrowserTree tree;
     private final ModelBrowserDetail detail;
+    private AddressTemplate rootTemplate;
 
     public ModelBrowser(UIContext uic) {
         this.uic = uic;
@@ -62,6 +84,13 @@ public class ModelBrowser implements IsElement<HTMLElement> {
                 .element();
         tree.detail = detail;
         detail.tree = tree;
+
+        element().addEventListener(SELECT_TEMPLATE_EVENT, evt -> {
+            //noinspection unchecked
+            CustomEvent<String> customEvent = (CustomEvent<String>) evt;
+            AddressTemplate template = AddressTemplate.of(customEvent.detail);
+            select(template);
+        });
     }
 
     @Override
@@ -72,6 +101,7 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     // ------------------------------------------------------ api
 
     public void show(AddressTemplate template) {
+        this.rootTemplate = template;
         if (template.fullyQualified()) {
             uic.metadataRepository().lookup(template, metadata -> {
                 ResourceAddress address = template.resolve(uic.statementContext());
@@ -87,6 +117,18 @@ public class ModelBrowser implements IsElement<HTMLElement> {
             });
         } else {
             logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);
+        }
+    }
+
+    public void select(AddressTemplate template) {
+        if (rootTemplate != null) {
+            if (template.template.startsWith(rootTemplate.template)) {
+                tree.select(template);
+            } else {
+                logger.error("Unable to select %s: %s is not a sub-template of %s", template, template, rootTemplate);
+            }
+        } else {
+            logger.error("Unable to select %s: Root template is null!", template);
         }
     }
 }

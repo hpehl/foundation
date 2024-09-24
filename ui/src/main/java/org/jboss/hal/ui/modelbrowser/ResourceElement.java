@@ -57,24 +57,17 @@ class ResourceElement implements IsElement<HTMLElement> {
         Tabs tabs = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
-                        .addContent(tabContent()
-                                .add(resourceView(uic, metadata, resource))))
+                        .addContent(tabContent().add(resourceView(uic, metadata, resource))))
                 .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tbs.addItem(tab("attributes", "Attributes")
-                                .addContent(tabContent()
-                                        .add(new AttributesTable(uic, metadata.resourceDescription(),
-                                                metadata.resourceDescription().attributes()))));
+                                .addContent(tabContent().add(new AttributesTable(uic, metadata))));
                     }
                 })
                 .addItem(tab("operations", "Operations")
-                        .addContent(tabContent()
-                                .add(new OperationsTable(uic, metadata.resourceDescription(),
-                                        metadata.resourceDescription().operations()))))
+                        .addContent(tabContent().add(new OperationsTable(uic, metadata))))
                 .addItem(tab("capabilities", "Capabilities")
-                        .addContent(tabContent()
-                                .add(new CapabilitiesTable(uic, metadata.resourceDescription(),
-                                        metadata.resourceDescription().capabilities()))))
+                        .addContent(tabContent().add(new CapabilitiesTable(uic, metadata))))
                 .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier());
         root.append(tabs.element());
     }

@@ -41,10 +41,10 @@ import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.breadcrumb.Breadcrumb.breadcrumb;
 import static org.patternfly.component.breadcrumb.BreadcrumbItem.breadcrumbItem;
 import static org.patternfly.component.page.PageMainBreadcrumb.pageMainBreadcrumb;
@@ -124,10 +124,10 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                         .active(last)
                         .run(bci -> {
                             if (!last) {
-                                bci.onClick((event, component) -> {
+                                bci.onClick((event, breadcrumbItem) -> {
                                     event.preventDefault();
                                     event.stopPropagation();
-                                    tree.select(component.identifier());
+                                    tree.select(breadcrumbItem.identifier());
                                 });
                             }
                         }));

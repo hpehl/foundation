@@ -24,6 +24,7 @@ public interface HalClasses {
     String content = "content";
     String filtered = "filtered";
     String modelBrowser = "model-browser";
+    String rbacHidden = "rbac-hidden";
     String resourceView = "resource-view";
     String stabilityLevel = "stability-level";
     String unit = "unit";

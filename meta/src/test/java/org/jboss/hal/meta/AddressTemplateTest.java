@@ -53,6 +53,26 @@ class AddressTemplateTest {
     }
 
     @Test
+    void malformed() {
+        assertEquals("/", AddressTemplate.of("a").template);
+        assertEquals("/", AddressTemplate.of("a=").template);
+        assertEquals("/", AddressTemplate.of("=a").template);
+        assertEquals("/", AddressTemplate.of("=a=").template);
+        assertEquals("/", AddressTemplate.of("{}").template);
+        assertEquals("/", AddressTemplate.of("={}").template);
+        assertEquals("/", AddressTemplate.of("{}=").template);
+        assertEquals("/", AddressTemplate.of("={}=").template);
+        assertEquals("/", AddressTemplate.of("{a}=").template);
+        assertEquals("/", AddressTemplate.of("={a}").template);
+        assertEquals("/", AddressTemplate.of("={a}=").template);
+        assertEquals("/", AddressTemplate.of("a={").template);
+        assertEquals("/", AddressTemplate.of("a=}").template);
+        assertEquals("/", AddressTemplate.of("a={}").template);
+        assertEquals("/", AddressTemplate.of("{}=a").template);
+        assertEquals("/a=b", AddressTemplate.of("a=b/c/d=e/f=g").template);
+    }
+
+    @Test
     void absolute() {
         assertEquals("/a=b/c=d", AddressTemplate.of("/a=b/c=d").template);
     }

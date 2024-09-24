@@ -43,6 +43,10 @@
             <artifactId>hal-environment</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.elemento</groupId>
+            <artifactId>elemento-flow</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>

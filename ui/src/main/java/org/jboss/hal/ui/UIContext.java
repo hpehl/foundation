@@ -24,6 +24,7 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.env.Settings;
+import org.jboss.hal.meta.CapabilityRegistry;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 
@@ -51,6 +52,7 @@ public class UIContext {
     private final Environment environment;
     private final Settings settings;
     private final Dispatcher dispatcher;
+    private final CapabilityRegistry capabilityRegistry;
     private final MetadataRepository metadataRepository;
     private final StatementContext statementContext;
 
@@ -58,11 +60,13 @@ public class UIContext {
     public UIContext(Environment environment,
             Settings settings,
             Dispatcher dispatcher,
+            CapabilityRegistry capabilityRegistry,
             MetadataRepository metadataRepository,
             StatementContext statementContext) {
         this.environment = environment;
         this.settings = settings;
         this.dispatcher = dispatcher;
+        this.capabilityRegistry = capabilityRegistry;
         this.metadataRepository = metadataRepository;
         this.statementContext = statementContext;
     }
@@ -82,6 +86,10 @@ public class UIContext {
 
     public Dispatcher dispatcher() {
         return dispatcher;
+    }
+
+    public CapabilityRegistry capabilityRegistry() {
+        return capabilityRegistry;
     }
 
     public MetadataRepository metadataRepository() {

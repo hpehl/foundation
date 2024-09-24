@@ -17,34 +17,63 @@ package org.jboss.hal.meta;
 
 import org.junit.jupiter.api.Test;
 
+import static org.jboss.hal.meta.WildcardResolver.Direction.LTR;
+import static org.jboss.hal.meta.WildcardResolver.Direction.RTL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class WildcardResolverTest {
 
     @Test
     void resolve() {
-        WildcardResolver resolver = new WildcardResolver(null);
+        WildcardResolver resolver = new WildcardResolver(LTR, null);
         assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
 
-        resolver = new WildcardResolver(null, (String[]) null);
+        resolver = new WildcardResolver(LTR, null, (String[]) null);
         assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
 
-        resolver = new WildcardResolver("foo");
+        resolver = new WildcardResolver(LTR, "foo");
         assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
 
-        resolver = new WildcardResolver("foo");
+        resolver = new WildcardResolver(LTR, "foo");
         assertEquals("/{a}/b={c}", resolver.resolve(AddressTemplate.of("{a}/b={c}")).template);
 
-        resolver = new WildcardResolver("b");
+        resolver = new WildcardResolver(LTR, "b");
         assertEquals("/a=b/c=*", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
 
-        resolver = new WildcardResolver("b", "d");
+        resolver = new WildcardResolver(LTR, "b", "d");
         assertEquals("/a=b/c=d", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
 
-        resolver = new WildcardResolver("b", "d", "e");
+        resolver = new WildcardResolver(LTR, "b", "d", "e");
         assertEquals("/a=b/c=d", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
 
-        resolver = new WildcardResolver("b", "d", "e");
+        resolver = new WildcardResolver(LTR, "b", "d", "e");
+        assertEquals("/a=b/c={d}", resolver.resolve(AddressTemplate.of("a=*/c={d}")).template);
+    }
+
+    @Test
+    void rtl() {
+        WildcardResolver resolver = new WildcardResolver(RTL, null);
+        assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
+
+        resolver = new WildcardResolver(RTL, null, (String[]) null);
+        assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
+
+        resolver = new WildcardResolver(RTL, "foo");
+        assertEquals("/a=b", resolver.resolve(AddressTemplate.of("a=b")).template);
+
+        resolver = new WildcardResolver(RTL, "foo");
+        assertEquals("/{a}/b={c}", resolver.resolve(AddressTemplate.of("{a}/b={c}")).template);
+
+        resolver = new WildcardResolver(RTL, "b");
+        assertEquals("/a=*/c=b", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
+
+        resolver = new WildcardResolver(RTL, "b", "d");
+        assertEquals("/a=d/c=b", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
+
+        resolver = new WildcardResolver(RTL, "b", "d", "e");
+        assertEquals("/a=d/c=b", resolver.resolve(AddressTemplate.of("a=*/c=*")).template);
+
+        resolver = new WildcardResolver(RTL, "b", "d", "e");
         assertEquals("/a=b/c={d}", resolver.resolve(AddressTemplate.of("a=*/c={d}")).template);
     }
 }

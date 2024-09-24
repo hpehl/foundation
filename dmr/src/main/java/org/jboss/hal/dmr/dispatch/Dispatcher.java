@@ -86,7 +86,9 @@ public class Dispatcher {
                     return null;
                 })
                 .catch_(error -> {
-                    errorHandler.onError(operations, String.valueOf(error));
+                    if (errorHandler != null) {
+                        errorHandler.onError(operations, String.valueOf(error));
+                    }
                     return null;
                 });
     }
@@ -108,21 +110,27 @@ public class Dispatcher {
                     return null;
                 })
                 .catch_(error -> {
-                    errorHandler.onError(operation, String.valueOf(error));
+                    if (errorHandler != null) {
+                        errorHandler.onError(operation, String.valueOf(error));
+                    }
                     return null;
                 });
     }
 
     public Promise<ModelNode> execute(Operation operation) {
-        return dmr(operation).then(payload -> Promise.resolve(operationResult(payload)));
+        return execute(operation, true);
+    }
+
+    public Promise<ModelNode> execute(Operation operation, boolean logError) {
+        return dmr(operation, logError).then(payload -> Promise.resolve(operationResult(payload)));
     }
 
     // ------------------------------------------------------ dmr
 
     /**
-     * Executes the operation and upon successful result, calls the success function with the response results, but doesn't
-     * retrieve the "result" payload as the other execute methods does. You should use this method if the response node you want
-     * is not in the "result" attribute.
+     * Executes the operation and upon a successful result, returns the response result but doesn't retrieve the "result"
+     * payload as the other execute methods does. You should use this method if the response node you want is not in the
+     * "result" attribute.
      */
     public void dmr(Operation operation, Consumer<ModelNode> success, DispatcherErrorHandler errorHandler) {
         dmr(operation)
@@ -131,17 +139,35 @@ public class Dispatcher {
                     return null;
                 })
                 .catch_(error -> {
-                    errorHandler.onError(operation, String.valueOf(error));
+                    if (errorHandler != null) {
+                        errorHandler.onError(operation, String.valueOf(error));
+                    }
                     return null;
                 });
     }
 
     /**
-     * Executes the operation and upon successful result, returns the response results, but doesn't retrieve the "result"
+     * Executes the operation and upon a successful result, returns the response result but doesn't retrieve the "result"
      * payload as the other execute methods does. You should use this method if the response node you want is not in the
      * "result" attribute.
+     *
+     * @param operation the {@link Operation} to be executed
+     * @return a {@link Promise} of {@link ModelNode} - the result of the operation
      */
     public Promise<ModelNode> dmr(Operation operation) {
+        return dmr(operation, true);
+    }
+
+    /**
+     * Executes the operation and upon a successful result, returns the response result but doesn't retrieve the "result"
+     * payload as the other execute methods does. You should use this method if the response node you want is not in the
+     * "result" attribute.
+     *
+     * @param operation the {@link Operation} to be executed
+     * @param logError  if true, logs any error that occurs during the operation execution
+     * @return a {@link Promise} of {@link ModelNode} - the result of the operation
+     */
+    public Promise<ModelNode> dmr(Operation operation, boolean logError) {
         RequestInit init = requestInit(POST, true);
         init.setBody(runAs(operation).toBase64String());
         Request request = new Request(endpoints.dmr(), init);
@@ -149,7 +175,12 @@ public class Dispatcher {
         return fetch(request)
                 .then(processResponse())
                 .then(processText(operation, new OperationResponseProcessor(), true))
-                .catch_(rejectWithError());
+                .catch_(error -> {
+                    if (logError) {
+                        defaultErrorHandler.onError(operation, String.valueOf(error));
+                    }
+                    return Promise.reject(error);
+                });
     }
 
     // ------------------------------------------------------ promise handlers
@@ -193,7 +224,7 @@ public class Dispatcher {
 
     CatchOnRejectedCallbackFn<ModelNode> rejectWithError() {
         return error -> {
-            logger.error("Dispatcher error: {}", error);
+            logger.error("Dispatcher error: %s", error);
             return Promise.reject(error);
         };
     }

@@ -380,6 +380,7 @@ public interface ModelDescriptionConstants {
     String GENERATE_SECRET_KEY = "generate-secret-key";
     String GET_CONNECTORS_AS_JSON = "get-connectors-as-json";
     String GET_METADATA = "get-metadata";
+    String GET_PROVIDER_POINTS = "get-provider-points";
     String GET_ROLES = "get-roles";
     String GET_SESSION_CREATION_TIME = "get-session-creation-time";
     String GET_SESSION_LAST_ACCESSED_TIME = "get-session-last-accessed-time";

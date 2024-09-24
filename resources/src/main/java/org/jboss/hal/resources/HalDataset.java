@@ -13,20 +13,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.resources;
 
-import java.util.function.Function;
+public interface HalDataset {
 
-import org.jboss.hal.meta.description.AttributeDescription;
-import org.patternfly.filter.FilterAttribute;
+    // ------------------------------------------------------ constants (a-z)
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
-
-public class AccessTypeFilterAttribute<T> extends FilterAttribute<T, AccessTypeValue> {
-
-    public static final String NAME = "access-type";
-
-    public AccessTypeFilterAttribute(Function<T, AttributeDescription> adf) {
-        super(NAME, (object, accessType) -> accessType.value.equals(adf.apply(object).find(ACCESS_TYPE).asString()));
-    }
+    String capabilityReference = "capabilityReference";
+    String capabilityValue = "capabilityValue";
 }

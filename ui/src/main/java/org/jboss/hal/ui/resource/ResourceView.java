@@ -29,9 +29,13 @@ import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.Property;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.description.AttributeDescriptions;
 import org.jboss.hal.resources.HalClasses;
+import org.jboss.hal.resources.HalDataset;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.modelbrowser.ModelBrowser;
+import org.patternfly.component.button.Button;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.label.Label;
@@ -47,6 +51,8 @@ import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
+import static elemental2.dom.DomGlobal.clearTimeout;
+import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.div;
@@ -55,7 +61,9 @@ import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.Elements.wrapHtmlContainer;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.CAPABILITY_REFERENCE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
@@ -89,7 +97,10 @@ import static org.patternfly.component.list.ListItem.listItem;
 import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
+import static org.patternfly.core.Attributes.role;
 import static org.patternfly.core.ObservableValue.ov;
+import static org.patternfly.core.Roles.button;
+import static org.patternfly.core.Timeouts.LOADING_TIMEOUT;
 import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
@@ -102,6 +113,11 @@ import static org.patternfly.style.Breakpoint.md;
 import static org.patternfly.style.Breakpoint.sm;
 import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
+import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Classes.descriptionList;
+import static org.patternfly.style.Classes.helpText;
+import static org.patternfly.style.Classes.modifier;
+import static org.patternfly.style.Classes.text;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
 import static org.patternfly.style.Variable.globalVar;
@@ -199,8 +215,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 visible.set(resourceAttributes.size());
                 total.set(resourceAttributes.size());
                 for (ResourceAttribute ra : resourceAttributes) {
-                    String label = labelBuilder.label(ra.name);
-                    DescriptionListTerm term = label(ra, label);
+                    DescriptionListTerm term = label(ra);
                     Tuple<HTMLElement, UpdateValueFn> tuple = value(ra);
                     dl.addItem(descriptionListGroup(Id.build(ra.name, "group"))
                             .store(RESOURCE_ATTRIBUTE_KEY, ra)
@@ -208,6 +223,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                             .addDescription(descriptionListDescription()
                                     .add(tuple.key)));
                     updateValueFunctions.put(ra.name, tuple.value);
+                    tuple.value.update(ra.value);
                 }
                 setVisible(toolbar, true);
                 viewContainer.append(dl.element());
@@ -303,12 +319,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                 ModelNode value = property.getValue();
                 AttributeDescription description = metadata.resourceDescription().attributes().get(name);
                 if (description.simpleValueType()) {
-                    List<Property> nestedTypes = description.get(VALUE_TYPE).asPropertyList();
-                    for (Property nestedType : nestedTypes) {
-                        String nestedName = name + "." + nestedType.getName();
-                        ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedName);
-                        AttributeDescription nestedDescription = new AttributeDescription(nestedType);
-                        resourceAttributes.add(new ResourceAttribute(nestedName, nestedValue, nestedDescription));
+                    AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
+                    for (AttributeDescription nestedDescription : nestedDescriptions) {
+                        ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.name());
+                        resourceAttributes.add(new ResourceAttribute(nestedDescription.name(), nestedValue, nestedDescription));
                     }
                 } else {
                     resourceAttributes.add(new ResourceAttribute(name, value, description));
@@ -329,30 +343,80 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
         return resourceAttributes;
     }
 
-    private DescriptionListTerm label(ResourceAttribute ra, String label) {
-        DescriptionListTerm term = descriptionListTerm(label);
+    private DescriptionListTerm label(ResourceAttribute ra) {
+        DescriptionListTerm term;
         if (ra.description != null) {
+            if (ra.description.nested()) {
+                // <unstable>
+                // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
+                // By default, DescriptionListTerm supports only one text element. But in this case we
+                // want to have one for the parent and one for the nested attribute description.
+                // So we set up the internals of DescriptionListTerm manually.
+                AttributeDescription parentDescription = ra.description.parent();
+                AttributeDescription nestedDescription = ra.description;
+                String parentLabel = labelBuilder.label(parentDescription.name());
+                String nestedLabel = labelBuilder.label(ra.name);
+                term = descriptionListTerm(parentLabel)
+                        .help(popover()
+                                .css(util("min-width"))
+                                .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
+                                .addHeader(parentLabel)
+                                .addBody(popoverBody()
+                                        .add(attributeDescription(parentDescription))));
+                HTMLElement nestedTextElement = span()
+                        .css(component(descriptionList, text), modifier(helpText))
+                        .attr(role, button)
+                        .attr("type", "button")
+                        .apply(element -> element.tabIndex = 0)
+                        .textContent(nestedLabel)
+                        .element();
+                popover()
+                        .css(util("min-width"))
+                        .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
+                        .addHeader(nestedLabel)
+                        .addBody(popoverBody()
+                                .add(attributeDescription(nestedDescription)))
+                        .trigger(nestedTextElement)
+                        .appendToBody();
+                wrapHtmlContainer(term.element())
+                        .style("flex-wrap", "wrap")
+                        .style("gap", globalVar("spacer", "xs").asVar())
+                        .add("/")
+                        .add(nestedTextElement);
+                // </unstable>
+
+            } else {
+                String label = labelBuilder.label(ra.name);
+                term = descriptionListTerm(label);
+                term.help(popover()
+                        .css(util("min-width"))
+                        .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
+                        .addHeader(label)
+                        .addBody(popoverBody()
+                                .add(attributeDescription(ra.description))));
+            }
+
+            // only the top level attribute is stability-labeled
             if (uic.environment().highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
-                // Kind of a hack: Because DescriptionListTerm implements ElementDelegate
-                // and delegates to the internal text element, we must use
-                // term.element.appendChild() instead of term.add() to add the
-                // stability label after the text element instead of into the text element.
-                // Then we must reset the font weight to normal (DescriptionListTerm uses bold)
-                term.style("align-items", "center");
+                // <unstable>
+                // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
+                // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
+                // That's why we must use term.element.appendChild() instead of term.add() to add the
+                // stability label after the text element instead of into the text element. Then we must
+                // reset the font weight to normal (DescriptionListTerm uses bold)
+                term.element().style.setProperty("align-items", "center");
                 term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
                         .style("align-self", "baseline")
                         .css(util("ml-sm"), util("font-weight-normal"))
                         .element());
+                // </unstable>
             }
             if (ra.description.deprecation().isDefined()) {
                 term.delegate().classList.add(halModifier(deprecated));
             }
-            term.help(popover()
-                    .css(util("min-width"))
-                    .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
-                    .addHeader(label)
-                    .addBody(popoverBody()
-                            .add(attributeDescription(ra.description))));
+
+        } else {
+            term = descriptionListTerm(labelBuilder.label(ra.name));
         }
         return term;
     }
@@ -410,8 +474,27 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                         .element();
                                 fn = value -> label.text(value.asString());
                             } else {
-                                element = span().element();
-                                fn = value -> element.textContent = value.asString();
+                                if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
+                                    String capability = ra.description.get(CAPABILITY_REFERENCE).asString();
+                                    Button button = button()
+                                            .link()
+                                            .inline()
+                                            .progress(false, "Search for capability")
+                                            .data(HalDataset.capabilityReference, capability)
+                                            .data(HalDataset.capabilityValue, "")
+                                            .onClick((__, btn) -> findCapability(btn));
+                                    element = span()
+                                            .add(tooltip(button.element(), "Follow capability reference " + capability))
+                                            .add(button)
+                                            .element();
+                                    fn = value -> {
+                                        button.data(HalDataset.capabilityValue, value.asString());
+                                        button.text(value.asString());
+                                    };
+                                } else {
+                                    element = span().element();
+                                    fn = value -> element.textContent = value.asString();
+                                }
                             }
                         } else if (type == LIST) {
                             ModelType valueType = ra.description.has(VALUE_TYPE) &&
@@ -453,9 +536,30 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
             element = span().css(halComponent(resourceView, undefined)).element();
             fn = value -> element.textContent = value.asString();
         }
-
-        fn.update(ra.value);
         return tuple(element, fn);
+    }
+
+    private void findCapability(Button button) {
+        String capability = button.element().dataset.get(HalDataset.capabilityReference);
+        String value = button.element().dataset.get(HalDataset.capabilityValue);
+        if (capability != null && !capability.isEmpty() && value != null && !value.isEmpty()) {
+            double handle = setTimeout(__ -> button.startProgress(), LOADING_TIMEOUT);
+            uic.capabilityRegistry().findReference(capability, value)
+                    .then(template -> {
+                        clearTimeout(handle);
+                        button.stopProgress();
+                        if (template != null) {
+                            element().dispatchEvent(ModelBrowser.selectEvent(template));
+                        } else {
+                            // TODO Show an alert!
+                            logger.error("Unable to find capability %s for value %s", capability, value);
+                        }
+                        return null;
+                    });
+        } else {
+            logger.error("Unable to find capability. Dataset properties for capability and/or value not found on %s",
+                    button.element());
+        }
     }
 
     // ------------------------------------------------------ internal / filter
