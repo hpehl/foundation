@@ -51,7 +51,6 @@ import org.patternfly.style.Variables;
 import elemental2.dom.HTMLElement;
 
 import static elemental2.dom.DomGlobal.clearTimeout;
-import static elemental2.dom.DomGlobal.console;
 import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
@@ -396,10 +395,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                                 .add(attributeDescription(ra.description))));
 
                 // only the top level attribute is stability-labeled
-                if (ra.name.equals("authentication-request-format")) {
-                    console.log("### attribute stability: %s", metadata.resourceDescription().stability().name());
-                    console.log("### resource  stability: %s", ra.description.stability().name());
-                }
                 if (uic.environment()
                         .highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
                     // <unstable>
