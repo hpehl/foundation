@@ -23,7 +23,6 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
-import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
@@ -33,7 +32,6 @@ import static org.jboss.hal.dmr.ModelType.OBJECT;
 public class AttributeDescription extends NamedNode implements Description {
 
     private final AttributeDescription parent;
-    private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
 
     public AttributeDescription(Property property) {
         super(property);
@@ -53,6 +51,11 @@ public class AttributeDescription extends NamedNode implements Description {
     AttributeDescription(AttributeDescription parent, Property property) {
         super(property);
         this.parent = parent;
+    }
+
+    @Override
+    public ModelNode modelNode() {
+        return asModelNode();
     }
 
     public String fullyQualifiedName() {
@@ -84,17 +87,6 @@ public class AttributeDescription extends NamedNode implements Description {
             return modelNode;
         }
         return get(name);
-    }
-
-    @Override
-    public ModelNode modelNode() {
-        return asModelNode();
-    }
-
-    @Override
-    // TODO Remove pseudo stability code
-    public Stability stability() {
-        return stability;
     }
 
     public boolean nested() {

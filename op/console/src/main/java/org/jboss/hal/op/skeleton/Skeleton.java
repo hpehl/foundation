@@ -77,6 +77,7 @@ public class Skeleton implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ instance
 
+    private static final String STABILITY_MARKER = "hal-stability-marker";
     private final Page page;
     private final PageMain pageMain;
     private final ToolbarItem toolbarItem;
@@ -98,6 +99,7 @@ public class Skeleton implements IsElement<HTMLElement> {
                 .add(backToTop()
                         .scrollableSelector(By.id(Ids.MAIN_ID)));
         if (environment != null && environment.highlightStability()) {
+            document.documentElement.classList.add(STABILITY_MARKER);
             root = flex()
                     .direction(column)
                     .flexWrap(noWrap)
@@ -141,6 +143,7 @@ public class Skeleton implements IsElement<HTMLElement> {
             document.body.prepend(page.element());
             failSafeRemoveFromParent(root);
             root = page.element();
+            document.documentElement.classList.remove(STABILITY_MARKER);
         }
     }
 }

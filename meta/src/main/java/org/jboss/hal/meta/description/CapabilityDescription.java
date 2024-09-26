@@ -19,16 +19,13 @@ import java.util.List;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
-import org.jboss.hal.env.Stability;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DYNAMIC;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DYNAMIC_ELEMENTS;
 
-public class CapabilityDescription extends NamedNode {
-
-    private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
+public class CapabilityDescription extends NamedNode implements Description {
 
     public CapabilityDescription(ModelNode modelNode) {
         super(modelNode);
@@ -44,8 +41,8 @@ public class CapabilityDescription extends NamedNode {
                 : emptyList();
     }
 
-    public Stability stability() {
-        // TODO replace with: return ModelNodeHelper.asEnumValue(this, STABILITY, Stability::valueOf, Stability.DEFAULT);
-        return stability;
+    @Override
+    public ModelNode modelNode() {
+        return asModelNode();
     }
 }

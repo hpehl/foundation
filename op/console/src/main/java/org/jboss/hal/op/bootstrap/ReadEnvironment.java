@@ -106,7 +106,10 @@ class ReadEnvironment implements Task<FlowContext> {
                     Version managementModelVersion = ModelNodeHelper.parseVersion(root);
 
                     environment.update(name, organisation, productName, productVersion, managementModelVersion, operationMode);
-                    logger.info("Environment: %s", environment);
+                    logger.info(
+                            "Name: %s, organisation: %s, product-name: %s, product-info: %s, management-model-version: %s, operation-mode: %s",
+                            environment.instanceName(), environment.instanceOrganization(), environment.productName(),
+                            environment.productVersion(), environment.managementVersion(), environment.operationMode());
                     if (operationMode == OperationMode.STANDALONE) {
                         Server.standalone().addServerAttributes(root);
                     }

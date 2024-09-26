@@ -51,6 +51,7 @@ import org.patternfly.style.Variables;
 import elemental2.dom.HTMLElement;
 
 import static elemental2.dom.DomGlobal.clearTimeout;
+import static elemental2.dom.DomGlobal.console;
 import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
@@ -384,7 +385,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         .add("/")
                         .add(nestedTextElement);
                 // </unstable>
-
             } else {
                 String label = labelBuilder.label(ra.name);
                 term = descriptionListTerm(label);
@@ -394,27 +394,31 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         .addHeader(label)
                         .addBody(popoverBody()
                                 .add(attributeDescription(ra.description))));
-            }
 
-            // only the top level attribute is stability-labeled
-            if (uic.environment().highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
-                // <unstable>
-                // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
-                // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
-                // That's why we must use term.element.appendChild() instead of term.add() to add the
-                // stability label after the text element instead of into the text element. Then we must
-                // reset the font weight to normal (DescriptionListTerm uses bold)
-                term.element().style.setProperty("align-items", "center");
-                term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
-                        .style("align-self", "baseline")
-                        .css(util("ml-sm"), util("font-weight-normal"))
-                        .element());
-                // </unstable>
+                // only the top level attribute is stability-labeled
+                if (ra.name.equals("authentication-request-format")) {
+                    console.log("### attribute stability: %s", metadata.resourceDescription().stability().name());
+                    console.log("### resource  stability: %s", ra.description.stability().name());
+                }
+                if (uic.environment()
+                        .highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
+                    // <unstable>
+                    // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
+                    // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
+                    // That's why we must use term.element.appendChild() instead of term.add() to add the
+                    // stability label after the text element instead of into the text element. Then we must
+                    // reset the font weight to normal (DescriptionListTerm uses bold)
+                    term.element().style.setProperty("align-items", "center");
+                    term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
+                            .style("align-self", "baseline")
+                            .css(util("ml-sm"), util("font-weight-normal"))
+                            .element());
+                    // </unstable>
+                }
             }
             if (ra.description.deprecation().isDefined()) {
                 term.delegate().classList.add(halModifier(deprecated));
             }
-
         } else {
             term = descriptionListTerm(labelBuilder.label(ra.name));
         }

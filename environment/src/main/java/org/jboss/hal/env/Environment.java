@@ -16,7 +16,6 @@
 package org.jboss.hal.env;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,7 +30,7 @@ import static org.jboss.hal.env.Version.EMPTY_VERSION;
 @ApplicationScoped
 public class Environment {
 
-    private static final Stability LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED = COMMUNITY;
+    private static final Stability LOWEST_LEVEL_WITHOUT_HIGHLIGH = COMMUNITY;
 
     private final String applicationId;
     private final String applicationName;
@@ -84,28 +83,6 @@ public class Environment {
         this.base = base;
         this.buildType = buildType;
         this.builtInStability = builtInStability;
-    }
-
-    @Override
-    public String toString() {
-        return "Environment(" +
-                "applicationId='" + applicationId + '\'' +
-                ", applicationName='" + applicationName + '\'' +
-                ", applicationVersion=" + applicationVersion +
-                ", base='" + base + '\'' +
-                ", buildType=" + buildType +
-                ", instanceName='" + instanceName + '\'' +
-                ", instanceOrganization='" + instanceOrganization + '\'' +
-                ", productName='" + productName + '\'' +
-                ", productVersion=" + productVersion +
-                ", managementVersion=" + managementVersion +
-                ", operationMode=" + operationMode +
-                ", stability=" + serverStability +
-                ", permissibleStabilityLevels=" + Arrays.toString(permissibleStabilityLevels) +
-                ", accessControlProvider=" + accessControlProvider +
-                ", sso=" + sso +
-                ", domainController=" + domainController +
-                ')';
     }
 
     // ------------------------------------------------------ update
@@ -206,21 +183,22 @@ public class Environment {
     }
 
     /**
-     * Determines if the stability level of the server is greater than the built-in stability level.
+     * Determines if the stability level of the server is greater than or equal to the built-in stability level.
      * <p>
      * The built-in stability level is the stability level the console was built with. It is passed at built time using the
      * system property {@code environment.stability}.
      *
-     * @return true if the stability level of the server is greater than the built-in stability level, false otherwise.
+     * @return true if the stability level of the server is greater than or equal to the built-in stability level, false
+     * otherwise.
      */
     public boolean highlightStability() {
         return checkStability(serverStability, builtInStability);
     }
 
     /**
-     * Determines if the given stability level is greater than the stability level of the server. If one or more dependent
-     * stability levels are given, then this method returns true only if the dependent stability is greater than all previous
-     * levels.
+     * Determines if the given stability level is greater than or equal tothe stability level of the server. If one or more
+     * dependent stability levels are given, then this method returns true only if the dependent stability is greater than all
+     * previous levels.
      * <p>
      * Use this method to check resources, attributes, operations and operation parameters, e.g.:
      * <ul>
@@ -273,7 +251,7 @@ public class Environment {
 
     private static boolean checkStability(Stability stability, List<Stability> compareToAll) {
         boolean check = stability != null &&
-                stability.order > LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED.order;
+                stability.order > LOWEST_LEVEL_WITHOUT_HIGHLIGH.order;
         for (Iterator<Stability> iterator = compareToAll.iterator(); iterator.hasNext() && check; ) {
             Stability compareTo = iterator.next();
             check = checkStability(stability, compareTo);
@@ -283,7 +261,7 @@ public class Environment {
 
     private static boolean checkStability(Stability stability, Stability compareTo) {
         return stability != null &&
-                stability.order > LOWEST_LEVEL_THAT_SHOULD_BE_HIGHLIGHTED.order &&
-                stability.order > compareTo.order;
+                stability.order > LOWEST_LEVEL_WITHOUT_HIGHLIGH.order &&
+                stability.order >= compareTo.order;
     }
 }

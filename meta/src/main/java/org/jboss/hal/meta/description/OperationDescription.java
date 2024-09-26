@@ -21,7 +21,6 @@ import java.util.Set;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
-import org.jboss.hal.env.Stability;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_ADD_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LIST_CLEAR_OPERATION;
@@ -78,8 +77,6 @@ public class OperationDescription extends NamedNode implements Description {
         GLOBAL_OPERATIONS.add(WRITE_ATTRIBUTE_OPERATION);
     }
 
-    private final Stability stability = Stability.random(); // TODO Remove pseudo stability code
-
     public OperationDescription() {
         super();
     }
@@ -107,11 +104,5 @@ public class OperationDescription extends NamedNode implements Description {
         } else {
             return new AttributeDescription();
         }
-    }
-
-    @Override
-    // TODO Remove pseudo stability code
-    public Stability stability() {
-        return stability;
     }
 }
