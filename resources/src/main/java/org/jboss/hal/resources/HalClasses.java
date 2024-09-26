@@ -23,6 +23,7 @@ public interface HalClasses {
     String detail = "detail";
     String content = "content";
     String filtered = "filtered";
+    String goto_ = "goto";
     String modelBrowser = "model-browser";
     String rbacHidden = "rbac-hidden";
     String resourceView = "resource-view";

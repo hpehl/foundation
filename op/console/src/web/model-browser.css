@@ -14,14 +14,23 @@
  *  limitations under the License.
  */
 .hal-c-model-browser__tree, .hal-c-model-browser__detail {
-    /* TODO Replace hard-coded value of 4.375rem (masthead height) */
+    /* TODO Replace hard-coded values (masthead) */
     height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     max-height: calc(100vh - 4.375rem - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     overflow: scroll;
 }
 
 .hal-c-model-browser__tree {
-    --pf-v5-c-tree-view--PaddingTop: 0;
+    --pf-v5-c-page--section--m-sticky-top--BoxShadow: none;
+
+    .pf-v5-c-tree-view {
+        --pf-v5-c-tree-view--PaddingTop: 0;
+    }
+
+    .pf-v5-c-tree-view__content {
+        /* TODO Replace hard-coded value (toolbar height) */
+        scroll-margin-top: 68px;
+    }
 }
 
 .hal-c-model-browser__detail {
@@ -30,6 +39,13 @@
 
 .hal-c-model-browser__detail-content {
     --pf-v5-c-page__main-section--PaddingTop: 0;
+}
+
+.hal-c-model-browser__goto {
+    background-color: var(--pf-v5-global--BackgroundColor--100);
+    box-shadow: var(--pf-v5-global--BoxShadow--lg);
+    min-width: 30rem;
+    padding: var(--pf-v5-global--spacer--sm);
 }
 
 .pf-v5-c-tree-view__list-item.pf-m-disabled {

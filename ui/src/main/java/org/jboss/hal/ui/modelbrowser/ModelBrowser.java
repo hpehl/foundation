@@ -46,19 +46,23 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     /**
      * Creates and returns a custom event to select a resource for the provided address template in the model browser. The event
      * can only be used by elements which are part of the model browser DOM.
+     * <p>
+     * The model browser listens for these events and calls {@link #select(AddressTemplate)}. If the template is empty (equals
+     * {@link AddressTemplate#root()}), {@link #home()} is called.
      *
+     * @param source   the source element used to dispatch the event.
      * @param template the address template used to create the event's detail.
-     * @return a custom event initialized with the provided address template
      * @see <a
      * href="https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events">https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events</a>
      */
-    public static CustomEvent<String> selectEvent(AddressTemplate template) {
+    public static void dispatchSelectEvent(HTMLElement source, AddressTemplate template) {
         //noinspection unchecked
         CustomEventInit<String> init = CustomEventInit.create();
         init.setBubbles(true);
         init.setCancelable(true);
         init.setDetail(template == null ? "" : template.toString());
-        return new CustomEvent<>(SELECT_TEMPLATE_EVENT, init);
+        CustomEvent<String> event = new CustomEvent<>(SELECT_TEMPLATE_EVENT, init);
+        source.dispatchEvent(event);
     }
 
     // ------------------------------------------------------ instance
@@ -71,7 +75,7 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private final ModelBrowserTree tree;
     private final ModelBrowserDetail detail;
-    private AddressTemplate rootTemplate;
+    private ModelBrowserNode rootMbn;
 
     public ModelBrowser(UIContext uic) {
         this.uic = uic;
@@ -89,7 +93,11 @@ public class ModelBrowser implements IsElement<HTMLElement> {
             //noinspection unchecked
             CustomEvent<String> customEvent = (CustomEvent<String>) evt;
             AddressTemplate template = AddressTemplate.of(customEvent.detail);
-            select(template);
+            if (template.isEmpty()) {
+                home();
+            } else {
+                select(template);
+            }
         });
     }
 
@@ -101,7 +109,6 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     // ------------------------------------------------------ api
 
     public void show(AddressTemplate template) {
-        this.rootTemplate = template;
         if (template.fullyQualified()) {
             uic.metadataRepository().lookup(template, metadata -> {
                 ResourceAddress address = template.resolve(uic.statementContext());
@@ -110,9 +117,9 @@ public class ModelBrowser implements IsElement<HTMLElement> {
                         .build();
                 uic.dispatcher().execute(operation, result -> {
                     String name = template.isEmpty() ? "Management Model" : template.last().value;
-                    ModelBrowserNode mbn = new ModelBrowserNode(template, name, RESOURCE);
-                    tree.show(parseChildren(mbn, result, true));
-                    detail.show(mbn);
+                    rootMbn = new ModelBrowserNode(template, name, RESOURCE);
+                    tree.show(parseChildren(rootMbn, result, true));
+                    detail.show(rootMbn);
                 });
             });
         } else {
@@ -120,12 +127,20 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         }
     }
 
+    public void home() {
+        if (rootMbn != null) {
+            tree.unselect();
+            detail.show(rootMbn);
+        }
+    }
+
     public void select(AddressTemplate template) {
-        if (rootTemplate != null) {
-            if (template.template.startsWith(rootTemplate.template)) {
+        if (rootMbn != null) {
+            if (template.template.startsWith(rootMbn.template.template)) {
                 tree.select(template);
             } else {
-                logger.error("Unable to select %s: %s is not a sub-template of %s", template, template, rootTemplate);
+                logger.error("Unable to select %s: %s is not a sub-template of %s",
+                        template, template, rootMbn.template);
             }
         } else {
             logger.error("Unable to select %s: Root template is null!", template);

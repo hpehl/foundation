@@ -40,11 +40,12 @@ import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowser.dispatchSelectEvent;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.breadcrumb.Breadcrumb.breadcrumb;
 import static org.patternfly.component.breadcrumb.BreadcrumbItem.breadcrumbItem;
 import static org.patternfly.component.page.PageMainBreadcrumb.pageMainBreadcrumb;
@@ -116,7 +117,12 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
         if (mbn.template.isEmpty()) {
             breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/"));
         } else {
-            breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/", "/management-model"));
+            breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/")
+                    .onClick((event, component) -> {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        dispatchSelectEvent(element(), AddressTemplate.root());
+                    }));
             for (Segment segment : mbn.template) {
                 current = current.append(segment.key, segment.value);
                 boolean last = current.last().equals(mbn.template.last());

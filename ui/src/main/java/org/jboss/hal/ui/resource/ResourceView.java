@@ -34,7 +34,6 @@ import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.HalDataset;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.modelbrowser.ModelBrowser;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.emptystate.EmptyState;
@@ -79,6 +78,7 @@ import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowser.dispatchSelectEvent;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
@@ -549,7 +549,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView> {
                         clearTimeout(handle);
                         button.stopProgress();
                         if (template != null) {
-                            element().dispatchEvent(ModelBrowser.selectEvent(template));
+                            dispatchSelectEvent(element(), template);
                         } else {
                             // TODO Show an alert!
                             logger.error("Unable to find capability %s for value %s", capability, value);
