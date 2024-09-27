@@ -19,6 +19,7 @@ public interface HalClasses {
 
     // ------------------------------------------------------ constants (a-z)
 
+    String copy = "copy";
     String deprecated = "deprecated";
     String detail = "detail";
     String content = "content";

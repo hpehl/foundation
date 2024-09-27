@@ -23,6 +23,6 @@ public class GlobalOperationsFilterAttribute<T> extends FilterAttribute<Operatio
     public static final String NAME = "global-operations";
 
     public GlobalOperationsFilterAttribute() {
-        super(NAME, (operation, global) -> global || !operation.global());
+        super(NAME, (operation, value) -> value || !operation.global());
     }
 }

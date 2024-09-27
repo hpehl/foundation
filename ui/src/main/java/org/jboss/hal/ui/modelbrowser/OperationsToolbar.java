@@ -65,6 +65,7 @@ class OperationsToolbar implements IsElement<HTMLElement> {
 
     private OperationsToolbar(UIContext uic, Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
+        boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         toolbar = toolbar()
                 .addContent(toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
@@ -74,6 +75,7 @@ class OperationsToolbar implements IsElement<HTMLElement> {
                         .addItem(toolbarItem().style("align-self", "center")
                                 .add(globalOperationsSwitch = switch_(Id.unique("global-operations"), "global-operations")
                                         .label("Show global operations", "Omit global operations")
+                                        .value(showGlobalOperations, false)
                                         .onChange((e, c, v) -> {
                                             uic.settings().set(Settings.Key.SHOW_GLOBAL_OPERATIONS, v);
                                             filter.set(GlobalOperationsFilterAttribute.NAME, v, ORIGIN);
@@ -98,8 +100,8 @@ class OperationsToolbar implements IsElement<HTMLElement> {
         filter.onChange((f, origin) -> {
             if (!origin.equals(ORIGIN)) {
                 if (f.defined(GlobalOperationsFilterAttribute.NAME)) {
-                    boolean showGlobalOperations = f.<Boolean>get(GlobalOperationsFilterAttribute.NAME).value();
-                    globalOperationsSwitch.value(showGlobalOperations, false);
+                    boolean value = f.<Boolean>get(GlobalOperationsFilterAttribute.NAME).value();
+                    globalOperationsSwitch.value(value, false);
                 }
             }
         });

@@ -91,8 +91,9 @@ class OperationsTable implements IsElement<HTMLElement> {
     private EmptyState noAttributes;
 
     OperationsTable(UIContext uic, Metadata metadata) {
+        boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         this.uic = uic;
-        this.filter = new OperationsFilter().onChange(this::onFilterChanged);
+        this.filter = new OperationsFilter(showGlobalOperations).onChange(this::onFilterChanged);
         this.visible = ov(metadata.resourceDescription().operations().size());
         this.total = ov(metadata.resourceDescription().operations().size());
         this.root = div()
@@ -130,15 +131,12 @@ class OperationsTable implements IsElement<HTMLElement> {
                                                     .run(td -> {
                                                         if (executable) {
                                                             td.add(span().css(component(Classes.table, text))
-                                                                    // .add(button().plain().icon(play())
                                                                     .add(button("Execute").secondary()
                                                                             .onClick((e, c) -> execute(operation))));
                                                         }
                                                     }));
                                 })))
                 .element();
-
-        boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         filter.set(GlobalOperationsFilterAttribute.NAME, showGlobalOperations);
     }
 

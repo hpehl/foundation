@@ -27,12 +27,22 @@ import org.patternfly.filter.FilterOperator;
 
 public class OperationsFilter extends Filter<OperationDescription> {
 
-    public OperationsFilter() {
+    private final boolean showGlobalOperations;
+
+    public OperationsFilter(boolean showGlobalOperations) {
         super(FilterOperator.AND);
+        this.showGlobalOperations = showGlobalOperations;
         add(new NameFilterAttribute<>(NamedNode::name));
         add(new ParametersFilterAttribute<>());
         add(new ReturnValueFilterAttribute<>());
         add(new DeprecatedFilterAttribute<>(od -> od));
         add(new GlobalOperationsFilterAttribute<>());
+    }
+
+    @Override
+    public void resetAll(String origin) {
+        super.resetAll(origin);
+        // respect user setting!
+        set(GlobalOperationsFilterAttribute.NAME, showGlobalOperations);
     }
 }

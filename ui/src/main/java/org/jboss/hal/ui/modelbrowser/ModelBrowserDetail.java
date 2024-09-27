@@ -15,7 +15,9 @@
  */
 package org.jboss.hal.ui.modelbrowser;
 
+import org.jboss.elemento.By;
 import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.AddressTemplate;
@@ -23,41 +25,52 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.Segment;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.breadcrumb.Breadcrumb;
+import org.patternfly.component.icon.Icon;
 import org.patternfly.component.page.PageMainBreadcrumb;
 import org.patternfly.component.page.PageMainSection;
 import org.patternfly.component.title.Title;
+import org.patternfly.component.tooltip.Tooltip;
 import org.patternfly.layout.flex.FlexItem;
 
 import elemental2.dom.HTMLElement;
 import elemental2.dom.HTMLParagraphElement;
 
+import static org.jboss.elemento.DomGlobal.navigator;
 import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.p;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
+import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.EventType.click;
 import static org.jboss.hal.resources.HalClasses.content;
+import static org.jboss.hal.resources.HalClasses.copy;
 import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowser.dispatchSelectEvent;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.breadcrumb.Breadcrumb.breadcrumb;
 import static org.patternfly.component.breadcrumb.BreadcrumbItem.breadcrumbItem;
+import static org.patternfly.component.icon.Icon.icon;
 import static org.patternfly.component.page.PageMainBreadcrumb.pageMainBreadcrumb;
 import static org.patternfly.component.page.PageMainGroup.pageMainGroup;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
+import static org.patternfly.component.tooltip.Tooltip.tooltip;
+import static org.patternfly.icon.IconSets.fas.copy;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
+import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Brightness.light;
 import static org.patternfly.style.Size._3xl;
+import static org.patternfly.style.Size.sm;
 import static org.patternfly.style.Sticky.top;
 
 class ModelBrowserDetail implements IsElement<HTMLElement> {
@@ -112,7 +125,6 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
     }
 
     private void fillBreadcrumb(ModelBrowserNode mbn) {
-        AddressTemplate current = AddressTemplate.root();
         Breadcrumb breadcrumb = breadcrumb();
         if (mbn.template.isEmpty()) {
             breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/"));
@@ -123,8 +135,10 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                         event.stopPropagation();
                         dispatchSelectEvent(element(), AddressTemplate.root());
                     }));
+            AddressTemplate current = AddressTemplate.root();
             for (Segment segment : mbn.template) {
                 current = current.append(segment.key, segment.value);
+                final AddressTemplate finalTemplate = current;
                 boolean last = current.last().equals(mbn.template.last());
                 breadcrumb.addItem(breadcrumbItem(uniqueId(current), segment.key + "=" + segment.value)
                         .active(last)
@@ -135,6 +149,8 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                                     event.stopPropagation();
                                     tree.select(breadcrumbItem.identifier());
                                 });
+                            } else {
+                                bci.add(copyToClipboard(finalTemplate));
                             }
                         }));
             }
@@ -170,5 +186,21 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
         removeChildrenFrom(header);
         removeChildrenFrom(description);
         removeChildrenFrom(pageMainSection);
+    }
+
+    private HTMLElement copyToClipboard(AddressTemplate template) {
+        String copyToClipboardId = Id.build(uniqueId(template), "copy");
+        String copyToClipboardText = "Copy address to clipboard";
+        Tooltip tooltip = tooltip(By.id(copyToClipboardId), copyToClipboardText)
+                .placement(auto)
+                .onClose((e, t) -> t.text(copyToClipboardText)); // restore text
+        Icon icon = icon(copy()).size(sm).id(copyToClipboardId).on(click, e -> {
+            navigator.clipboard.writeText(template.toString());
+            tooltip.text("Address copied");
+        });
+        return span().css(halComponent(modelBrowser, copy))
+                .add(icon)
+                .add(tooltip)
+                .element();
     }
 }

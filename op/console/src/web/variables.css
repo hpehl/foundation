@@ -1,4 +1,4 @@
-/*
+/**
  *  Copyright 2024 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import "@patternfly/patternfly/patternfly.css";
-import "@patternfly/patternfly/patternfly-addons.css";
-import "./variables.css"
-import "./model-browser.css"
-import "./resource-view.css"
-import "./stability.css"
-import "./ui.css"
+
+:root {
+    /* TODO Replace hard-coded values */
+    --hal-banner-Height: 29px;
+    --hal-masthead--Height: 4.375rem;
+}

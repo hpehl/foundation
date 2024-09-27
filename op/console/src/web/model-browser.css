@@ -14,13 +14,9 @@
  *  limitations under the License.
  */
 
-:root {
-    /* TODO Replace hard-coded values */
-    --hal-banner-Height: 29px;
-    --hal-masthead--Height: 4.375rem;
-}
-
 .hal-c-model-browser {
+    /* TODO Replace hard-coded value */
+    --hal-c-model-browser-toolbar--Height: 68px;
     --hal-c-model-browser-offset: var(--hal-masthead--Height);
 }
 
@@ -44,8 +40,7 @@
     }
 
     .pf-v5-c-tree-view__content {
-        /* TODO Replace hard-coded value (toolbar height) */
-        scroll-margin-top: 68px;
+        scroll-margin-top: var(--hal-c-model-browser-toolbar--Height);
     }
 }
 
@@ -57,10 +52,23 @@
     --pf-v5-c-page__main-section--PaddingTop: 0;
 }
 
+.hal-c-model-browser__copy {
+    align-self: center;
+    margin-left: var(--pf-v5-global--spacer--sm);
+
+    .pf-v5-c-icon__content {
+        --pf-v5-c-icon__content--Color: var(--pf-v5-global--Color--200);
+
+        &:hover {
+            --pf-v5-c-icon__content--Color: initial;
+        }
+    }
+}
+
 .hal-c-model-browser__goto {
     background-color: var(--pf-v5-global--BackgroundColor--100);
     box-shadow: var(--pf-v5-global--BoxShadow--lg);
-    min-width: 30rem;
+    min-width: 40ch;
     padding: var(--pf-v5-global--spacer--sm);
 }
 
