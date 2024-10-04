@@ -13,8 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.event;
+package org.jboss.hal.ui.modelbrowser;
 
-/** Marker interface for HAL event */
-public interface IsEvent {
+import org.jboss.hal.ui.filter.NameFilterAttribute;
+import org.patternfly.filter.Filter;
+import org.patternfly.filter.FilterOperator;
+
+public class ResourcesFilter extends Filter<ModelBrowserNode> {
+
+    public ResourcesFilter() {
+        super(FilterOperator.AND);
+        add(new NameFilterAttribute<>(mbn -> mbn.name));
+    }
 }

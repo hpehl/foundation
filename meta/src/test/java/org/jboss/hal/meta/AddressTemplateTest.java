@@ -115,12 +115,22 @@ class AddressTemplateTest {
     }
 
     @Test
-    void append() {
+    void appendString() {
         AddressTemplate template = AddressTemplate.of("a=b");
         assertEquals("/a=b/c=d", template.append("c=d").template);
         assertEquals("/a=b/c=d", template.append("/c=d").template);
         assertEquals("/a=b/{c}", template.append("{c}").template);
         assertEquals("/a=b/c={d}", template.append("c={d}").template);
+        assertEquals("/a=b/c=*", template.append("c=*").template);
+    }
+
+    @Test
+    void appendKeyValue() {
+        AddressTemplate template = AddressTemplate.of("a=b");
+        assertEquals("/a=b/c=d", template.append("c", "d").template);
+        assertEquals("/a=b/c=d", template.append("/c", "d").template);
+        assertEquals("/a=b/c={d}", template.append("c", "{d}").template);
+        assertEquals("/a=b/c=*", template.append("c", "*").template);
     }
 
     @Test

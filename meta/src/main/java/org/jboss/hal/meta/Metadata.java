@@ -16,37 +16,52 @@
 package org.jboss.hal.meta;
 
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.meta.security.SecurityContext;
 
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.RESOURCE_DESCRIPTION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.SECURITY_CONTEXT;
 
 public class Metadata extends ModelNode {
 
-    public static Metadata undefined() {
+    static Metadata undefined() {
         return new Metadata();
     }
 
-    public static Metadata metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
-        return new Metadata(resourceDescription, securityContext);
+    static Metadata metadata(String address, ResourceDescription resourceDescription,
+            SecurityContext securityContext) {
+        return new Metadata(address, resourceDescription, securityContext);
     }
 
+    private final String address;
     private final ResourceDescription resourceDescription;
     private final SecurityContext securityContext;
 
-    Metadata() {
+    private Metadata() {
         super();
+        this.address = "";
         this.resourceDescription = new ResourceDescription();
         this.securityContext = new SecurityContext();
     }
 
-    Metadata(ResourceDescription resourceDescription, SecurityContext securityContext) {
+    private Metadata(String address, ResourceDescription resourceDescription, SecurityContext securityContext) {
         super();
+        this.address = address;
         this.resourceDescription = resourceDescription;
         this.securityContext = securityContext;
+        get(ADDRESS).set(address);
         get(RESOURCE_DESCRIPTION).set(resourceDescription);
         get(SECURITY_CONTEXT).set(securityContext);
+    }
+
+    public String address() {
+        return address;
+    }
+
+    public ResourceAddress resourceAddress() {
+        return AddressTemplate.of(address).resolve();
     }
 
     public ResourceDescription resourceDescription() {

@@ -131,7 +131,7 @@ class OperationsTable implements IsElement<HTMLElement> {
                                                     .run(td -> {
                                                         if (executable) {
                                                             td.add(span().css(component(Classes.table, text))
-                                                                    .add(button("Execute").secondary()
+                                                                    .add(button("Execute").tertiary()
                                                                             .onClick((e, c) -> execute(operation))));
                                                         }
                                                     }));

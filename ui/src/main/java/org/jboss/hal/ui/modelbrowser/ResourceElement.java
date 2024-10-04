@@ -16,18 +16,11 @@
 package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.IsElement;
-import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.tabs.Tabs;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.hal.ui.resource.ResourceView.resourceView;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
@@ -35,29 +28,13 @@ import static org.patternfly.component.tabs.Tabs.tabs;
 
 class ResourceElement implements IsElement<HTMLElement> {
 
-    private final UIContext uic;
     private final HTMLElement root;
 
-    ResourceElement(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
-        this.uic = uic;
-        this.root = div().element();
-        Operation operation = new Operation.Builder(mbn.template.resolve(uic.statementContext()), READ_RESOURCE_OPERATION)
-                .param(ATTRIBUTES_ONLY, true)
-                .param(INCLUDE_RUNTIME, true)
-                .build();
-        uic.dispatcher().execute(operation, resource -> details(resource, metadata));
-    }
-
-    @Override
-    public HTMLElement element() {
-        return root;
-    }
-
-    private void details(ModelNode resource, Metadata metadata) {
-        Tabs tabs = tabs()
+    ResourceElement(UIContext uic, Metadata metadata) {
+        this.root = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
-                        .addContent(tabContent().add(resourceView(uic, metadata, resource))))
+                        .addContent(tabContent().add(resourceView(uic, metadata))))
                 .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tbs.addItem(tab("attributes", "Attributes")
@@ -68,7 +45,12 @@ class ResourceElement implements IsElement<HTMLElement> {
                         .addContent(tabContent().add(new OperationsTable(uic, metadata))))
                 .addItem(tab("capabilities", "Capabilities")
                         .addContent(tabContent().add(new CapabilitiesTable(uic, metadata))))
-                .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier());
-        root.append(tabs.element());
+                .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier())
+                .element();
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
     }
 }

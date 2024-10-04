@@ -19,31 +19,49 @@ import java.util.List;
 
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
+import org.patternfly.component.list.DataList;
 import org.patternfly.component.list.DataListCell;
+import org.patternfly.component.list.DataListItem;
+import org.patternfly.core.ObservableValue;
+import org.patternfly.filter.Filter;
 import org.patternfly.layout.flex.Flex;
 
 import elemental2.dom.HTMLElement;
+import elemental2.promise.Promise;
 
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.isAttached;
+import static org.jboss.elemento.Elements.removeChildrenFrom;
+import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.small;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
+import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
+import static org.jboss.hal.ui.modelbrowser.ResourcesToolbar.resourcesToolbar;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.list.DataList.dataList;
 import static org.patternfly.component.list.DataListAction.dataListAction;
 import static org.patternfly.component.list.DataListCell.dataListCell;
 import static org.patternfly.component.list.DataListItem.dataListItem;
+import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Direction.column;
@@ -54,63 +72,137 @@ import static org.patternfly.style.Size.sm;
 
 class ResourcesElement implements IsElement<HTMLElement> {
 
+    private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
+    private static final String MBN_KEY = "modelbrowser.mbn";
+
     private final UIContext uic;
     private final ModelBrowserTree tree;
     private final ModelBrowserNode parent;
     private final Metadata metadata;
+    private final ObservableValue<Integer> visible;
+    private final ObservableValue<Integer> total;
+    private final Filter<ModelBrowserNode> filter;
+    private final NoMatch<ModelBrowserNode> noMatch;
+    private final Operation operation;
+    private final ResourcesToolbar toolbar;
+    private final HTMLElement resourcesElement;
     private final HTMLElement root;
+    private DataList dataList;
 
     ResourcesElement(UIContext uic, ModelBrowserTree tree, ModelBrowserNode parent, Metadata metadata) {
         this.uic = uic;
         this.tree = tree;
         this.parent = parent;
         this.metadata = metadata;
-        this.root = div().element();
-
-        Operation operation = new Operation.Builder(parent.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
+        this.visible = ov(0);
+        this.total = ov(0);
+        this.filter = new ResourcesFilter().onChange(this::onFilterChanged);
+        this.noMatch = new NoMatch<>(filter);
+        this.operation = new Operation.Builder(parent.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
                 .param(CHILD_TYPE, parent.name)
                 .build();
-        uic.dispatcher().execute(operation, result -> {
-            List<ModelBrowserNode> children = parseChildren(parent, result, false);
-            if (children.isEmpty()) {
+        this.root = div()
+                .add(toolbar = resourcesToolbar(this, filter, visible, total))
+                .add(resourcesElement = div().element())
+                .element();
+
+        load();
+    }
+
+    private Promise<List<ModelBrowserNode>> load() {
+        setVisible(toolbar, false);
+        removeChildrenFrom(resourcesElement);
+        if (dataList != null) {
+            dataList.clear();
+        }
+        return uic.dispatcher().execute(operation).then(result -> {
+            List<ModelBrowserNode> allChildren = parseChildren(parent, result, true);
+            List<ModelBrowserNode> existingChildren = allChildren.stream().filter(child -> child.exists).collect(toList());
+            if (existingChildren.isEmpty()) {
                 empty();
+                return Promise.resolve(emptyList());
             } else {
-                children(children);
+                visible.set(existingChildren.size());
+                total.set(existingChildren.size());
+                toolbar.supportsAdd(supportsAdd(parent, allChildren));
+                children(existingChildren);
+                return Promise.resolve(existingChildren);
             }
         });
     }
 
+    private boolean supportsAdd(ModelBrowserNode parent, List<ModelBrowserNode> children) {
+        if (parent.type == ModelBrowserNode.Type.FOLDER) {
+            return true;
+        } else if (parent.type == ModelBrowserNode.Type.SINGLETON_FOLDER) {
+            for (ModelBrowserNode child : children) {
+                if (!child.exists) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
+    }
+
+    // ------------------------------------------------------ status
+
     private void empty() {
-        root.append(emptyState().size(sm)
+        setVisible(toolbar, false);
+        removeChildrenFrom(resourcesElement);
+        resourcesElement.appendChild(emptyState().size(sm)
                 .addHeader(emptyStateHeader()
                         .icon(ban())
                         .text("No child resources"))
                 .addBody(emptyStateBody()
                         .textContent("This resource has no child resources."))
+                .addFooter(emptyStateFooter()
+                        .addActions(emptyStateActions()
+                                .add(button("Add").link().onClick((e, b) -> add()))
+                                .add(button("Refresh").link().onClick((e, b) -> refresh()))))
                 .element());
     }
 
     private void children(List<ModelBrowserNode> children) {
-        root.appendChild(dataList()
-                .addItems(children, child -> {
-                    String childId = Id.build(child.name);
-                    Metadata childMetadata = parent.type == SINGLETON_FOLDER
-                            ? uic.metadataRepository().get(child.template)
-                            : metadata;
-                    return dataListItem(childId)
-                            .addCell(nameCell(childId, child, childMetadata))
-                            .addAction(dataListAction()
-                                    .run(dataListAction -> {
-                                        if (parent.type == FOLDER) {
-                                            // There are no descriptions, so center the button horizontally
-                                            dataListAction.style("align-items", "center");
-                                        }
-                                    })
-                                    .add(button("View")
-                                            .secondary()
-                                            .onClick((e, c) -> tree.select(parent, child))));
-                })
-                .element());
+        setVisible(toolbar, true);
+        if (dataList == null) {
+            dataList = dataList();
+        }
+        dataList.addItems(children, child -> {
+            String childId = Id.build(child.name);
+            Metadata childMetadata = parent.type == SINGLETON_FOLDER
+                    ? uic.metadataRepository().get(child.template)
+                    : metadata;
+            return dataListItem(childId)
+                    .store(MBN_KEY, child)
+                    .addCell(nameCell(childId, child, childMetadata))
+                    .addAction(dataListAction()
+                            .run(dataListAction -> {
+                                if (parent.type == FOLDER) {
+                                    // There are no descriptions, so center the button horizontally
+                                    dataListAction.style("align-items", "center");
+                                }
+                            })
+                            .add(button("View")
+                                    .tertiary()
+                                    .onClick((e, c) -> tree.select(parent, child)))
+                            .run(dataListAction -> {
+                                if (childMetadata.resourceDescription().operations().supports(REMOVE)) {
+                                    dataListAction.add(button("Remove")
+                                            .tertiary()
+                                            .onClick((e, c) -> remove(child)));
+                                }
+                            }));
+        });
+        if (!isAttached(dataList)) {
+            resourcesElement.appendChild(dataList.element());
+        }
     }
 
     private DataListCell nameCell(String childId, ModelBrowserNode child, Metadata metadata) {
@@ -128,11 +220,59 @@ class ResourcesElement implements IsElement<HTMLElement> {
         } else {
             flex.addItem(flexItem().id(childId).textContent(child.name));
         }
-        return dataListCell().add(flex);
+        return dataListCell()
+                .run(cell -> {
+                    if (parent.type == FOLDER) {
+                        cell.style("align-self", "center");
+                    }
+                })
+                .add(flex);
     }
 
-    @Override
-    public HTMLElement element() {
-        return root;
+    // ------------------------------------------------------ filter
+
+    private void onFilterChanged(Filter<ModelBrowserNode> filter, String origin) {
+        if (dataList != null) {
+            logger.debug("Filter resources: %s", filter);
+            int matchingItems;
+            if (filter.defined()) {
+                matchingItems = 0;
+                for (DataListItem item : dataList.items()) {
+                    ModelBrowserNode mbn = item.get(MBN_KEY);
+                    if (mbn != null) {
+                        boolean match = filter.match(mbn);
+                        item.classList().toggle(halModifier(HalClasses.filtered), !match);
+                        if (match) {
+                            matchingItems++;
+                        }
+                    }
+                }
+                noMatch.toggle(resourcesElement, matchingItems == 0);
+            } else {
+                matchingItems = total.get();
+                noMatch.toggle(resourcesElement, false);
+                dataList.items().forEach(dlg -> dlg.classList().remove(halModifier(HalClasses.filtered)));
+            }
+            visible.set(matchingItems);
+        }
+    }
+
+    // ------------------------------------------------------ action handlers
+
+    void add() {
+
+    }
+
+    void refresh() {
+        load().then(children -> {
+            if (filter.defined()) {
+                onFilterChanged(filter, null);
+            }
+            return null;
+        });
+    }
+
+    private void remove(ModelBrowserNode child) {
+
     }
 }

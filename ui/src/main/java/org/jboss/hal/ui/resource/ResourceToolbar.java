@@ -24,6 +24,7 @@ import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
 import org.jboss.hal.ui.filter.StorageFilterAttribute;
 import org.patternfly.component.toolbar.Toolbar;
+import org.patternfly.component.toolbar.ToolbarItem;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 
@@ -46,6 +47,7 @@ import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.icon.IconSets.fas.edit;
 import static org.patternfly.icon.IconSets.fas.link;
+import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.icon.IconSets.fas.undo;
 import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Classes.modifier;
@@ -54,20 +56,37 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static ResourceToolbar resourceToolbar(Filter<ResourceAttribute> filter,
+    static ResourceToolbar resourceToolbar(ResourceView resourceView, Filter<ResourceAttribute> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        return new ResourceToolbar(filter, visible, total);
+        return new ResourceToolbar(resourceView, filter, visible, total);
     }
 
     // ------------------------------------------------------ instance
 
     private final Toolbar toolbar;
 
-    private ResourceToolbar(Filter<ResourceAttribute> filter,
+    private ResourceToolbar(ResourceView resourceView, Filter<ResourceAttribute> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
+        // TODO RBAC
         String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
+        String refreshId = Id.unique("refresh");
         String editId = Id.unique("edit");
+
+        ToolbarItem resolveItem = toolbarItem()
+                .add(button().id(resolveId).plain().icon(link()).onClick((e, b) -> resourceView.resolve()))
+                .add(tooltip(By.id(resolveId), "Resolve all expressions").placement(auto));
+        ToolbarItem resetItem = toolbarItem()
+                .add(button().id(resetId).plain().icon(undo()).onClick((e, b) -> resourceView.reset()))
+                .add(tooltip(By.id(resetId),
+                        "Reset attributes to their initial or default value. Applied only to nillable attributes without relationships to other attributes.")
+                        .placement(auto));
+        ToolbarItem refreshItem = toolbarItem()
+                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> resourceView.refresh()))
+                .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
+        ToolbarItem editItem = toolbarItem()
+                .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceView.edit()))
+                .add(tooltip(By.id(editId), "Edit resource").placement(auto));
 
         toolbar = toolbar()
                 .addContent(toolbarContent()
@@ -79,19 +98,10 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                                 .style("align-self", "center")
                                 .add(itemCount(visible, total, "attribute", "attributes")))
                         .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
-                                .addItem(toolbarItem()
-                                        .add(button().id(resolveId).link().icon(link()))
-                                        .add(tooltip(By.id(resolveId), "Resolve all expressions")
-                                                .placement(auto)))
-                                .addItem(toolbarItem()
-                                        .add(button().id(resetId).link().icon(undo()))
-                                        .add(tooltip(By.id(resetId),
-                                                "Reset attributes to their initial or default value. Applied only to nillable attributes without relationships to other attributes.")
-                                                .placement(auto)))
-                                .addItem(toolbarItem()
-                                        .add(button().id(editId).link().icon(edit()))
-                                        .add(tooltip(By.id(editId), "Edit resource")
-                                                .placement(auto)))))
+                                .addItem(refreshItem)
+                                .addItem(resolveItem)
+                                .addItem(resetItem)
+                                .addItem(editItem)))
                 .addFilterContent(toolbarFilterContent()
                         .bindVisibility(filter, DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME,
                                 StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
@@ -103,7 +113,8 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                                         .filterAttributes(StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
                                         .filterToChips(FilterChips::modeChips)))
                         .addItem(toolbarItem()
-                                .add(button("Clear all filters").link().inline().onClick((e, c) -> filter.resetAll()))));
+                                .add(button("Clear all filters").link().inline()
+                                        .onClick((e, c) -> filter.resetAll()))));
     }
 
     @Override

@@ -16,16 +16,18 @@
 package org.jboss.hal.ui.modelbrowser;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
-import org.jboss.elemento.Key;
 import org.jboss.elemento.flow.Flow;
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Segment;
+import org.jboss.hal.model.ManagementModel.TraverseType;
+import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.tooltip.Tooltip;
@@ -34,14 +36,13 @@ import org.patternfly.component.tree.TreeViewItem;
 import org.patternfly.style.Sticky;
 
 import elemental2.dom.HTMLElement;
-import elemental2.dom.HTMLInputElement;
-import elemental2.dom.KeyboardEvent;
 
+import static elemental2.dom.DomGlobal.console;
+import static java.util.Collections.emptySet;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.resources.HalClasses.halComponent;
-import static org.jboss.hal.resources.HalClasses.modelBrowser;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowser.dispatchSelectEvent;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.MODEL_BROWSER_NODE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.button.Button.button;
@@ -60,6 +61,7 @@ import static org.patternfly.icon.IconSets.far.minusSquare;
 import static org.patternfly.icon.IconSets.fas.arrowLeft;
 import static org.patternfly.icon.IconSets.fas.arrowRight;
 import static org.patternfly.icon.IconSets.fas.home;
+import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.popper.Placement.bottom;
 import static org.patternfly.popper.Placement.bottomStart;
 import static org.patternfly.style.Classes.insetNone;
@@ -72,6 +74,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(ModelBrowserTree.class.getName());
     private final UIContext uic;
+    private final ModelBrowser modelBrowser;
     private final History<TreeViewItem> history;
     private final Button backButton;
     private final Button forwardButton;
@@ -79,37 +82,35 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private Tooltip backTooltip;
     private Tooltip forwardTooltip;
-    ModelBrowserDetail detail;
 
-    ModelBrowserTree(UIContext uic) {
+    ModelBrowserTree(UIContext uic, ModelBrowser modelBrowser) {
         this.uic = uic;
+        this.modelBrowser = modelBrowser;
         this.history = new History<>();
 
         treeView = treeView(selectableItems).guides()
-                .onSelect((event, treeViewItem, selected) ->
-                        navigate(treeViewItem, true));
-        backButton = button().plain().icon(arrowLeft()).disabled()
-                .onClick((event, component) -> back());
-        forwardButton = button().plain().icon(arrowRight()).disabled()
-                .onClick((event, component) -> forward());
-        Button homeButton = button().plain().icon(home()).onClick((e, b) ->
-                dispatchSelectEvent(element(), AddressTemplate.root()));
-        Button collapseButton = button().plain().icon(minusSquare()).onClick((e, b) ->
-                treeView.collapse());
+                .onSelect((event, treeViewItem, selected) -> navigate(treeViewItem, true));
+        backButton = button().plain().icon(arrowLeft()).disabled().onClick((event, component) -> back());
+        forwardButton = button().plain().icon(arrowRight()).disabled().onClick((event, component) -> forward());
+        Button reloadButton = button().plain().icon(sync()).onClick((e, b) -> reload());
+        Button homeButton = button().plain().icon(home()).onClick((e, b) -> modelBrowser.home());
         GotoResource gotoResource = new GotoResource(this);
+        Button collapseButton = button().plain().icon(minusSquare()).onClick((e, b) -> treeView.collapse());
 
+        tooltip(reloadButton.element(), "Refresh").placement(bottom).appendToBody();
         tooltip(homeButton.element(), "Home").placement(bottom).appendToBody();
         tooltip(collapseButton.element(), "Collapse all").placement(bottom).appendToBody();
         tooltip(collapseButton.element(), "Collapse all").placement(bottom).appendToBody();
         tooltip(gotoResource.element(), "Go to resource").placement(bottom).appendToBody();
 
-        root = div().css(halComponent(modelBrowser, tree))
+        root = div().css(halComponent(HalClasses.modelBrowser, tree))
                 .add(pageMainSection().sticky(Sticky.top).padding(noPadding)
                         .add(toolbar().css(modifier(insetNone))
                                 .addContent(toolbarContent()
                                         .addGroup(toolbarGroup(iconButtonGroup)
                                                 .addItem(toolbarItem().add(backButton))
                                                 .addItem(toolbarItem().add(forwardButton))
+                                                .addItem(toolbarItem().add(reloadButton))
                                                 .addItem(toolbarItem().add(homeButton))
                                                 .addItem(toolbarItem().add(gotoResource))
                                                 .addItem(toolbarItem().add(collapseButton))))))
@@ -122,25 +123,63 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         return root;
     }
 
-    // ------------------------------------------------------ api
+    // ------------------------------------------------------ load
 
-    void show(List<ModelBrowserNode> nodes) {
+    void load(List<ModelBrowserNode> nodes) {
+        treeView.clear();
         treeView.addItems(nodes, mbn2tvi(uic.dispatcher()));
     }
+
+    private void reload() {
+        if (!treeView.selectedItems().isEmpty()) {
+            treeView.selectedItems().get(0).reload();
+
+            TreeViewItem treeViewItem = treeView.selectedItems().get(0);
+            ModelBrowserNode mbn = treeViewItem.get(MODEL_BROWSER_NODE);
+            if (mbn != null) {
+                traverse(mbn.template);
+            }
+        } else {
+            // no selection → reload root
+            modelBrowser.reload();
+            traverse(AddressTemplate.root());
+        }
+    }
+
+    private void traverse(AddressTemplate template) {
+        uic.managementModel().traverse(template, emptySet(), EnumSet.noneOf(TraverseType.class),
+                        resourceAddress -> console.log("### %s", resourceAddress))
+                .then(context -> {
+                    console.log("=== Done: %d!", context.resources());
+                    return null;
+                });
+    }
+
+    // ------------------------------------------------------ select
 
     void select(String identifier) {
         treeView.select(identifier);
     }
 
-    void select(ModelBrowserNode parent, ModelBrowserNode mbn) {
+    void select(ModelBrowserNode parent, ModelBrowserNode child) {
         TreeViewItem parentItem = treeView.findItem(parent.id);
-        if (parentItem != null && !parentItem.expanded() && parentItem.status() == pending) {
-            parentItem.load().then(__ -> {
-                treeView.select(mbn.id);
-                return null;
-            });
+        if (parentItem != null) {
+            if (!parentItem.expanded() && parentItem.status() == pending) {
+                parentItem.load().then(__ -> {
+                    treeView.select(child.id);
+                    return null;
+                });
+            } else if (!parentItem.contains(child.id)) {
+                // child might have been added externally in CLI or other management tools
+                parentItem.reload().then(__ -> {
+                    treeView.select(child.id);
+                    return null;
+                });
+            } else {
+                treeView.select(child.id);
+            }
         } else {
-            treeView.select(mbn.id);
+            treeView.select(child.id);
         }
     }
 
@@ -174,8 +213,6 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     void unselect() {
         treeView.unselect(false);
     }
-
-    // ------------------------------------------------------ internal
 
     private List<Task<FlowContext>> selectTasks(AddressTemplate template) {
         /*
@@ -217,28 +254,6 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ navigation
 
-    private void goto_(KeyboardEvent event) {
-        if (Key.Enter.match(event)) {
-            HTMLInputElement inputElement = (HTMLInputElement) event.target;
-            AddressTemplate template = AddressTemplate.of(inputElement.value);
-            select(template);
-            inputElement.value = "";
-            event.stopPropagation();
-            event.preventDefault();
-        }
-    }
-
-    private void navigate(TreeViewItem treeViewItem, boolean updateHistory) {
-        if (updateHistory) {
-            history.navigate(treeViewItem);
-        }
-        updateNavigationButtons();
-        ModelBrowserNode node = treeViewItem.get(ModelBrowserEngine.MODEL_BROWSER_NODE);
-        if (node != null) {
-            detail.show(node);
-        }
-    }
-
     private void back() {
         if (history.canGoBack()) {
             TreeViewItem treeViewItem = history.back();
@@ -252,6 +267,17 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
             TreeViewItem treeViewItem = history.forward();
             treeView.select(treeViewItem, true, false);
             navigate(treeViewItem, false);
+        }
+    }
+
+    private void navigate(TreeViewItem treeViewItem, boolean updateHistory) {
+        if (updateHistory) {
+            history.navigate(treeViewItem);
+        }
+        updateNavigationButtons();
+        ModelBrowserNode node = treeViewItem.get(ModelBrowserEngine.MODEL_BROWSER_NODE);
+        if (node != null) {
+            modelBrowser.detail.show(node);
         }
     }
 

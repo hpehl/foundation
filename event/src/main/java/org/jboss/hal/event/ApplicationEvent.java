@@ -13,15 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.dmr.dispatch;
+package org.jboss.hal.event;
 
-import org.jboss.hal.event.ApplicationEvent;
-
-public class ProcessStateEvent implements ApplicationEvent {
-
-    public final ProcessState processState;
-
-    public ProcessStateEvent(ProcessState processState) {
-        this.processState = processState;
-    }
+/** Marker interface for HAL application events */
+public interface ApplicationEvent {
 }

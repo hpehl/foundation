@@ -49,6 +49,10 @@ public class OperationDescriptions implements Iterable<OperationDescription> {
         return operations.values().iterator();
     }
 
+    public boolean supports(String name) {
+        return operations.containsKey(name);
+    }
+
     public OperationDescription get(String name) {
         return operations.getOrDefault(name, new OperationDescription());
     }

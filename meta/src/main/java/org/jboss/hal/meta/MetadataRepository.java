@@ -57,7 +57,7 @@ public class MetadataRepository {
      * Template resolver used by this metadata repository. The template resolver is applied
      * <ol>
      *     <li>to address templates in {@link #get(AddressTemplate)} and {@link #lookup(AddressTemplate)} to check if a metadata is in the cache and</li>
-     *     <li>to resource addresses from the rrd-payload in {@link #addMetadata(String, Metadata)} when adding meta to cache</li>
+     *     <li>to resource addresses from the rrd-payload in {@link #addMetadata(Metadata)} when adding meta to the cache</li>
      * </ol>
      */
     private final TemplateResolver resolver;
@@ -88,9 +88,7 @@ public class MetadataRepository {
         this.cache = new LRUCache<>(FIRST_LEVEL_CACHE_SIZE);
         this.processedAddresses = new HashMap<>();
 
-        cache.addRemovalHandler((address, __) -> {
-            logger.debug("LRU metadata for %s has been removed", address);
-        });
+        cache.addRemovalHandler((address, __) -> logger.debug("LRU metadata for %s has been removed", address));
     }
 
     // ------------------------------------------------------ api
@@ -151,11 +149,9 @@ public class MetadataRepository {
 
     // ------------------------------------------------------ internal
 
-    void addMetadata(String address, Metadata metadata) {
-        AddressTemplate template = AddressTemplate.of(address);
-        String resolved = resolveTemplate(template);
-        logger.debug("Add metadata for %s → %s", address, resolved);
-        cache.put(resolved, metadata);
+    void addMetadata(Metadata metadata) {
+        logger.debug("Add metadata for %s", metadata.resourceAddress());
+        cache.put(metadata.address(), metadata);
     }
 
     void addProcessedAddresses(String address, Set<String> processedAddresses) {

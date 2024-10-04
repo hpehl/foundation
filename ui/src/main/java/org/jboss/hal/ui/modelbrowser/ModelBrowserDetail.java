@@ -23,6 +23,7 @@ import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.Segment;
+import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.breadcrumb.Breadcrumb;
 import org.patternfly.component.icon.Icon;
@@ -46,14 +47,12 @@ import static org.jboss.hal.resources.HalClasses.content;
 import static org.jboss.hal.resources.HalClasses.copy;
 import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
-import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowser.dispatchSelectEvent;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
+import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.breadcrumb.Breadcrumb.breadcrumb;
 import static org.patternfly.component.breadcrumb.BreadcrumbItem.breadcrumbItem;
 import static org.patternfly.component.icon.Icon.icon;
@@ -77,17 +76,18 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
 
     static String lastTab = null;
     private final UIContext uic;
+    private final ModelBrowser modelBrowser;
     private final HTMLElement root;
     private final PageMainBreadcrumb pageMainBreadcrumb;
     private final Title header;
     private final FlexItem stabilityContainer;
     private final HTMLContainerBuilder<HTMLParagraphElement> description;
     private final PageMainSection pageMainSection;
-    ModelBrowserTree tree;
 
-    ModelBrowserDetail(UIContext uic) {
+    ModelBrowserDetail(UIContext uic, ModelBrowser modelBrowser) {
         this.uic = uic;
-        this.root = div().css(halComponent(modelBrowser, detail))
+        this.modelBrowser = modelBrowser;
+        this.root = div().css(halComponent(HalClasses.modelBrowser, detail))
                 .add(pageMainGroup()
                         .sticky(top)
                         .addSection(pageMainBreadcrumb = pageMainBreadcrumb())
@@ -97,7 +97,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                                                 .addItem(flexItem().add(header = title(1, _3xl, "")))
                                                 .addItem(stabilityContainer = flexItem()))
                                         .add(description = p().textContent("")))))
-                .add(pageMainSection = pageMainSection().css(halComponent(modelBrowser, detail, content)))
+                .add(pageMainSection = pageMainSection().css(halComponent(HalClasses.modelBrowser, detail, content)))
                 .element();
     }
 
@@ -114,11 +114,11 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             switch (mbn.type) {
                 case SINGLETON_FOLDER:
                 case FOLDER:
-                    pageMainSection.add(new ResourcesElement(uic, tree, mbn, metadata));
+                    pageMainSection.add(new ResourcesElement(uic, modelBrowser.tree, mbn, metadata));
                     break;
                 case SINGLETON_RESOURCE:
                 case RESOURCE:
-                    pageMainSection.add(new ResourceElement(uic, mbn, metadata));
+                    pageMainSection.add(new ResourceElement(uic, metadata));
                     break;
             }
         });
@@ -133,7 +133,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                     .onClick((event, component) -> {
                         event.preventDefault();
                         event.stopPropagation();
-                        dispatchSelectEvent(element(), AddressTemplate.root());
+                        modelBrowser.home();
                     }));
             AddressTemplate current = AddressTemplate.root();
             for (Segment segment : mbn.template) {
@@ -147,7 +147,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                                 bci.onClick((event, breadcrumbItem) -> {
                                     event.preventDefault();
                                     event.stopPropagation();
-                                    tree.select(breadcrumbItem.identifier());
+                                    modelBrowser.tree.select(breadcrumbItem.identifier());
                                 });
                             } else {
                                 bci.add(copyToClipboard(finalTemplate));
@@ -198,7 +198,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             navigator.clipboard.writeText(template.toString());
             tooltip.text("Address copied");
         });
-        return span().css(halComponent(modelBrowser, copy))
+        return span().css(halComponent(HalClasses.modelBrowser, copy))
                 .add(icon)
                 .add(tooltip)
                 .element();

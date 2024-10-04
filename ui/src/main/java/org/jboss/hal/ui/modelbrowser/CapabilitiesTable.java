@@ -102,7 +102,7 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
     }
 
     private List dynamicElements(CapabilityDescription capability) {
-        return list().plain().bordered()
+        return list().plain()
                 .addItems(capability.dynamicElements(), dynamicElement -> listItem().text(dynamicElement));
     }
 }

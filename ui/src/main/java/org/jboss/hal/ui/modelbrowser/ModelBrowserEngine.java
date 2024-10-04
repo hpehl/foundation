@@ -28,6 +28,7 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.component.tree.TreeViewItem;
+import org.patternfly.style.Classes;
 
 import elemental2.promise.Promise;
 
@@ -111,9 +112,9 @@ class ModelBrowserEngine {
                     // we can detect the difference (see below)
                     String singleton = name.substring(0, index);
                     String child = name.substring(index + 1);
-                    ModelBrowserNode node = mbns.computeIfAbsent(singleton,
+                    ModelBrowserNode mbn = mbns.computeIfAbsent(singleton,
                             key -> new ModelBrowserNode(template.append(key, "*"), key, SINGLETON_FOLDER));
-                    node.children.add(new ModelBrowserNode(template.append(name), child, SINGLETON_RESOURCE));
+                    mbn.children.add(new ModelBrowserNode(template.append(name), child, SINGLETON_RESOURCE));
                 } else {
                     if (template.template.endsWith("*")) {
                         mbns.put(name,
@@ -160,9 +161,28 @@ class ModelBrowserEngine {
                         }
                     } else {
                         tvi.css(modifier(disabled));
+                        // This popover is used for the initial load. It is removed together with the
+                        // tree view item when the parent is collapsed.
                         tvi.add(popover(By.data(identifier, mbn.id))
                                 .addHeader(mbn.name)
                                 .addBody("Non-existing singleton resource"));
+                    }
+                })
+                .onToggle((event, tvi, expanded) -> {
+                    if (expanded) {
+                        for (TreeViewItem item : tvi.items()) {
+                            if (item.element().classList.contains(modifier(Classes.disabled))) {
+                                ModelBrowserNode m = item.get(MODEL_BROWSER_NODE);
+                                if (m != null) {
+                                    // This popover is used when the paren item is collapsed/expanded
+                                    // This is necessary because the initial popover has been removed
+                                    // on collapsed. It is removed automatically when the parent is collapsed.
+                                    item.add(popover(By.data(identifier, m.id))
+                                            .addHeader(m.name)
+                                            .addBody("Non-existing singleton resource"));
+                                }
+                            }
+                        }
                     }
                 });
     }

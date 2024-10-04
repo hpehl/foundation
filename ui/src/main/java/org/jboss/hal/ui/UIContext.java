@@ -27,6 +27,7 @@ import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.CapabilityRegistry;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.model.ManagementModel;
 
 /** Holds common classes needed by UI elements. Use this class to keep the method signatures clean and tidy. */
 @Startup
@@ -52,23 +53,26 @@ public class UIContext {
     private final Environment environment;
     private final Settings settings;
     private final Dispatcher dispatcher;
+    private final StatementContext statementContext;
+    private final ManagementModel managementModel;
     private final CapabilityRegistry capabilityRegistry;
     private final MetadataRepository metadataRepository;
-    private final StatementContext statementContext;
 
     @Inject
     public UIContext(Environment environment,
             Settings settings,
             Dispatcher dispatcher,
+            StatementContext statementContext,
+            ManagementModel managementModel,
             CapabilityRegistry capabilityRegistry,
-            MetadataRepository metadataRepository,
-            StatementContext statementContext) {
+            MetadataRepository metadataRepository) {
         this.environment = environment;
         this.settings = settings;
         this.dispatcher = dispatcher;
+        this.statementContext = statementContext;
+        this.managementModel = managementModel;
         this.capabilityRegistry = capabilityRegistry;
         this.metadataRepository = metadataRepository;
-        this.statementContext = statementContext;
     }
 
     @PostConstruct
@@ -88,15 +92,19 @@ public class UIContext {
         return dispatcher;
     }
 
+    public StatementContext statementContext() {
+        return statementContext;
+    }
+
+    public ManagementModel managementModel() {
+        return managementModel;
+    }
+
     public CapabilityRegistry capabilityRegistry() {
         return capabilityRegistry;
     }
 
     public MetadataRepository metadataRepository() {
         return metadataRepository;
-    }
-
-    public StatementContext statementContext() {
-        return statementContext;
     }
 }

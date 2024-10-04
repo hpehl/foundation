@@ -13,15 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.dmr.dispatch;
+package org.jboss.hal.event;
 
-import org.jboss.hal.event.ApplicationEvent;
-
-public class ProcessStateEvent implements ApplicationEvent {
-
-    public final ProcessState processState;
-
-    public ProcessStateEvent(ProcessState processState) {
-        this.processState = processState;
-    }
+/**
+ * Marker interface for HAL UI events. Implementations should provide static factory methods to create and return instances of
+ * {@link elemental2.dom.CustomEvent}s.
+ *
+ * @see <a
+ * href="https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events">https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events</a>
+ */
+public interface UIEvent {
 }

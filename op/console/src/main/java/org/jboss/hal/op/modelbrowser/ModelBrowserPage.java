@@ -42,7 +42,7 @@ public class ModelBrowserPage implements Page {
 
     @Inject
     public ModelBrowserPage(UIContext uic) {
-        this.modelBrowser = modelBrowser(uic);
+        this.modelBrowser = modelBrowser(uic, AddressTemplate.root());
     }
 
     @Override
@@ -51,10 +51,5 @@ public class ModelBrowserPage implements Page {
                 pageMainSection().background(light)
                         .add(modelBrowser)
                         .element());
-    }
-
-    @Override
-    public void attach() {
-        modelBrowser.show(AddressTemplate.root());
     }
 }

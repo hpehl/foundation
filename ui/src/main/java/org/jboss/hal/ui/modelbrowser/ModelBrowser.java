@@ -22,8 +22,6 @@ import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
 
-import elemental2.dom.CustomEvent;
-import elemental2.dom.CustomEventInit;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
@@ -39,66 +37,35 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static ModelBrowser modelBrowser(UIContext uic) {
-        return new ModelBrowser(uic);
-    }
-
-    /**
-     * Creates and returns a custom event to select a resource for the provided address template in the model browser. The event
-     * can only be used by elements which are part of the model browser DOM.
-     * <p>
-     * The model browser listens for these events and calls {@link #select(AddressTemplate)}. If the template is empty (equals
-     * {@link AddressTemplate#root()}), {@link #home()} is called.
-     *
-     * @param source   the source element used to dispatch the event.
-     * @param template the address template used to create the event's detail.
-     * @see <a
-     * href="https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events">https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events</a>
-     */
-    public static void dispatchSelectEvent(HTMLElement source, AddressTemplate template) {
-        //noinspection unchecked
-        CustomEventInit<String> init = CustomEventInit.create();
-        init.setBubbles(true);
-        init.setCancelable(true);
-        init.setDetail(template == null ? "" : template.toString());
-        CustomEvent<String> event = new CustomEvent<>(SELECT_TEMPLATE_EVENT, init);
-        source.dispatchEvent(event);
+    public static ModelBrowser modelBrowser(UIContext uic, AddressTemplate template) {
+        return new ModelBrowser(uic, template);
     }
 
     // ------------------------------------------------------ instance
 
-    public static final String SELECT_TEMPLATE_EVENT = "select-template";
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
     private static final int TREE_COLUMNS = 3;
     private static final int DETAIL_COLUMNS = 9;
+    final ModelBrowserTree tree;
+    final ModelBrowserDetail detail;
     private final UIContext uic;
+    private final AddressTemplate template;
     private final HTMLElement root;
-    private final ModelBrowserTree tree;
-    private final ModelBrowserDetail detail;
     private ModelBrowserNode rootMbn;
 
-    public ModelBrowser(UIContext uic) {
+    public ModelBrowser(UIContext uic, AddressTemplate template) {
         this.uic = uic;
-        this.tree = new ModelBrowserTree(uic);
-        this.detail = new ModelBrowserDetail(uic);
+        this.template = template;
+        this.tree = new ModelBrowserTree(uic, this);
+        this.detail = new ModelBrowserDetail(uic, this);
         this.root = grid().span(12)
                 .css(halComponent(modelBrowser))
                 .addItem(gridItem().span(TREE_COLUMNS).add(tree))
                 .addItem(gridItem().span(DETAIL_COLUMNS).add(detail))
                 .element();
-        tree.detail = detail;
-        detail.tree = tree;
 
-        element().addEventListener(SELECT_TEMPLATE_EVENT, evt -> {
-            //noinspection unchecked
-            CustomEvent<String> customEvent = (CustomEvent<String>) evt;
-            AddressTemplate template = AddressTemplate.of(customEvent.detail);
-            if (template.isEmpty()) {
-                home();
-            } else {
-                select(template);
-            }
-        });
+        ModelBrowserSelectEvent.listen(root, this::select);
+        load();
     }
 
     @Override
@@ -107,25 +74,6 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     }
 
     // ------------------------------------------------------ api
-
-    public void show(AddressTemplate template) {
-        if (template.fullyQualified()) {
-            uic.metadataRepository().lookup(template, metadata -> {
-                ResourceAddress address = template.resolve(uic.statementContext());
-                Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
-                        .param(INCLUDE_SINGLETONS, true)
-                        .build();
-                uic.dispatcher().execute(operation, result -> {
-                    String name = template.isEmpty() ? "Management Model" : template.last().value;
-                    rootMbn = new ModelBrowserNode(template, name, RESOURCE);
-                    tree.show(parseChildren(rootMbn, result, true));
-                    detail.show(rootMbn);
-                });
-            });
-        } else {
-            logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);
-        }
-    }
 
     public void home() {
         if (rootMbn != null) {
@@ -144,6 +92,32 @@ public class ModelBrowser implements IsElement<HTMLElement> {
             }
         } else {
             logger.error("Unable to select %s: Root template is null!", template);
+        }
+    }
+
+    public void reload() {
+        load();
+    }
+
+    // ------------------------------------------------------ internal
+
+    private void load() {
+        if (template.fullyQualified()) {
+            uic.metadataRepository().lookup(template, metadata -> {
+                ResourceAddress address = template.resolve(uic.statementContext());
+                Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
+                        .param(INCLUDE_SINGLETONS, true)
+                        .build();
+                uic.dispatcher().execute(operation, result -> {
+                    String name = template.isEmpty() ? "Management Model" : template.last().value;
+                    rootMbn = new ModelBrowserNode(template, name, RESOURCE);
+                    tree.load(parseChildren(rootMbn, result, true));
+                    detail.show(rootMbn);
+                });
+            });
+        } else {
+            // TODO Add error empty state
+            logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);
         }
     }
 }

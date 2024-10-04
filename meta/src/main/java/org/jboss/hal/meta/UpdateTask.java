@@ -47,7 +47,7 @@ class UpdateTask implements Task<ProcessingContext> {
                     logger.warn("No security context for %s in rrd results. Fallback to read-only security context.", address);
                     securityContext = SecurityContext.READ_ONLY;
                 }
-                metadataRepository.addMetadata(address, metadata(resourceDescription, securityContext));
+                metadataRepository.addMetadata(metadata(address, resourceDescription, securityContext));
             }
             for (Map.Entry<String, Set<String>> entry : context.rrdResult.processedAddresses.entrySet()) {
                 metadataRepository.addProcessedAddresses(entry.getKey(), entry.getValue());
