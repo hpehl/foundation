@@ -27,7 +27,7 @@ import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.CapabilityRegistry;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
-import org.jboss.hal.model.ManagementModel;
+import org.jboss.hal.meta.tree.ModelTree;
 
 /** Holds common classes needed by UI elements. Use this class to keep the method signatures clean and tidy. */
 @Startup
@@ -54,7 +54,7 @@ public class UIContext {
     private final Settings settings;
     private final Dispatcher dispatcher;
     private final StatementContext statementContext;
-    private final ManagementModel managementModel;
+    private final ModelTree modelTree;
     private final CapabilityRegistry capabilityRegistry;
     private final MetadataRepository metadataRepository;
 
@@ -63,14 +63,14 @@ public class UIContext {
             Settings settings,
             Dispatcher dispatcher,
             StatementContext statementContext,
-            ManagementModel managementModel,
+            ModelTree modelTree,
             CapabilityRegistry capabilityRegistry,
             MetadataRepository metadataRepository) {
         this.environment = environment;
         this.settings = settings;
         this.dispatcher = dispatcher;
         this.statementContext = statementContext;
-        this.managementModel = managementModel;
+        this.modelTree = modelTree;
         this.capabilityRegistry = capabilityRegistry;
         this.metadataRepository = metadataRepository;
     }
@@ -96,8 +96,8 @@ public class UIContext {
         return statementContext;
     }
 
-    public ManagementModel managementModel() {
-        return managementModel;
+    public ModelTree modelTree() {
+        return modelTree;
     }
 
     public CapabilityRegistry capabilityRegistry() {

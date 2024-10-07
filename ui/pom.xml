@@ -51,10 +51,6 @@
             <artifactId>hal-meta</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>hal-model</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.patternfly</groupId>
             <artifactId>patternfly-java-j2cl</artifactId>
         </dependency>

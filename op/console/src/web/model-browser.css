@@ -26,22 +26,10 @@
     }
 }
 
-.hal-c-model-browser__tree, .hal-c-model-browser__detail {
+.hal-c-model-browser__detail, .hal-c-model-browser__tree {
     height: calc(100vh - var(--hal-c-model-browser-offset) - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     max-height: calc(100vh - var(--hal-c-model-browser-offset) - var(--pf-v5-c-page__main-section--PaddingTop) - var(--pf-v5-c-page__main-section--PaddingBottom));
     overflow: scroll;
-}
-
-.hal-c-model-browser__tree {
-    --pf-v5-c-page--section--m-sticky-top--BoxShadow: none;
-
-    .pf-v5-c-tree-view {
-        --pf-v5-c-tree-view--PaddingTop: 0;
-    }
-
-    .pf-v5-c-tree-view__content {
-        scroll-margin-top: var(--hal-c-model-browser-toolbar--Height);
-    }
 }
 
 .hal-c-model-browser__detail {
@@ -72,26 +60,23 @@
     padding: var(--pf-v5-global--spacer--sm);
 }
 
-.pf-v5-c-tree-view__list-item.pf-m-disabled {
-    --pf-v5-c-tree-view__node--Color: var(--pf-v5-global--disabled-color--100);
-    --pf-v5-c-tree-view__node-icon--Color: var(--pf-v5-global--disabled-color--200);
-    --pf-v5-c-tree-view__node--m-current--FontWeight: var(--pf-v5-global--FontWeight--normal);
-    cursor: not-allowed;
+.hal-c-model-browser__tree {
+    --pf-v5-c-page--section--m-sticky-top--BoxShadow: none;
 
-    .pf-v5-c-tree-view__node,
-    .pf-v5-c-tree-view__node-container,
-    .pf-v5-c-tree-view__node-toggle,
-    .pf-v5-c-tree-view__node-icon,
-    .pf-v5-c-tree-view__node-text {
-        cursor: not-allowed;
+    .pf-v5-c-tree-view {
+        --pf-v5-c-tree-view--PaddingTop: 0;
     }
 
-    .pf-v5-c-tree-view__node {
-        pointer-events: none;
+    .pf-v5-c-tree-view__content {
+        scroll-margin-top: var(--hal-c-model-browser-toolbar--Height);
     }
+}
 
-    .pf-v5-c-tree-view__content:hover,
-    .pf-v5-c-tree-view__content:focus-within {
-        background-color: unset;
+.hal-c-model-browser__search {
+
+    .hal-c-model-browser__search-results {
+        --pf-v5-c-list--li--MarginTop: var(--pf-v5-global--spacer--xs);
+        max-height: 300px;
+        overflow-y: scroll;
     }
 }

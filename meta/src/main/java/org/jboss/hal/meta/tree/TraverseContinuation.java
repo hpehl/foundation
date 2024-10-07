@@ -13,11 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import "@patternfly/patternfly/patternfly.css";
-import "@patternfly/patternfly/patternfly-addons.css";
-import "./variables.css"
-import "./model-browser.css"
-import "./resource-view.css"
-import "./stability.css"
-import "./tree-view.css"
-import "./ui.css"
+package org.jboss.hal.meta.tree;
+
+/**
+ * Class representing the control mechanism for managing the traversal process. The {@code TraverseContinuation} object can be
+ * used to control the traversal by stopping the traversal operation.
+ */
+public class TraverseContinuation {
+
+    boolean running;
+
+    public TraverseContinuation() {
+        running = false;
+    }
+
+    public void stop() {
+        running = false;
+    }
+
+    public boolean isRunning() {
+        return running;
+    }
+}

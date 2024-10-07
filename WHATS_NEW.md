@@ -1,6 +1,6 @@
 # New features
 
-This document summarizes the new features of the management console.
+This document highlights the new features of the management console.
 
 ## Stability level
 
@@ -12,9 +12,10 @@ Pending...
 
 ## Model browser
 
-The model browser has many new features:
+The model browser has been greatly improved:
 
 - History of selected resources and buttons to go backwards and forwards
+- Search the management model for resource addresses, types and names
 - Go to arbitrary resources by specifying the resource address
 - Clickable breadcrumbs that reflect the currently selected resource address
 - Copy the current address to the clipboard
@@ -27,7 +28,7 @@ The model browser has many new features:
 - Links for referenced capabilities
 - Support for simple nested attributes
 - Support for complex attributes in the read-only view
-- Info for allowed values
+- Info of allowed values
 
 ### Attributes
 

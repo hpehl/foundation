@@ -16,7 +16,6 @@
 package org.jboss.hal.ui.modelbrowser;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
@@ -26,7 +25,6 @@ import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Segment;
-import org.jboss.hal.model.ManagementModel.TraverseType;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.button.Button;
@@ -37,8 +35,6 @@ import org.patternfly.style.Sticky;
 
 import elemental2.dom.HTMLElement;
 
-import static elemental2.dom.DomGlobal.console;
-import static java.util.Collections.emptySet;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.resources.HalClasses.halComponent;
@@ -61,6 +57,7 @@ import static org.patternfly.icon.IconSets.far.minusSquare;
 import static org.patternfly.icon.IconSets.fas.arrowLeft;
 import static org.patternfly.icon.IconSets.fas.arrowRight;
 import static org.patternfly.icon.IconSets.fas.home;
+import static org.patternfly.icon.IconSets.fas.search;
 import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.popper.Placement.bottom;
 import static org.patternfly.popper.Placement.bottomStart;
@@ -94,14 +91,15 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         forwardButton = button().plain().icon(arrowRight()).disabled().onClick((event, component) -> forward());
         Button reloadButton = button().plain().icon(sync()).onClick((e, b) -> reload());
         Button homeButton = button().plain().icon(home()).onClick((e, b) -> modelBrowser.home());
+        Button findResource = button().plain().icon(search()).onClick((e, b) -> new FindResource(uic, this).open());
         GotoResource gotoResource = new GotoResource(this);
         Button collapseButton = button().plain().icon(minusSquare()).onClick((e, b) -> treeView.collapse());
 
         tooltip(reloadButton.element(), "Refresh").placement(bottom).appendToBody();
         tooltip(homeButton.element(), "Home").placement(bottom).appendToBody();
-        tooltip(collapseButton.element(), "Collapse all").placement(bottom).appendToBody();
-        tooltip(collapseButton.element(), "Collapse all").placement(bottom).appendToBody();
+        tooltip(findResource.element(), "Find a resource").placement(bottom).appendToBody();
         tooltip(gotoResource.element(), "Go to resource").placement(bottom).appendToBody();
+        tooltip(collapseButton.element(), "Collapse all").placement(bottom).appendToBody();
 
         root = div().css(halComponent(HalClasses.modelBrowser, tree))
                 .add(pageMainSection().sticky(Sticky.top).padding(noPadding)
@@ -112,6 +110,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                                                 .addItem(toolbarItem().add(forwardButton))
                                                 .addItem(toolbarItem().add(reloadButton))
                                                 .addItem(toolbarItem().add(homeButton))
+                                                .addItem(toolbarItem().add(findResource))
                                                 .addItem(toolbarItem().add(gotoResource))
                                                 .addItem(toolbarItem().add(collapseButton))))))
                 .add(pageMainSection().padding(noPadding).add(treeView))
@@ -133,26 +132,10 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     private void reload() {
         if (!treeView.selectedItems().isEmpty()) {
             treeView.selectedItems().get(0).reload();
-
-            TreeViewItem treeViewItem = treeView.selectedItems().get(0);
-            ModelBrowserNode mbn = treeViewItem.get(MODEL_BROWSER_NODE);
-            if (mbn != null) {
-                traverse(mbn.template);
-            }
         } else {
             // no selection → reload root
             modelBrowser.reload();
-            traverse(AddressTemplate.root());
         }
-    }
-
-    private void traverse(AddressTemplate template) {
-        uic.managementModel().traverse(template, emptySet(), EnumSet.noneOf(TraverseType.class),
-                        resourceAddress -> console.log("### %s", resourceAddress))
-                .then(context -> {
-                    console.log("=== Done: %d!", context.resources());
-                    return null;
-                });
     }
 
     // ------------------------------------------------------ select
@@ -191,7 +174,8 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
             } else {
                 Flow.sequential(new FlowContext(), selectTasks(template)).subscribe(context -> {
                     if (context.successful()) {
-                        // The template might contain invalid segments. Build a template up to the last valid segment.
+                        // The template might contain invalid segments or no longer exist.
+                        // Build a template up to the last valid segment.
                         AddressTemplate current = AddressTemplate.root();
                         for (Segment segment : template) {
                             if (treeView.findItem(uniqueId(current.append(segment.key, segment.value))) == null) {
@@ -212,6 +196,17 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
 
     void unselect() {
         treeView.unselect(false);
+    }
+
+    String selectedAddress() {
+        if (!treeView.selectedItems().isEmpty()) {
+            TreeViewItem tvi = treeView.selectedItems().get(0);
+            ModelBrowserNode mbn = tvi.get(MODEL_BROWSER_NODE);
+            if (mbn != null) {
+                return mbn.template.toString();
+            }
+        }
+        return "";
     }
 
     private List<Task<FlowContext>> selectTasks(AddressTemplate template) {
