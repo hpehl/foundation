@@ -27,6 +27,7 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelNodeHelper;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.Property;
+import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
@@ -78,8 +79,8 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
 
     // ------------------------------------------------------ factory
 
-    public static ResourceView resourceView(UIContext uic, Metadata metadata) {
-        return new ResourceView(uic, metadata);
+    public static ResourceView resourceView(UIContext uic, AddressTemplate template, Metadata metadata) {
+        return new ResourceView(uic, template, metadata);
     }
 
     // ------------------------------------------------------ instance
@@ -98,7 +99,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
     private Operation operation;
     private DescriptionList dl;
 
-    ResourceView(UIContext uic, Metadata metadata) {
+    ResourceView(UIContext uic, AddressTemplate template, Metadata metadata) {
         Filter<ResourceAttribute> filter = new ResourceFilter().onChange(this::onFilterChanged);
 
         this.uic = uic;
@@ -108,7 +109,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
         this.noMatch = new NoMatch<>(filter);
         this.visible = ov(0);
         this.total = ov(0);
-        this.operation = new Operation.Builder(metadata.resourceAddress(), READ_RESOURCE_OPERATION)
+        this.operation = new Operation.Builder(template.resolve(), READ_RESOURCE_OPERATION)
                 .param(ATTRIBUTES_ONLY, true)
                 .param(INCLUDE_RUNTIME, true)
                 .build();

@@ -15,8 +15,8 @@
  */
 package org.jboss.hal.meta;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -34,6 +34,7 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 
 import elemental2.promise.Promise;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
@@ -44,8 +45,11 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATIO
 @ApplicationScoped
 public class CapabilityRegistry {
 
-    private static final AddressTemplate TEMPLATE = AddressTemplate.of("{domain.controller}/core-service=capability-registry");
     private static final Logger logger = Logger.getLogger(CapabilityRegistry.class.getName());
+    private static final AddressTemplate TEMPLATE = AddressTemplate.of("{domain.controller}/core-service=capability-registry");
+    private static final String PROVIDER_POINTS = "provider-points";
+    private static final String TEMPLATES = "templates";
+
     private final Dispatcher dispatcher;
     private final StatementContext statementContext;
 
@@ -67,30 +71,35 @@ public class CapabilityRegistry {
                 });
     }
 
-    public Promise<AddressTemplate> findReference(String capability, String value) {
+    public Promise<List<AddressTemplate>> findReference(String capability, String value) {
         List<Task<FlowContext>> tasks = List.of(
-                context -> providerPoints(capability).then(context::resolve),
+                context -> providerPoints(capability).then(pps -> context.resolve(PROVIDER_POINTS, pps)),
                 context -> {
-                    List<String> providerPoints = context.pop();
+                    List<String> providerPoints = context.get(PROVIDER_POINTS);
                     List<Task<FlowContext>> nestedTasks = providerPoints.stream()
                             .map(pp -> new ReadProviderPoint(dispatcher, capability, value, pp))
                             .collect(toList());
+                    // nested parallel tasks to read the provider points
                     return new ParallelTasks<>(nestedTasks, false).apply(context);
                 });
-        return Flow.sequential(new FlowContext(), tasks)
+
+        List<AddressTemplate> templates = new ArrayList<>();
+        FlowContext flowContext = new FlowContext();
+        flowContext.set(TEMPLATES, templates);
+        return Flow.sequential(flowContext, tasks)
                 .failFast(false)
-                .then(context -> Promise.resolve(context.<AddressTemplate>pop(null)))
+                .then(context -> Promise.resolve(context.get(TEMPLATES, emptyList())))
                 .catch_(error -> {
                     logger.error("Unable to find capability %s for %s", capability, value);
-                    return Promise.resolve(((AddressTemplate) null));
+                    return Promise.resolve(emptyList());
                 });
     }
 
     private static class ReadProviderPoint implements Task<FlowContext> {
 
         private final Dispatcher dispatcher;
-        private final String providerPoint;
         private final String capability;
+        private final String providerPoint;
         private final String value;
 
         private ReadProviderPoint(Dispatcher dispatcher, String capability, String value, String providerPoint) {
@@ -103,6 +112,7 @@ public class CapabilityRegistry {
         @Override
         public Promise<FlowContext> apply(FlowContext context) {
             logger.debug("Read provider point %s for %s and %s", providerPoint, capability, value);
+            List<AddressTemplate> foundTemplates = context.get(TEMPLATES);
             ResourceAddress address = AddressTemplate.of(providerPoint).resolve();
             Operation operation = new Operation.Builder(address, READ_RESOURCE_OPERATION)
                     .param(ATTRIBUTES_ONLY, true)
@@ -111,29 +121,27 @@ public class CapabilityRegistry {
                     .then(result -> {
                         if (result.isDefined()) {
                             if (result.getType() == ModelType.LIST) {
-                                Optional<AddressTemplate> any = result.asList().stream()
+                                List<AddressTemplate> templates = result.asList().stream()
                                         .filter(node -> node.hasDefined(ADDRESS))
                                         .map(node -> AddressTemplate.of(new ResourceAddress(node.get(ADDRESS))))
                                         .filter(template -> value.equals(template.last().value))
-                                        .findAny();
-                                if (any.isPresent()) {
-                                    return found(context, any.get());
+                                        .collect(toList());
+                                if (!templates.isEmpty()) {
+                                    foundTemplates.addAll(templates);
+                                    logger.debug("Add %s for %s and %s to found templates", templates, capability, value);
                                 }
                             } else if (result.getType() == ModelType.OBJECT) {
-                                return found(context, AddressTemplate.of(address));
+                                AddressTemplate template = AddressTemplate.of(new ResourceAddress(result.get(ADDRESS)));
+                                foundTemplates.add(template);
+                                logger.debug("Add %s for %s and %s to found templates", template, capability, value);
                             }
                         }
-                        return context.resolve(); // not found
+                        return context.resolve();
                     })
                     .catch_(error -> {
                         logger.debug("%s is not a valid resource for %s and %s", address, capability, value);
                         return context.resolve();  // ignore errors
                     });
-        }
-
-        private Promise<FlowContext> found(FlowContext context, AddressTemplate template) {
-            logger.debug("Found %s for %s and %s", template, capability, value);
-            return context.resolve(template);
         }
     }
 }

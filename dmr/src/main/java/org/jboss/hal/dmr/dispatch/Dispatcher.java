@@ -61,12 +61,20 @@ public class Dispatcher {
     private static final Logger logger = Logger.getLogger(Dispatcher.class.getName());
     private final DispatcherErrorHandler defaultErrorHandler;
 
-    @Inject Endpoints endpoints;
-    @Inject Environment environment;
-    @Inject Settings settings;
-    @Inject Instance<DmrHeaderProcessor> dmrHeaderProcessors;
+    private final Endpoints endpoints;
+    private final Environment environment;
+    private final Settings settings;
+    private final Instance<DmrHeaderProcessor> dmrHeaderProcessors;
 
-    public Dispatcher() {
+    @Inject
+    public Dispatcher(Environment environment,
+            Settings settings,
+            Endpoints endpoints,
+            Instance<DmrHeaderProcessor> dmrHeaderProcessors) {
+        this.environment = environment;
+        this.settings = settings;
+        this.endpoints = endpoints;
+        this.dmrHeaderProcessors = dmrHeaderProcessors;
         defaultErrorHandler = (operation, error) -> {
             logger.error("Error executing operation: %s: %s", operation.asCli(), error);
             // TODO Fire message event

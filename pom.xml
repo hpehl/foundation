@@ -94,10 +94,9 @@
         <version.kie.j2cl.bom>0.2</version.kie.j2cl.bom>
         <version.kie.di.bom>0.7</version.kie.di.bom>
         <version.mockito>5.14.1</version.mockito>
-        <version.node>v22.8.0</version.node>
+        <version.node>v20.18.0</version.node>
         <version.patternfly>5.2.1</version.patternfly>
         <version.patternfly.java>0.2.11-SNAPSHOT</version.patternfly.java>
-        <version.yarn>v1.22.22</version.yarn>
 
         <!-- Plugin versions -->
         <version.checkstyle.plugin>3.3.0</version.checkstyle.plugin>
@@ -595,14 +594,22 @@
         <repository>
             <id>oss-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases><enabled>false</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <repository>
             <id>oss-snapshots-01</id>
             <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-            <releases><enabled>false</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 </project>

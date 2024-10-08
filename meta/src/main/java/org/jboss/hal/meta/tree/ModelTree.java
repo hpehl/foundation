@@ -66,11 +66,11 @@ public class ModelTree {
      * Traverses through the management model tree based on the specified parameters and invokes a consumer for each resource
      * address.
      * <p>
-     * The method returns a promise of the {@link TraverseContext} that is resolved when the model tree has been fully
-     * traversed. The traversal can be controlled with an instance of {@link TraverseContinuation} that has to be passed as
-     * parameter. Call {@link TraverseContinuation#stop()} to abort the traversal. In that case the promise is resolved with the
-     * current context. Dispatcher errors are caught by this method and won't cause the promise to be rejected. Other errors
-     * will result in the promise to be rejected, though.
+     * The method returns a promise that resolves to a {@link TraverseContext} when the model tree has been fully traversed. The
+     * traversal can be controlled with an instance of {@link TraverseContinuation} that has to be passed as parameter. Call
+     * {@link TraverseContinuation#stop()} to abort the traversal. In that case the promise is resolved with the current
+     * context. DMR errors are caught by this method and won't cause the promise to be rejected. Other errors will reject the
+     * promise, though.
      * <p>
      * The {@linkplain TraverseContinuation#isRunning() running state} of the continuation is controlled by this method: It is
      * set to {@code true} when the traversal starts and to {@code false} if the traversal ends, fails, or has been aborted by

@@ -118,7 +118,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                     break;
                 case SINGLETON_RESOURCE:
                 case RESOURCE:
-                    pageMainSection.add(new ResourceElement(uic, metadata));
+                    pageMainSection.add(new ResourceElement(uic, mbn, metadata));
                     break;
             }
         });

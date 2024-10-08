@@ -30,11 +30,11 @@ class ResourceElement implements IsElement<HTMLElement> {
 
     private final HTMLElement root;
 
-    ResourceElement(UIContext uic, Metadata metadata) {
+    ResourceElement(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
         this.root = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
-                        .addContent(tabContent().add(resourceView(uic, metadata))))
+                        .addContent(tabContent().add(resourceView(uic, mbn.template, metadata))))
                 .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tbs.addItem(tab("attributes", "Attributes")

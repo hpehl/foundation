@@ -24,11 +24,8 @@ import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
-import org.jboss.hal.resources.HalDataset;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.modelbrowser.ModelBrowserSelectEvent;
-import org.patternfly.component.button.Button;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionListGroup;
@@ -40,8 +37,6 @@ import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
-import static elemental2.dom.DomGlobal.clearTimeout;
-import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.div;
@@ -76,7 +71,6 @@ import static org.patternfly.component.popover.Popover.popover;
 import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Attributes.role;
-import static org.patternfly.core.Timeouts.LOADING_TIMEOUT;
 import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.style.Classes.component;
@@ -237,21 +231,9 @@ class ResourceViewItem {
                             } else {
                                 if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
                                     String capability = ra.description.get(CAPABILITY_REFERENCE).asString();
-                                    Button button = button()
-                                            .link()
-                                            .inline()
-                                            .progress(false, "Search for capability")
-                                            .data(HalDataset.capabilityReference, capability)
-                                            .data(HalDataset.capabilityValue, "")
-                                            .onClick((__, btn) -> findCapability(uic, btn));
-                                    element = span()
-                                            .add(tooltip(button.element(), "Follow capability reference " + capability))
-                                            .add(button)
-                                            .element();
-                                    fn = value -> {
-                                        button.data(HalDataset.capabilityValue, value.asString());
-                                        button.text(value.asString());
-                                    };
+                                    CapabilityReferenceLink crl = new CapabilityReferenceLink(uic, capability);
+                                    element = crl.element();
+                                    fn = value -> crl.assignValue(value.asString());
                                 } else {
                                     element = span().element();
                                     fn = value -> element.textContent = value.asString();
@@ -298,29 +280,6 @@ class ResourceViewItem {
             fn = value -> element.textContent = value.asString();
         }
         return tuple(element, fn);
-    }
-
-    private static void findCapability(UIContext uic, Button button) {
-        String capability = button.element().dataset.get(HalDataset.capabilityReference);
-        String value = button.element().dataset.get(HalDataset.capabilityValue);
-        if (capability != null && !capability.isEmpty() && value != null && !value.isEmpty()) {
-            double handle = setTimeout(__ -> button.startProgress(), LOADING_TIMEOUT);
-            uic.capabilityRegistry().findReference(capability, value)
-                    .then(template -> {
-                        clearTimeout(handle);
-                        button.stopProgress();
-                        if (template != null) {
-                            ModelBrowserSelectEvent.dispatch(button.element(), template.toString());
-                        } else {
-                            // TODO Show an alert!
-                            logger.error("Unable to find capability %s for value %s", capability, value);
-                        }
-                        return null;
-                    });
-        } else {
-            logger.error("Unable to find capability. Dataset properties for capability and/or value not found on %s",
-                    button.element());
-        }
     }
 
     final DescriptionListGroup dlg;

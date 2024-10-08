@@ -26,6 +26,7 @@ import org.jboss.hal.meta.tree.TraverseType;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.form.Form;
+import org.patternfly.component.form.FormGroup;
 import org.patternfly.component.form.FormGroupControl;
 import org.patternfly.component.form.Radio;
 import org.patternfly.component.form.TextArea;
@@ -38,6 +39,8 @@ import org.patternfly.component.popover.Popover;
 import org.patternfly.core.Timeouts;
 import org.patternfly.icon.IconSets;
 import org.patternfly.layout.flex.FlexItem;
+import org.patternfly.layout.flex.Gap;
+import org.patternfly.style.Breakpoint;
 import org.patternfly.style.Size;
 
 import static elemental2.dom.DomGlobal.clearTimeout;
@@ -85,9 +88,11 @@ import static org.patternfly.layout.flex.Direction.column;
 import static org.patternfly.layout.flex.Display.inlineFlex;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
-import static org.patternfly.layout.flex.Gap.md;
 import static org.patternfly.layout.flex.Gap.sm;
+import static org.patternfly.layout.grid.Grid.grid;
+import static org.patternfly.layout.grid.GridItem.gridItem;
 import static org.patternfly.popper.Placement.auto;
+import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Classes.search;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Size.lg;
@@ -144,7 +149,7 @@ class FindResource {
                                                 .add(strong().textContent("data"))
                                                 .add("-source=ExampleDS")))))
                 .addItem(descriptionListGroup(Id.build(scopeId, "type-help"))
-                        .addTerm(descriptionListTerm("Resource type"))
+                        .addTerm(descriptionListTerm("Type"))
                         .addDescription(descriptionListDescription()
                                 .add(div().textContent("Search in the resource type"))
                                 .add(flex().display(inlineFlex).columnGap(sm)
@@ -155,7 +160,7 @@ class FindResource {
                                                 .add(strong().textContent("data"))
                                                 .add("-source=ExampleDS")))))
                 .addItem(descriptionListGroup(Id.build(scopeId, "name-help"))
-                        .addTerm(descriptionListTerm("Resource name"))
+                        .addTerm(descriptionListTerm("Name"))
                         .addDescription(descriptionListDescription()
                                 .add(div().textContent("Search in the resource name"))
                                 .add(flex().display(inlineFlex).columnGap(sm)
@@ -165,15 +170,6 @@ class FindResource {
                                                 .add("/subsystem=datasources/data-source=")
                                                 .add(strong().textContent("Example"))
                                                 .add("DS")))));
-        Popover scopeInfo = popover()
-                .autoWidth()
-                .placement(auto)
-                .addHeader(popoverHeader().textContent("Where to search"))
-                .addBody(popoverBody()
-                        .add(flex().direction(column).rowGap(md)
-                                .addItem(flexItem().add(div().textContent("Given comparison is 'contains':")))
-                                .addItem(flexItem().add(scopeDescription))
-                                .addItem(flexItem().add(div().textContent("The search is case insensitive by default.")))));
 
         DescriptionList comparisonDescription = descriptionList().horizontal().compact()
                 .addItem(descriptionListGroup(Id.build(comparisonId, "contains-help"))
@@ -198,54 +194,76 @@ class FindResource {
                                         .add(span()
                                                 .add("/subsystem=datasources/data-source=")
                                                 .add(strong().textContent("ExampleDS"))))));
+
+        Popover scopeInfo = popover()
+                .autoWidth()
+                .placement(auto)
+                .addHeader(popoverHeader().textContent("Where to search"))
+                .addBody(popoverBody()
+                        .add(flex().direction(column).rowGap(Gap.md)
+                                .addItem(flexItem().add(div().textContent("Given comparison is 'contains':")))
+                                .addItem(flexItem().add(scopeDescription))
+                                .addItem(flexItem().add(div().textContent("The search is case insensitive by default.")))));
+
         Popover comparisonInfo = popover()
                 .autoWidth()
                 .placement(auto)
                 .addHeader(popoverHeader().textContent("How to search"))
                 .addBody(popoverBody()
-                        .add(flex().direction(column).rowGap(md)
-                                .addItem(flexItem().add(div().textContent("Given scope is 'resource name':")))
+                        .add(flex().direction(column).rowGap(Gap.md)
+                                .addItem(flexItem().add(div().textContent("Given scope is 'Name':")))
                                 .addItem(flexItem().add(comparisonDescription))
                                 .addItem(flexItem().add(div().textContent("The search is case insensitive by default.")))));
 
+        FormGroup nameFormGroup = formGroup().fieldId(nameId).required()
+                .addLabel(formGroupLabel("Name"))
+                .addControl(nameControl = formGroupControl()
+                        .addControl(nameInput = textInput(nameId)));
+
+        FormGroup rootFormGroup = formGroup().fieldId(rootId)
+                .addLabel(formGroupLabel("Root"))
+                .addControl(formGroupControl()
+                        .addControl(rootInput = textInput(rootId).value(modelBrowserTree.selectedAddress()))
+                        .addHelperText(helperText("Leave empty to search the whole model.")));
+
+        FormGroup excludeFormGroup = formGroup().fieldId(excludeId)
+                .addLabel(formGroupLabel("Exclude"))
+                .addControl(formGroupControl()
+                        .addControl(excludeTextArea = textArea(excludeId)
+                                .applyTo(textArea -> textArea.element().rows = 1)
+                                .autoResize()
+                                .resize(vertical)
+                                .value("/core-service"))
+                        .addHelperText(helperText("Enter resource addresses to exclude (separated by line breaks)")));
+
+        FormGroup scopeFormGroup = formGroup().fieldId(scopeId).role(radiogroup)
+                .addLabel(formGroupLabel("Scope").noPaddingTop().help("Where to search", scopeInfo))
+                .addControl(formGroupControl().inline()
+                        .addRadio(scopeAddressRadio = radio(Id.build(scopeId, "address"), scopeId, "Address"))
+                        .addRadio(scopeTypeRadio = radio(Id.build(scopeId, "type"), scopeId, "Type"))
+                        .addRadio(scopeNameRadio = radio(Id.build(scopeId, "name"), scopeId, "Name")
+                                .value(true, false)));
+
+        FormGroup comparisonFormGroup = formGroup().fieldId(comparisonId).role(radiogroup)
+                .addLabel(formGroupLabel("Comparison").noPaddingTop().help("How to search", comparisonInfo))
+                .addControl(formGroupControl().inline()
+                        .addRadio(comparisonContainsRadio = radio(Id.build(comparisonId, "contains"),
+                                comparisonId,
+                                "contains")
+                                .value(true, false))
+                        .addRadio(radio(Id.build(comparisonId, "equals"), comparisonId, "equals")));
+
         Form searchForm = form().horizontal()
-                .addGroup(formGroup().fieldId(nameId).required()
-                        .addLabel(formGroupLabel("Name"))
-                        .addControl(nameControl = formGroupControl()
-                                .addControl(nameInput = textInput(nameId))))
-                .addGroup(formGroup().fieldId(rootId)
-                        .addLabel(formGroupLabel("Root"))
-                        .addControl(formGroupControl()
-                                .addControl(rootInput = textInput(rootId).value(modelBrowserTree.selectedAddress()))
-                                .addHelperText(helperText("Leave empty to search the whole model."))))
-                .addGroup(formGroup().fieldId(excludeId)
-                        .addLabel(formGroupLabel("Exclude"))
-                        .addControl(formGroupControl()
-                                .addControl(excludeTextArea = textArea(excludeId)
-                                        .applyTo(textArea -> textArea.element().rows = 1)
-                                        .autoResize()
-                                        .resize(vertical)
-                                        .value("/core-service"))
-                                .addHelperText(helperText("Enter resource addresses to exclude (separated by line breaks)"))))
-                .addGroup(formGroup().fieldId(scopeId).role(radiogroup)
-                        .addLabel(formGroupLabel("Scope").help("Where to search", scopeInfo))
-                        .addControl(formGroupControl().inline()
-                                .addRadio(scopeAddressRadio = radio(Id.build(scopeId, "address"), scopeId, "Address"))
-                                .addRadio(scopeTypeRadio = radio(Id.build(scopeId, "type"), scopeId, "Resource type"))
-                                .addRadio(scopeNameRadio = radio(Id.build(scopeId, "name"), scopeId, "Resource name")
-                                        .value(true, false))))
-                .addGroup(formGroup().fieldId(comparisonId).role(radiogroup)
-                        .addLabel(formGroupLabel("Comparison").help("How to search", comparisonInfo))
-                        .addControl(formGroupControl().inline()
-                                .addRadio(comparisonContainsRadio = radio(Id.build(comparisonId, "contains"), comparisonId,
-                                        "contains")
-                                        .value(true, false))
-                                .addRadio(radio(Id.build(comparisonId, "equals"), comparisonId, "equals"))));
+                .add(grid().gutter().columns(breakpoints(Breakpoint.md, 6))
+                        .addItem(gridItem().span(12).add(nameFormGroup))
+                        .addItem(gridItem().span(12).add(rootFormGroup))
+                        .addItem(gridItem().span(12).add(excludeFormGroup))
+                        .addItem(gridItem().span(6).add(scopeFormGroup))
+                        .addItem(gridItem().span(6).add(comparisonFormGroup)));
 
         searchResults = flexItem()
-                .add(flex().direction(column).rowGap(md)
-                        .addItem(status = flexItem().css(util("text-truncate"))
-                                .textContent("Processing ..."))
+                .add(flex().direction(column).rowGap(Gap.md)
+                        .addItem(status = flexItem().css(util("text-truncate")))
                         .addItem(flexItem()
                                 .add(matchingResources = list().css(halComponent(modelBrowser, search, results))
                                         .plain())));
@@ -263,7 +281,7 @@ class FindResource {
                 .size(lg)
                 .addHeader("Find a resource")
                 .addBody(modalBody()
-                        .add(flex().direction(column).rowGap(md)
+                        .add(flex().direction(column).rowGap(Gap.md)
                                 .addItem(flexItem().add(searchForm))
                                 .addItem(flexItem().add(divider(hr)))
                                 .addItem(searchResults)
@@ -300,6 +318,7 @@ class FindResource {
                 nameControl.removeHelperText();
                 nameInput.resetValidation();
                 matchingResources.clear();
+                removeChildrenFrom(status);
                 status.style("color", globalVar("Color", "200").asVar());
                 setVisible(searchResults, true);
                 setVisible(noResults, false);

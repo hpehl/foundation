@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 class LRUCache<K, V> {
 
@@ -93,6 +95,10 @@ class LRUCache<K, V> {
         return (K[]) cacheList.stream().map(n -> n.key).toArray();
     }
 
+    Set<Map.Entry<K, Node<K, V>>> entries() {
+        return cacheMap.entrySet();
+    }
+
     private void moveToHead(Node<K, V> node) {
         cacheList.remove(node);
         cacheList.addFirst(node);
@@ -108,10 +114,10 @@ class LRUCache<K, V> {
 
     // ------------------------------------------------------ inner classes
 
-    private static class Node<K, V> {
+    static class Node<K, V> {
 
-        private final K key;
-        private V value;
+        final K key;
+        V value;
 
         private Node(K key, V value) {
             this.key = key;

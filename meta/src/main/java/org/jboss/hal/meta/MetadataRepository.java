@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -33,7 +34,9 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Settings;
 
 import elemental2.promise.Promise;
+import jsinterop.annotations.JsMethod;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 
 /**
@@ -46,7 +49,6 @@ import static java.util.Collections.singleton;
 public class MetadataRepository {
 
     // TODO: Add support for 2nd level cache!
-
     private static final int FIRST_LEVEL_CACHE_SIZE = 500;
     private static final Logger logger = Logger.getLogger(MetadataRepository.class.getName());
 
@@ -100,13 +102,25 @@ public class MetadataRepository {
             logger.debug("Get metadata for %s → %s from cache", template, address);
             return metadata;
         } else {
-            if (processedInCache(address)) {
+            Set<String> processed = processedInCache(address);
+            if (processed.isEmpty()) {
+                logger.error("No metadata found for %s → %s. Returning an empty metadata", template, address);
+                return Metadata.undefined();
+            } else if (processed.size() == 1) {
+                address = processed.iterator().next();
+                metadata = internalGet(address);
+                if (metadata == null) {
+                    logger.error("No metadata found for %s → %s. Returning an empty metadata", template, address);
+                    return Metadata.undefined();
+                } else {
+                    logger.debug("Get metadata for %s → %s from cache", template, address);
+                    return metadata;
+                }
+            } else {
                 logger.debug("Metadata for %s → %s has been processed, but resulted in multiple metadata. " +
                         "Returning an empty metadata", template, address);
-            } else {
-                logger.error("No metadata found for %s → %s. Returning an empty metadata", template, address);
+                return Metadata.undefined();
             }
-            return Metadata.undefined();
         }
     }
 
@@ -136,14 +150,66 @@ public class MetadataRepository {
             logger.debug("Lookup metadata for %s → %s from cache", template, address);
             return Promise.resolve(metadata);
         } else {
-            if (processedInCache(address)) {
+            Set<String> processed = processedInCache(address);
+            if (processed.isEmpty()) {
+                logger.debug("Process metadata for %s → %s", template, address);
+                return process(template, singleton(address));
+            } else if (processed.size() == 1) {
+                address = processed.iterator().next();
+                metadata = internalGet(address);
+                if (metadata == null) {
+                    logger.debug("Process metadata for %s → %s", template, address);
+                    return process(template, singleton(address));
+                } else {
+                    logger.debug("Lookup metadata for %s → %s from cache", template, address);
+                    return Promise.resolve(metadata);
+                }
+            } else {
                 logger.debug("Metadata for %s → %s has been processed, but resulted in multiple metadata. " +
                         "Returning an empty metadata", template, address);
                 return Promise.resolve(Metadata.undefined());
-            } else {
-                logger.debug("Process metadata for %s → %s", template, address);
-                return process(template, singleton(address));
             }
+        }
+    }
+
+    // ------------------------------------------------------ js api
+
+    private static MetadataRepository instance;
+
+    @PostConstruct
+    void init() {
+        MetadataRepository.instance = this;
+    }
+
+    @JsMethod(name = "get")
+    private static Metadata jsGet(String address) {
+        if (instance != null) {
+            return instance.get(AddressTemplate.of(address));
+        } else {
+            logger.error("MetadataRepository not initialized");
+            return Metadata.undefined();
+        }
+    }
+
+    @JsMethod(name = "lookup")
+    private static Promise<Metadata> jsLookup(String address) {
+        if (instance != null) {
+            return instance.lookup(AddressTemplate.of(address));
+        } else {
+            logger.error("MetadataRepository not initialized");
+            return Promise.resolve(Metadata.undefined());
+        }
+    }
+
+    @JsMethod(name = "dump")
+    private static void jsDump() {
+        if (instance != null) {
+            logger.debug("%d entries in 1st level cache", instance.cache.size());
+            for (Map.Entry<String, LRUCache.Node<String, Metadata>> entry : instance.cache.entries()) {
+                logger.debug("%s: %s", entry.getKey(), entry.getValue().value.address());
+            }
+        } else {
+            logger.error("MetadataRepository not initialized");
         }
     }
 
@@ -159,17 +225,8 @@ public class MetadataRepository {
         this.processedAddresses.computeIfAbsent(address, k -> new HashSet<>()).addAll(processedAddresses);
     }
 
-    private boolean processedInCache(String address) {
-        if (processedAddresses.containsKey(address)) {
-            Set<String> addresses = processedAddresses.get(address);
-            for (String a : addresses) {
-                if (!inCache(a)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
+    private Set<String> processedInCache(String address) {
+        return processedAddresses.getOrDefault(address, emptySet());
     }
 
     private Promise<Metadata> process(AddressTemplate template, Set<String> addresses) {

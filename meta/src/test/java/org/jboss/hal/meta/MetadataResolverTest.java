@@ -30,29 +30,29 @@ class MetadataResolverTest {
                 new String[]{"/{domain.controller}", "/host=primary"},
                 new String[]{"/{selected.host}", "/host=secondary"},
                 // host/server placeholders
-                new String[]{"/{domain.controller}/{selected.server}", "/host=*/server=*"},
-                new String[]{"/{selected.host}/{selected.server}", "/host=*/server=*"},
-                new String[]{"/{selected.host}/server=*", "/host=*/server=*"},
-                new String[]{"/{selected.host}/server=server1", "/host=*/server=*"},
+                new String[]{"/{domain.controller}/{selected.server}", "/host=primary/server=server1"},
+                new String[]{"/{selected.host}/{selected.server}", "/host=secondary/server=server1"},
+                new String[]{"/{selected.host}/server=*", "/host=secondary/server=*"},
+                new String[]{"/{selected.host}/server=server1", "/host=secondary/server=server1"},
                 new String[]{
                         "/{selected.host}/{selected.server}/subsystem=undertow/server=*/host=*",
-                        "/host=*/server=*/subsystem=undertow/server=*/host=*"
+                        "/host=secondary/server=server1/subsystem=undertow/server=*/host=*"
                 },
                 new String[]{
                         "/{selected.host}/{selected.server}/subsystem=undertow/server=default-server/host=default-host",
-                        "/host=*/server=*/subsystem=undertow/server=default-server/host=default-host",
+                        "/host=secondary/server=server1/subsystem=undertow/server=default-server/host=default-host",
                 },
                 // host/server-config placeholders
-                new String[]{"/{selected.host}/{selected.server-config}", "/host=*/server-config=*"},
-                new String[]{"/{selected.host}/server-config=*", "/host=*/server-config=*"},
-                new String[]{"/{selected.host}/server-config=server1", "/host=*/server-config=*"},
+                new String[]{"/{selected.host}/{selected.server-config}", "/host=secondary/server-config=server2"},
+                new String[]{"/{selected.host}/server-config=*", "/host=secondary/server-config=*"},
+                new String[]{"/{selected.host}/server-config=server1", "/host=secondary/server-config=server1"},
                 new String[]{
                         "/{selected.host}/{selected.server-config}/subsystem=undertow/server=*/host=*",
-                        "/host=*/server-config=*/subsystem=undertow/server=*/host=*"
+                        "/host=secondary/server-config=server2/subsystem=undertow/server=*/host=*"
                 },
                 new String[]{
                         "/{selected.host}/{selected.server-config}/subsystem=undertow/server=default-server/host=default-host",
-                        "/host=*/server-config=*/subsystem=undertow/server=default-server/host=default-host"
+                        "/host=secondary/server-config=server2/subsystem=undertow/server=default-server/host=default-host"
                 },
                 // host wildcard
                 new String[]{"/host=*", "/host=*"},
@@ -79,24 +79,24 @@ class MetadataResolverTest {
                 // host value
                 new String[]{"/host=primary", "/host=primary"},
                 // host/server values
-                new String[]{"/host=primary/server=server1", "/host=*/server=*"},
+                new String[]{"/host=primary/server=server1", "/host=primary/server=server1"},
                 new String[]{
                         "/host=primary/server=server1/subsystem=undertow/server=server1/host=*",
-                        "/host=*/server=*/subsystem=undertow/server=server1/host=*"
+                        "/host=primary/server=server1/subsystem=undertow/server=server1/host=*"
                 },
                 new String[]{
                         "/host=primary/server=server1/subsystem=undertow/server=default-server/host=default-host",
-                        "/host=*/server=*/subsystem=undertow/server=default-server/host=default-host"
+                        "/host=primary/server=server1/subsystem=undertow/server=default-server/host=default-host"
                 },
                 // host/server-config values
-                new String[]{"/host=primary/server-config=server1", "/host=*/server-config=*"},
+                new String[]{"/host=primary/server-config=server1", "/host=primary/server-config=server1"},
                 new String[]{
                         "/host=primary/server-config=server1/subsystem=undertow/server=*/host=*",
-                        "/host=*/server-config=*/subsystem=undertow/server=*/host=*"
+                        "/host=primary/server-config=server1/subsystem=undertow/server=*/host=*"
                 },
                 new String[]{
                         "/host=primary/server-config=server1/subsystem=undertow/server=default-server/host=default-host",
-                        "/host=*/server-config=*/subsystem=undertow/server=default-server/host=default-host"
+                        "/host=primary/server-config=server1/subsystem=undertow/server=default-server/host=default-host"
                 },
         };
         MetadataResolver resolver = new MetadataResolver(domainStatementContext());
@@ -133,14 +133,14 @@ class MetadataResolverTest {
     public void serverGroup() {
         String[][] fixtures = new String[][]{
                 new String[]{"/{selected.server-group}", "/server-group=main-server-group"},
-                new String[]{"/{selected.server-group}/jvm=*", "/server-group=*/jvm=*"},
-                new String[]{"/{selected.server-group}/jvm=jvm1", "/server-group=*/jvm=jvm1"},
+                new String[]{"/{selected.server-group}/jvm=*", "/server-group=main-server-group/jvm=*"},
+                new String[]{"/{selected.server-group}/jvm=jvm1", "/server-group=main-server-group/jvm=jvm1"},
                 new String[]{"/server-group=*", "/server-group=*"},
                 new String[]{"/server-group=*/jvm=*", "/server-group=*/jvm=*"},
                 new String[]{"/server-group=*/jvm=jvm1", "/server-group=*/jvm=jvm1"},
                 new String[]{"/server-group=main-server-group", "/server-group=main-server-group"},
-                new String[]{"/server-group=main-server-group/jvm=*", "/server-group=*/jvm=*"},
-                new String[]{"/server-group=main-server-group/jvm=jvm1", "/server-group=*/jvm=jvm1"},
+                new String[]{"/server-group=main-server-group/jvm=*", "/server-group=main-server-group/jvm=*"},
+                new String[]{"/server-group=main-server-group/jvm=jvm1", "/server-group=main-server-group/jvm=jvm1"},
         };
         MetadataResolver resolver = new MetadataResolver(domainStatementContext());
         for (int i = 0; i < fixtures.length; i++) {
@@ -173,22 +173,25 @@ class MetadataResolverTest {
         String[][] fixtures = new String[][]{
                 new String[]{
                         "/server-group=main-server-group/{selected.deployment}",
-                        "/server-group=*/deployment=hello-world"
+                        "/server-group=main-server-group/deployment=hello-world"
                 },
                 new String[]{
                         "/server-group=main-server-group/{selected.deployment}/subsystem=batch",
-                        "/server-group=*/deployment=*/subsystem=batch"
+                        "/server-group=main-server-group/deployment=*/subsystem=batch"
                 },
-                new String[]{"/server-group=main-server-group/deployment=*", "/server-group=*/deployment=*"},
+                new String[]{
+                        "/server-group=main-server-group/deployment=*",
+                        "/server-group=main-server-group/deployment=*"},
                 new String[]{
                         "/server-group=main-server-group/deployment=*/subsystem=batch",
-                        "/server-group=*/deployment=*/subsystem=batch"
+                        "/server-group=main-server-group/deployment=*/subsystem=batch"
                 },
-                new String[]{"/server-group=main-server-group/deployment=kitchensink",
-                        "/server-group=*/deployment=kitchensink"},
+                new String[]{
+                        "/server-group=main-server-group/deployment=kitchensink",
+                        "/server-group=main-server-group/deployment=kitchensink"},
                 new String[]{
                         "/server-group=main-server-group/deployment=kitchensink/subsystem=batch",
-                        "/server-group=*/deployment=*/subsystem=batch"
+                        "/server-group=main-server-group/deployment=*/subsystem=batch"
                 },
         };
         MetadataResolver resolver = new MetadataResolver(domainStatementContext());
@@ -338,7 +341,7 @@ class MetadataResolverTest {
         String[][] fixtures = new String[][]{
                 new String[]{
                         "/{domain.controller}/{selected.server}/subsystem=undertow/server=default-server/host=default-host/location={selected.resource}/filter-ref={unknown}",
-                        "/host=*/server=*/subsystem=undertow/server=default-server/host=default-host/location=bar/filter-ref={unknown}"
+                        "/host=primary/server=server1/subsystem=undertow/server=default-server/host=default-host/location=bar/filter-ref={unknown}"
                 },
         };
         MetadataResolver resolver = new MetadataResolver(domainStatementContext());
