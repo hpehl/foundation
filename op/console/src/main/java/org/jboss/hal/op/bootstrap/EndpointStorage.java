@@ -36,12 +36,12 @@ class EndpointStorage {
     private final Map<String, Endpoint> endpoints;
     private final Storage storage;
 
+    @SuppressWarnings("unchecked")
     EndpointStorage() {
         this.endpoints = new HashMap<>();
         this.storage = WebStorageWindow.of(window).localStorage;
         String payload = storage.getItem(Ids.ENDPOINTS);
         if (payload != null && !payload.isEmpty()) {
-            //noinspection unchecked
             JsArray<Endpoint> eps = (JsArray<Endpoint>) JSON.parse(payload);
             for (int i = 0; i < eps.length; i++) {
                 endpoints.put(eps.getAt(i).id, eps.getAt(i));
