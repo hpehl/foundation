@@ -22,7 +22,7 @@
   "dependencies": {
     "@patternfly/patternfly": "^5.3.1"
   },
-  "overrides": {
-    "@parcel/watcher": "2.1.0"
+  "optionalDependencies": {
+    "@parcel/watcher-linux-x64-glibc": "^2.4.2-alpha.0"
   }
 }
