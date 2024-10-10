@@ -13,9 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
+// External first
 import "@patternfly/patternfly/patternfly.css";
 import "@patternfly/patternfly/patternfly-addons.css";
+
+// Variables second
 import "./variables.css"
+
+// Remaining third (a-z)
+import "./capability.css"
 import "./model-browser.css"
 import "./resource-view.css"
 import "./stability.css"

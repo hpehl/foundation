@@ -66,12 +66,13 @@ import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.style.Breakpoint._2xl;
-import static org.patternfly.style.Breakpoint.default_;
 import static org.patternfly.style.Breakpoint.lg;
 import static org.patternfly.style.Breakpoint.md;
 import static org.patternfly.style.Breakpoint.sm;
 import static org.patternfly.style.Breakpoint.xl;
 import static org.patternfly.style.Breakpoints.breakpoints;
+import static org.patternfly.style.Orientation.horizontal;
+import static org.patternfly.style.Orientation.vertical;
 import static org.patternfly.style.Variable.globalVar;
 
 // TODO Implement resolve all expressions, reset, and edit actions
@@ -165,11 +166,13 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                     visible.set(resourceAttributes.size());
                     total.set(resourceAttributes.size());
                     dl = descriptionList().css(halComponent(resourceView))
-                            .horizontal()
+                            .orientation(breakpoints(
+                                    sm, vertical,
+                                    md, vertical,
+                                    lg, horizontal,
+                                    xl, horizontal,
+                                    _2xl, horizontal))
                             .horizontalTermWidth(breakpoints(
-                                    default_, "12ch",
-                                    sm, "15ch",
-                                    md, "18ch",
                                     lg, "23ch",
                                     xl, "25ch",
                                     _2xl, "28ch"));

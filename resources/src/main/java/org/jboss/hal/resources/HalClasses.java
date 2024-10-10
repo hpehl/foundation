@@ -19,6 +19,7 @@ public interface HalClasses {
 
     // ------------------------------------------------------ constants (a-z)
 
+    String capabilityReference = "capability-reference";
     String copy = "copy";
     String deprecated = "deprecated";
     String detail = "detail";
@@ -26,6 +27,7 @@ public interface HalClasses {
     String filtered = "filtered";
     String goto_ = "goto";
     String modelBrowser = "model-browser";
+    String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";
     String resourceView = "resource-view";
     String results = "results";

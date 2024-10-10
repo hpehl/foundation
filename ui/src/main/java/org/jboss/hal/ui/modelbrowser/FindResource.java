@@ -19,6 +19,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.jboss.elemento.Id;
+import org.jboss.elemento.Key;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.tree.TraverseContext;
 import org.jboss.hal.meta.tree.TraverseContinuation;
@@ -52,6 +53,7 @@ import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
+import static org.jboss.elemento.EventType.keydown;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.resources.HalClasses.results;
@@ -218,12 +220,22 @@ class FindResource {
         FormGroup nameFormGroup = formGroup().fieldId(nameId).required()
                 .addLabel(formGroupLabel("Name"))
                 .addControl(nameControl = formGroupControl()
-                        .addControl(nameInput = textInput(nameId)));
+                        .addControl(nameInput = textInput(nameId)
+                                .on(keydown, e -> {
+                                    if (Key.Enter.match(e)) {
+                                        search();
+                                    }
+                                })));
 
         FormGroup rootFormGroup = formGroup().fieldId(rootId)
                 .addLabel(formGroupLabel("Root"))
                 .addControl(formGroupControl()
-                        .addControl(rootInput = textInput(rootId).value(modelBrowserTree.selectedAddress()))
+                        .addControl(rootInput = textInput(rootId).value(modelBrowserTree.selectedAddress())
+                                .on(keydown, e -> {
+                                    if (Key.Enter.match(e)) {
+                                        search();
+                                    }
+                                }))
                         .addHelperText(helperText("Leave empty to search the whole model.")));
 
         FormGroup excludeFormGroup = formGroup().fieldId(excludeId)

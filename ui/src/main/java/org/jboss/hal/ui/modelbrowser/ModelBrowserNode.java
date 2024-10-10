@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.gwtproject.safehtml.shared.SafeHtmlUtils;
-import org.jboss.elemento.Id;
 import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.icon.IconSets;
 import org.patternfly.icon.PredefinedIcon;
@@ -33,19 +32,6 @@ import org.patternfly.icon.PredefinedIcon;
 class ModelBrowserNode {
 
     static final String ROOT_ID = "root";
-
-    static String uniqueId(AddressTemplate template) {
-        if (template.isEmpty()) {
-            return ROOT_ID;
-        } else {
-            String safeTemplate = template.template
-                    .replace("/", "-s-")
-                    .replace("=", "-e-")
-                    .replace(":", "-c-")
-                    .replace("*", "-w-");
-            return Id.build(safeTemplate);
-        }
-    }
 
     enum Type {
         SINGLETON_FOLDER(IconSets.fas::listUl, null),
@@ -65,7 +51,7 @@ class ModelBrowserNode {
         }
     }
 
-    final String id;
+    final String identifier;
     final AddressTemplate template;
     final String name;
     final Type type;
@@ -73,7 +59,7 @@ class ModelBrowserNode {
     boolean exists;
 
     ModelBrowserNode(AddressTemplate template, String name, Type type) {
-        this.id = uniqueId(template);
+        this.identifier = template.identifier();
         this.template = template;
         this.name = name != null ? SafeHtmlUtils.htmlEscape(name) : null;
         this.type = type;

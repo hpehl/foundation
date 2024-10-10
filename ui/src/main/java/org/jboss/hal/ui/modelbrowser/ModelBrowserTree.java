@@ -40,13 +40,10 @@ import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.MODEL_BROWSER_NODE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
-import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
-import static org.patternfly.component.toolbar.ToolbarGroupType.iconButtonGroup;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.component.tree.TreeView.treeView;
@@ -105,14 +102,13 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                 .add(pageMainSection().sticky(Sticky.top).padding(noPadding)
                         .add(toolbar().css(modifier(insetNone))
                                 .addContent(toolbarContent()
-                                        .addGroup(toolbarGroup(iconButtonGroup)
-                                                .addItem(toolbarItem().add(backButton))
-                                                .addItem(toolbarItem().add(forwardButton))
-                                                .addItem(toolbarItem().add(reloadButton))
-                                                .addItem(toolbarItem().add(homeButton))
-                                                .addItem(toolbarItem().add(findResource))
-                                                .addItem(toolbarItem().add(gotoResource))
-                                                .addItem(toolbarItem().add(collapseButton))))))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(backButton))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(forwardButton))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(reloadButton))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(homeButton))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(findResource))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(gotoResource))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(collapseButton)))))
                 .add(pageMainSection().padding(noPadding).add(treeView))
                 .element();
     }
@@ -145,30 +141,30 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     }
 
     void select(ModelBrowserNode parent, ModelBrowserNode child) {
-        TreeViewItem parentItem = treeView.findItem(parent.id);
+        TreeViewItem parentItem = treeView.findItem(parent.identifier);
         if (parentItem != null) {
             if (!parentItem.expanded() && parentItem.status() == pending) {
                 parentItem.load().then(__ -> {
-                    treeView.select(child.id);
+                    treeView.select(child.identifier);
                     return null;
                 });
-            } else if (!parentItem.contains(child.id)) {
+            } else if (!parentItem.contains(child.identifier)) {
                 // child might have been added externally in CLI or other management tools
                 parentItem.reload().then(__ -> {
-                    treeView.select(child.id);
+                    treeView.select(child.identifier);
                     return null;
                 });
             } else {
-                treeView.select(child.id);
+                treeView.select(child.identifier);
             }
         } else {
-            treeView.select(child.id);
+            treeView.select(child.identifier);
         }
     }
 
     void select(AddressTemplate template) {
         if (!template.isEmpty() && template.fullyQualified()) {
-            TreeViewItem item = treeView.findItem(uniqueId(template));
+            TreeViewItem item = treeView.findItem(template.identifier());
             if (item != null) {
                 treeView.select(item);
             } else {
@@ -178,12 +174,12 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                         // Build a template up to the last valid segment.
                         AddressTemplate current = AddressTemplate.root();
                         for (Segment segment : template) {
-                            if (treeView.findItem(uniqueId(current.append(segment.key, segment.value))) == null) {
+                            if (treeView.findItem(current.append(segment.key, segment.value).identifier()) == null) {
                                 break;
                             }
                             current = current.append(segment.key, segment.value);
                         }
-                        treeView.select(uniqueId(current));
+                        treeView.select(current.identifier());
                     } else {
                         logger.error("Unable to select template %s: %s", template, context.failure());
                     }
@@ -238,8 +234,8 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         List<Task<FlowContext>> tasks = new ArrayList<>();
         AddressTemplate current = AddressTemplate.root();
         for (Segment segment : template) {
-            String wildcardItemId = uniqueId(current.append(segment.key, "*"));
-            String valueItemId = uniqueId(current.append(segment.key, segment.value));
+            String wildcardItemId = current.append(segment.key, "*").identifier();
+            String valueItemId = current.append(segment.key, segment.value).identifier();
             tasks.add(context -> treeView.load(wildcardItemId).then(items -> context.resolve()));
             tasks.add(context -> treeView.load(valueItemId).then(items -> context.resolve()));
             current = current.append(segment.key, segment.value);

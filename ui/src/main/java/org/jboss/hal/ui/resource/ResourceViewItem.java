@@ -18,7 +18,6 @@ package org.jboss.hal.ui.resource;
 import java.util.List;
 
 import org.jboss.elemento.Id;
-import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.meta.Metadata;
@@ -59,6 +58,7 @@ import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.resource.CapabilityReference.capabilityReference;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.label.LabelGroup.labelGroup;
@@ -86,15 +86,15 @@ import static org.patternfly.style.Variable.utilVar;
 class ResourceViewItem {
 
     static final String RESOURCE_ATTRIBUTE_KEY = "resourceViewItem";
-    private static final Logger logger = Logger.getLogger(ResourceViewItem.class.getName());
 
     static ResourceViewItem resourceViewItem(UIContext uic, Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm dlt = term(uic, metadata, ra);
         Tuple<HTMLElement, UpdateValueFn> tuple = elementFn(uic, ra);
-        DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.name, "group"))
+        DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.name, "dlg"))
                 .store(RESOURCE_ATTRIBUTE_KEY, ra)
                 .addTerm(dlt)
-                .addDescription(descriptionListDescription().add(tuple.key));
+                .addDescription(descriptionListDescription()
+                        .add(tuple.key));
         return new ResourceViewItem(dlg, tuple.value);
     }
 
@@ -104,7 +104,7 @@ class ResourceViewItem {
         if (ra.description != null) {
             if (ra.description.nested()) {
                 // <unstable>
-                // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
+                // If the internal DOM of DescriptionListTerm changes, this will no longer work
                 // By default, DescriptionListTerm supports only one text element. But in this case we
                 // want to have one for the parent and one for the nested attribute description.
                 // So we set up the internals of DescriptionListTerm manually.
@@ -154,7 +154,7 @@ class ResourceViewItem {
                 if (uic.environment()
                         .highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
                     // <unstable>
-                    // == If the internal DOM of DescriptionListTerm changes, this will no longer work ==
+                    // If the internal DOM of DescriptionListTerm changes, this will no longer work
                     // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
                     // That's why we must use term.element.appendChild() instead of term.add() to add the
                     // stability label after the text element instead of into the text element. Then we must
@@ -231,9 +231,9 @@ class ResourceViewItem {
                             } else {
                                 if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
                                     String capability = ra.description.get(CAPABILITY_REFERENCE).asString();
-                                    CapabilityReferenceLink crl = new CapabilityReferenceLink(uic, capability);
-                                    element = crl.element();
-                                    fn = value -> crl.assignValue(value.asString());
+                                    CapabilityReference capabilityReference = capabilityReference(uic, ra.name, capability);
+                                    element = capabilityReference.element();
+                                    fn = value -> capabilityReference.updateValue(value.asString());
                                 } else {
                                     element = span().element();
                                     fn = value -> element.textContent = value.asString();

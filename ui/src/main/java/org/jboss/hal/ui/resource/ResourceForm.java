@@ -15,5 +15,21 @@
  */
 package org.jboss.hal.ui.resource;
 
+import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.ui.UIContext;
+
 public class ResourceForm {
+
+    // ------------------------------------------------------ factory
+
+    public static ResourceForm resourceForm(UIContext uic, AddressTemplate template, Metadata metadata) {
+        return new ResourceForm(uic, template, metadata);
+    }
+
+    // ------------------------------------------------------ instance
+
+    ResourceForm(UIContext uic, AddressTemplate template, Metadata metadata) {
+
+    }
 }

@@ -49,7 +49,6 @@ import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.uniqueId;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
@@ -140,7 +139,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
                 current = current.append(segment.key, segment.value);
                 final AddressTemplate finalTemplate = current;
                 boolean last = current.last().equals(mbn.template.last());
-                breadcrumb.addItem(breadcrumbItem(uniqueId(current), segment.key + "=" + segment.value)
+                breadcrumb.addItem(breadcrumbItem(current.identifier(), segment.key + "=" + segment.value)
                         .active(last)
                         .run(bci -> {
                             if (!last) {
@@ -189,7 +188,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
     }
 
     private HTMLElement copyToClipboard(AddressTemplate template) {
-        String copyToClipboardId = Id.build(uniqueId(template), "copy");
+        String copyToClipboardId = Id.unique("address", "copy");
         String copyToClipboardText = "Copy address to clipboard";
         Tooltip tooltip = tooltip(By.id(copyToClipboardId), copyToClipboardText)
                 .placement(auto)

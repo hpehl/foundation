@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.jboss.elemento.Id;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.ValueEncoder;
@@ -274,6 +275,19 @@ public final class AddressTemplate implements Iterable<Segment> {
     @Override
     public Iterator<Segment> iterator() {
         return segments.iterator();
+    }
+
+    public String identifier() {
+        if (isEmpty()) {
+            return "root";
+        } else {
+            String safeTemplate = template
+                    .replace("/", "-s-")
+                    .replace("=", "-e-")
+                    .replace(":", "-c-")
+                    .replace("*", "-w-");
+            return Id.build(safeTemplate);
+        }
     }
 
     // ------------------------------------------------------ resolve

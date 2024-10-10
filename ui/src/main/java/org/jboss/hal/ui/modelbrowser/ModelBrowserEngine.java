@@ -149,7 +149,7 @@ class ModelBrowserEngine {
      * Returns a function that turns a {@link ModelBrowserNode} into a {@link TreeViewItem}.
      */
     static Function<ModelBrowserNode, TreeViewItem> mbn2tvi(Dispatcher dispatcher) {
-        return mbn -> treeViewItem(mbn.id)
+        return mbn -> treeViewItem(mbn.identifier)
                 .text(mbn.name)
                 .icon(mbn.type.icon.get())
                 .store(MODEL_BROWSER_NODE, mbn)
@@ -163,7 +163,7 @@ class ModelBrowserEngine {
                         tvi.css(modifier(disabled));
                         // This popover is used for the initial load. It is removed together with the
                         // tree view item when the parent is collapsed.
-                        tvi.add(popover(By.data(identifier, mbn.id))
+                        tvi.add(popover(By.data(identifier, mbn.identifier))
                                 .addHeader(mbn.name)
                                 .addBody("Non-existing singleton resource"));
                     }
@@ -177,7 +177,7 @@ class ModelBrowserEngine {
                                     // This popover is used when the paren item is collapsed/expanded
                                     // This is necessary because the initial popover has been removed
                                     // on collapsed. It is removed automatically when the parent is collapsed.
-                                    item.add(popover(By.data(identifier, m.id))
+                                    item.add(popover(By.data(identifier, m.identifier))
                                             .addHeader(m.name)
                                             .addBody("Non-existing singleton resource"));
                                 }

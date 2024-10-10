@@ -76,7 +76,7 @@
 
     .hal-c-model-browser__search-results {
         --pf-v5-c-list--li--MarginTop: var(--pf-v5-global--spacer--xs);
-        max-height: 300px;
+        max-height: 280px;
         overflow-y: scroll;
     }
 }

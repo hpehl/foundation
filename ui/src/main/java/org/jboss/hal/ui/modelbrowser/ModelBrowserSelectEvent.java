@@ -35,12 +35,12 @@ public interface ModelBrowserSelectEvent extends UIEvent {
      * @param source  the source element used to dispatch the event.
      * @param address the address used to create the event's detail.
      */
-    static void dispatch(HTMLElement source, String address) {
+    static void dispatch(HTMLElement source, AddressTemplate template) {
         //noinspection unchecked
         CustomEventInit<String> init = CustomEventInit.create();
         init.setBubbles(true);
         init.setCancelable(true);
-        init.setDetail(address);
+        init.setDetail(template.template);
         CustomEvent<String> event = new CustomEvent<>(TYPE, init);
         source.dispatchEvent(event);
     }

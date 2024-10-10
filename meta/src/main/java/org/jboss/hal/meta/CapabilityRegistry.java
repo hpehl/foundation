@@ -71,7 +71,7 @@ public class CapabilityRegistry {
                 });
     }
 
-    public Promise<List<AddressTemplate>> findReference(String capability, String value) {
+    public Promise<List<AddressTemplate>> findResources(String capability, String value) {
         List<Task<FlowContext>> tasks = List.of(
                 context -> providerPoints(capability).then(pps -> context.resolve(PROVIDER_POINTS, pps)),
                 context -> {
@@ -90,7 +90,8 @@ public class CapabilityRegistry {
                 .failFast(false)
                 .then(context -> Promise.resolve(context.get(TEMPLATES, emptyList())))
                 .catch_(error -> {
-                    logger.error("Unable to find capability %s for %s", capability, value);
+                    logger.error("Unable to find resources for capability %s and value %s: %s", capability, value,
+                            String.valueOf(error));
                     return Promise.resolve(emptyList());
                 });
     }
