@@ -26,12 +26,15 @@ public interface HalClasses {
     String content = "content";
     String filtered = "filtered";
     String goto_ = "goto";
+    String handle = "handle";
     String modelBrowser = "model-browser";
     String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";
     String resourceView = "resource-view";
+    String resize = "resize";
     String results = "results";
     String stabilityLevel = "stability-level";
+    String tree = "tree";
     String unit = "unit";
     String undefined = "undefined";
 

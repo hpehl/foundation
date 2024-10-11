@@ -78,7 +78,7 @@ class ResourcesToolbar implements IsElement<HTMLElement> {
         setVisible(addItem, false);
     }
 
-    void supportsAdd(boolean supportsAdd) {
+    void toggleAddButton(boolean supportsAdd) {
         setVisible(addItem, supportsAdd);
     }
 

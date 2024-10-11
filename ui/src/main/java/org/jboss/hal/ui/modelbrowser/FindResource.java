@@ -312,6 +312,7 @@ class FindResource {
 
     void open() {
         searchModal.open();
+        nameInput.inputElement().element().focus();
     }
 
     private void close() {

@@ -53,7 +53,7 @@ class DocumentationCard implements DashboardCard {
 
     private static final List<String[]> GET_HELP = asList(
             new String[]{"Getting started", "https://www.wildfly.org/get-started/"},
-            new String[]{"WildFly Guides", "https://www.wildfly.org/guides/"},
+            new String[]{"WildFly guides", "https://www.wildfly.org/guides/"},
             new String[]{"Join the forum", "https://groups.google.com/forum/#!forum/wildfly"},
             new String[]{"Join Zulip chat", "https://wildfly.zulipchat.com/"},
             new String[]{"Developer mailing list", "https://lists.jboss.org/archives/list/wildfly-dev@lists.jboss.org/"}
@@ -71,21 +71,20 @@ class DocumentationCard implements DashboardCard {
                         .addItem(flexItem().flex(_1)
                                 .add(card().fullHeight().plain()
                                         .addHeader(cardHeader().addTitle(cardTitle().textContent("General Resources")))
-                                        .addBody(cardBody()
-                                                .add(list().plain()
-                                                        .addItems(GENERAL_RESOURCES,
-                                                                tuple -> listItem(Id.build("general-resources", tuple[0]))
-                                                                        .add(a(replaceVersion(tuple[1]), "_blank")
-                                                                                .textContent(tuple[0])))))))
+                                        .addBody(cardBody().add(list().plain()
+                                                .addItems(GENERAL_RESOURCES, nu ->
+                                                        listItem(Id.build("general-resources", nu[0]))
+                                                                .add(a(replaceVersion(nu[1]), "_blank")
+                                                                        .textContent(nu[0])))))))
                         .add(divider(hr).orientation(breakpoints(md, vertical)))
                         .addItem(flexItem().flex(_1)
                                 .add(card().fullHeight().plain()
                                         .addHeader(cardHeader().addTitle(cardTitle().textContent("Get Help")))
-                                        .addBody(cardBody()
-                                                .add(list().plain()
-                                                        .addItems(GET_HELP, tuple -> listItem(Id.build("get-help", tuple[0]))
-                                                                .add(a(replaceVersion(tuple[1]), "_blank")
-                                                                        .textContent(tuple[0]))))))))
+                                        .addBody(cardBody().add(list().plain()
+                                                .addItems(GET_HELP, nu ->
+                                                        listItem(Id.build("get-help", nu[0]))
+                                                                .add(a(replaceVersion(nu[1]), "_blank")
+                                                                        .textContent(nu[0]))))))))
                 .element();
     }
 

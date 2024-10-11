@@ -39,17 +39,17 @@ public final class ModelNodeHelper {
 
         if (path != null && !path.isEmpty()) {
             String[] keys = path.split("\\.");
-            ModelNode context = modelNode;
+            ModelNode current = modelNode;
             for (String key : keys) {
                 String safeKey = ValueEncoder.decode(key);
-                if (context.hasDefined(safeKey)) {
-                    context = context.get(safeKey);
+                if (current.hasDefined(safeKey)) {
+                    current = current.get(safeKey);
                 } else {
-                    context = undefined;
+                    current = undefined;
                     break;
                 }
             }
-            return context;
+            return current;
         }
         return undefined;
     }

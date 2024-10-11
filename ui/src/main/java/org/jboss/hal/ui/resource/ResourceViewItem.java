@@ -90,7 +90,7 @@ class ResourceViewItem {
     static ResourceViewItem resourceViewItem(UIContext uic, Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm dlt = term(uic, metadata, ra);
         Tuple<HTMLElement, UpdateValueFn> tuple = elementFn(uic, ra);
-        DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.name, "dlg"))
+        DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.fqn, "dlg"))
                 .store(RESOURCE_ATTRIBUTE_KEY, ra)
                 .addTerm(dlt)
                 .addDescription(descriptionListDescription()

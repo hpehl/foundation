@@ -87,6 +87,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
     private final ResourcesToolbar toolbar;
     private final HTMLElement resourcesElement;
     private final HTMLElement root;
+    private String missingChild;
     private DataList dataList;
 
     ResourcesElement(UIContext uic, ModelBrowserTree tree, ModelBrowserNode parent, Metadata metadata) {
@@ -118,13 +119,15 @@ class ResourcesElement implements IsElement<HTMLElement> {
         return uic.dispatcher().execute(operation).then(result -> {
             List<ModelBrowserNode> allChildren = parseChildren(parent, result, true);
             List<ModelBrowserNode> existingChildren = allChildren.stream().filter(child -> child.exists).collect(toList());
+            List<ModelBrowserNode> missingChildren = allChildren.stream().filter(child -> !child.exists).collect(toList());
+            missingChild = missingChildren.size() == 1 ? missingChildren.get(0).name : null;
             if (existingChildren.isEmpty()) {
                 empty();
                 return Promise.resolve(emptyList());
             } else {
                 visible.set(existingChildren.size());
                 total.set(existingChildren.size());
-                toolbar.supportsAdd(supportsAdd(parent, allChildren));
+                toolbar.toggleAddButton(supportsAdd(parent, allChildren));
                 children(existingChildren);
                 return Promise.resolve(existingChildren);
             }
@@ -185,7 +188,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
                     .addAction(dataListAction()
                             .run(dataListAction -> {
                                 if (parent.type == FOLDER) {
-                                    // There are no descriptions, so center the button horizontally
+                                    // There are no individual descriptions, so center the button horizontally
                                     dataListAction.style("align-items", "center");
                                 }
                             })
@@ -260,7 +263,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
     // ------------------------------------------------------ action handlers
 
     void add() {
-
+        ModelBrowserEvents.AddResource.dispatch(element(), parent.template, missingChild, parent.type == SINGLETON_FOLDER);
     }
 
     void refresh() {

@@ -20,8 +20,9 @@ The model browser has been greatly improved:
 - Clickable breadcrumbs that reflect the currently selected resource address
 - Copy the current address to the clipboard
 - Descriptions in resources list views
+- Follow capability references
 
-### Data
+### Data / View
 
 - Filter by name, status (defined/undefined, deprecated/not deprecated) and mode (storage/access type)
 - Attribute description as popovers

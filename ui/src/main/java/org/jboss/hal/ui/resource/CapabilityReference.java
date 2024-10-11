@@ -27,7 +27,7 @@ import org.jboss.elemento.Key;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.modelbrowser.ModelBrowserSelectEvent;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents;
 import org.patternfly.component.button.Button;
 import org.patternfly.popper.Modifiers;
 import org.patternfly.popper.Popper;
@@ -50,6 +50,7 @@ import static org.jboss.elemento.Elements.isVisible;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.small;
 import static org.jboss.elemento.Elements.span;
+import static org.jboss.elemento.Elements.strong;
 import static org.jboss.elemento.EventType.bind;
 import static org.jboss.hal.resources.HalClasses.capabilityReference;
 import static org.jboss.hal.resources.HalClasses.halComponent;
@@ -89,6 +90,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     private final HTMLElement valueElement;
     private final Button providedByButton;
     private final HTMLElement menuElement;
+    private final HTMLElement menuNameElement;
     private final HTMLElement menuCountElement;
     private final org.patternfly.component.list.List menuList;
     private final HTMLElement root;
@@ -116,10 +118,12 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                 .add(stack().css(halComponent(capabilityReference, Classes.menu))
                         .gutter()
                         .addItem(stackItem()
-                                .add("Capability ")
-                                .add(code().textContent(capability))
-                                .add(" is provided by ")
-                                .add(menuCountElement = span().textContent("").element())
+                                .add("Attribute ")
+                                .add(menuNameElement = strong().element())
+                                .add(" references the capability ")
+                                .add(strong().add(code().textContent(capability)))
+                                .add(" provided by ")
+                                .add(menuCountElement = strong().element())
                                 .add(" resources:"))
                         .addItem(stackItem().fill()
                                 .add(menuList = list().css(halComponent(capabilityReference, Classes.menu, Classes.list))
@@ -183,6 +187,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     void updateValue(String value) {
         this.value = value;
         this.valueElement.textContent = value;
+        this.menuNameElement.textContent = value;
 
         menuList.clear();
         setVisible(providedByButton, false);
@@ -196,7 +201,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
     private void onClick() {
         if (state == State.ONE_RESOURCE && template != null) {
-            ModelBrowserSelectEvent.dispatch(element(), template);
+            ModelBrowserEvents.SelectInTree.dispatch(element(), template);
         } else if (state == State.MULTIPLE_RESOURCES) {
             popper.show(null);
         } else {
@@ -234,7 +239,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                             menuCountElement.textContent = size;
                             menuList.addItems(sortedTemplates, tpl -> listItem()
                                     .add(button(tpl.toString()).link().inline()
-                                            .onClick((e, btn) -> ModelBrowserSelectEvent.dispatch(element(), tpl))));
+                                            .onClick((e, btn) -> ModelBrowserEvents.SelectInTree.dispatch(element(), tpl))));
                             providedByButton.text("provided by " + size + " resources");
                         }
                         return Promise.resolve((Void) null);

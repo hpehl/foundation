@@ -21,12 +21,14 @@ import org.jboss.hal.meta.description.AttributeDescription;
 /** Simple record for an attribute name/value/description triple in {@link ResourceView} and {@link ResourceForm}. */
 class ResourceAttribute {
 
+    final String fqn;
     final String name;
     final ModelNode value;
     final AttributeDescription description;
 
-    ResourceAttribute(String name, ModelNode value, AttributeDescription description) {
-        this.name = name;
+    ResourceAttribute(ModelNode value, AttributeDescription description) {
+        this.fqn = description.fullyQualifiedName();
+        this.name = description.name();
         this.value = value;
         this.description = description;
     }

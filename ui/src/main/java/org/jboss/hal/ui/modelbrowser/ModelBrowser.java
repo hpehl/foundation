@@ -24,6 +24,7 @@ import org.jboss.hal.ui.UIContext;
 
 import elemental2.dom.HTMLElement;
 
+import static elemental2.dom.DomGlobal.console;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.hal.resources.HalClasses.halComponent;
@@ -44,8 +45,6 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
-    private static final int TREE_COLUMNS = 3;
-    private static final int DETAIL_COLUMNS = 9;
     final ModelBrowserTree tree;
     final ModelBrowserDetail detail;
     private final UIContext uic;
@@ -60,11 +59,26 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         this.detail = new ModelBrowserDetail(uic, this);
         this.root = grid().span(12)
                 .css(halComponent(modelBrowser))
-                .addItem(gridItem().span(TREE_COLUMNS).add(tree))
-                .addItem(gridItem().span(DETAIL_COLUMNS).add(detail))
+                // TODO Implement a resize handle which modifies the CSS variables
+                //  --hal-cmodel-browser-tree-columns: span 3;
+                //  --hal-cmodel-browser-detail-columns: span 9;
+                /*
+                                .addItem(gridItem()
+                                        .add(flex().spaceItems(none)
+                                                .addItem(flexItem().flex(_1)
+                                                        .add(tree))
+                                                .addItem(flexItem().alignSelf(stretch)
+                                                        .add(div().css(halComponent(modelBrowser, resize))
+                                                                .add(div().css(halComponent(modelBrowser, resize, handle))))))
+                                        .add(detail))
+                */
+                .addItem(gridItem().add(tree))
+                .addItem(gridItem().add(detail))
                 .element();
 
-        ModelBrowserSelectEvent.listen(root, this::select);
+        ModelBrowserEvents.SelectInTree.listen(root, this::select);
+        ModelBrowserEvents.AddResource.listen(root, details ->
+                console.warn("### Adding resources noy yet implemented: %o", details));
         load();
     }
 

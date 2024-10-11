@@ -45,7 +45,6 @@ import elemental2.dom.MutationRecord;
 import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.isAttached;
-import static org.jboss.elemento.Elements.pre;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
@@ -58,6 +57,7 @@ import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
 import static org.jboss.hal.ui.resource.ResourceViewItem.RESOURCE_ATTRIBUTE_KEY;
 import static org.jboss.hal.ui.resource.ResourceViewItem.resourceViewItem;
+import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
@@ -176,6 +176,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                                     lg, "23ch",
                                     xl, "25ch",
                                     _2xl, "28ch"));
+                    int counter = 0;
                     for (ResourceAttribute ra : resourceAttributes) {
                         ResourceViewItem rvi = resourceViewItem(uic, metadata, ra);
                         dl.addItem(rvi.dlg);
@@ -205,10 +206,10 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                     AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
                     for (AttributeDescription nestedDescription : nestedDescriptions) {
                         ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.fullyQualifiedName());
-                        resourceAttributes.add(new ResourceAttribute(nestedDescription.name(), nestedValue, nestedDescription));
+                        resourceAttributes.add(new ResourceAttribute(nestedValue, nestedDescription));
                     }
                 } else {
-                    resourceAttributes.add(new ResourceAttribute(name, value, description));
+                    resourceAttributes.add(new ResourceAttribute(value, description));
                 }
             }
         } else {
@@ -219,7 +220,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                 } else {
                     ModelNode value = resource.get(attribute);
                     AttributeDescription description = metadata.resourceDescription().attributes().get(attribute);
-                    resourceAttributes.add(new ResourceAttribute(attribute, value, description));
+                    resourceAttributes.add(new ResourceAttribute(value, description));
                 }
             }
         }
@@ -266,8 +267,8 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                 .addBody(emptyStateBody()
                         .add("Unable to view resource. Operation ")
                         .add(code().textContent(operation))
-                        .add(" failed")
-                        .add(pre().textContent(error)))
+                        .add(" failed:")
+                        .add(codeBlock().code(error)))
                 .element());
     }
 

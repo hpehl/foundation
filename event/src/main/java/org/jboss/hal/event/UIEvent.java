@@ -15,6 +15,9 @@
  */
 package org.jboss.hal.event;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Marker interface for HAL UI events. Implementations should provide static factory methods to create and return instances of
  * {@link elemental2.dom.CustomEvent}s.
@@ -23,4 +26,12 @@ package org.jboss.hal.event;
  * href="https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events">https://developer.mozilla.org/en-US/docs/Web/Events/Creating_and_triggering_events</a>
  */
 public interface UIEvent {
+
+    static String type(String identifier, String... identifiers) {
+        List<String> allIdentifiers = new ArrayList<>();
+        allIdentifiers.add("hal");
+        allIdentifiers.add(identifier);
+        allIdentifiers.addAll(List.of(identifiers));
+        return String.join("::", allIdentifiers);
+    }
 }

@@ -27,6 +27,7 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
+import org.patternfly.component.popover.Popover;
 import org.patternfly.component.tree.TreeViewItem;
 import org.patternfly.style.Classes;
 
@@ -34,6 +35,7 @@ import elemental2.promise.Promise;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.jboss.elemento.Elements.div;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
@@ -42,7 +44,9 @@ import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_RESOURCE;
+import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.popover.Popover.popover;
+import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.component.tree.TreeViewItem.treeViewItem;
 import static org.patternfly.core.Dataset.identifier;
 import static org.patternfly.style.Classes.disabled;
@@ -163,9 +167,7 @@ class ModelBrowserEngine {
                         tvi.css(modifier(disabled));
                         // This popover is used for the initial load. It is removed together with the
                         // tree view item when the parent is collapsed.
-                        tvi.add(popover(By.data(identifier, mbn.identifier))
-                                .addHeader(mbn.name)
-                                .addBody("Non-existing singleton resource"));
+                        tvi.add(nonExistingSingletonPopover(mbn));
                     }
                 })
                 .onToggle((event, tvi, expanded) -> {
@@ -176,14 +178,23 @@ class ModelBrowserEngine {
                                 if (m != null) {
                                     // This popover is used when the paren item is collapsed/expanded
                                     // This is necessary because the initial popover has been removed
-                                    // on collapsed. It is removed automatically when the parent is collapsed.
-                                    item.add(popover(By.data(identifier, m.identifier))
-                                            .addHeader(m.name)
-                                            .addBody("Non-existing singleton resource"));
+                                    // on collapsed.
+                                    item.add(nonExistingSingletonPopover(m));
                                 }
                             }
                         }
                     }
                 });
+    }
+
+    private static Popover nonExistingSingletonPopover(ModelBrowserNode mbn) {
+        AddressTemplate parent = mbn.template.parent().append(mbn.template.last().key, "*"); // /a=b/c=d -> /a=b/c=*
+        return popover(By.data(identifier, mbn.identifier))
+                .addHeader(mbn.name)
+                .addBody(popoverBody()
+                        .add(div().add("This resource does not yet exist."))
+                        .add(div().add(button("Add resource").link().inline()
+                                .onClick((e, b) -> ModelBrowserEvents.AddResource.dispatch(b.element(),
+                                        parent, mbn.name, true)))));
     }
 }

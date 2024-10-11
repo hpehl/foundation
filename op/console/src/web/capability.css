@@ -18,7 +18,7 @@
     background-color: var(--pf-v5-global--BackgroundColor--100);
     box-shadow: var(--pf-v5-global--BoxShadow--lg);
     padding: var(--pf-v5-global--spacer--sm);
-    max-width: 55ch;
+    max-width: 60ch;
 }
 
 .hal-c-capability-reference__menu-list {
