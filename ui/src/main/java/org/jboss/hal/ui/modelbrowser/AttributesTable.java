@@ -20,6 +20,7 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.table.TableType;
@@ -49,7 +50,6 @@ import static org.patternfly.style.Width.width60;
 class AttributesTable implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
-    private static final String ATTRIBUTE_KEY = "modelbrowser.attribute";
     private final Filter<AttributeDescription> filter;
     private final ObservableValue<Integer> visible;
     private final ObservableValue<Integer> total;
@@ -78,7 +78,7 @@ class AttributesTable implements IsElement<HTMLElement> {
                                 .addRows(metadata.resourceDescription().attributes(), attribute ->
                                         new AttributeRow(uic, metadata.resourceDescription(), anyComplexAttributes)
                                                 .apply(attribute)
-                                                .store(ATTRIBUTE_KEY, attribute))))
+                                                .store(Keys.ATTRIBUTE_DESCRIPTION, attribute))))
                 .element();
     }
 
@@ -102,7 +102,7 @@ class AttributesTable implements IsElement<HTMLElement> {
         if (filter.defined()) {
             matchingItems = 0;
             for (Tr tr : tbody.items()) {
-                AttributeDescription ad = tr.get(ATTRIBUTE_KEY);
+                AttributeDescription ad = tr.get(Keys.ATTRIBUTE_DESCRIPTION);
                 if (ad != null) {
                     boolean match = filter.match(ad);
                     tr.classList().toggle(halModifier(HalClasses.filtered), !match);

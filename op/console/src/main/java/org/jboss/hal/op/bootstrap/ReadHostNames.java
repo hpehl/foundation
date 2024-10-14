@@ -19,12 +19,12 @@ import java.util.List;
 
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
-import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
+import org.jboss.hal.resources.Keys;
 
 import elemental2.promise.Promise;
 
@@ -35,8 +35,6 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OP
 
 class ReadHostNames implements Task<FlowContext> {
 
-    static final String HOST_NAMES = "bootstrap.hostNames";
-    private static final Logger logger = Logger.getLogger(ReadEnvironment.class.getName());
     private final Dispatcher dispatcher;
     private final Environment environment;
 
@@ -56,7 +54,7 @@ class ReadHostNames implements Task<FlowContext> {
                         List<String> hosts = result.asList().stream()
                                 .map(ModelNode::asString)
                                 .collect(toList());
-                        context.set(HOST_NAMES, hosts);
+                        context.set(Keys.HOSTS, hosts);
                         return Promise.resolve(context);
                     });
         } else {

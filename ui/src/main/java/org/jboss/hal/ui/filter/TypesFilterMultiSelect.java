@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.resources.Keys;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
@@ -46,7 +47,6 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final String ORIGIN = "TypesFilterMultiSelect";
-    private static final String TYPE_ITEM_KEY = "typeItem";
     private final MultiSelect multiSelect;
 
     TypesFilterMultiSelect(Filter<T> filter) {
@@ -57,7 +57,7 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
                         .addContent(menuContent()
                                 .addList(menuList()
                                         .addItems(typeValues(), tv -> checkboxMenuItem(tv.identifier, tv.name)
-                                                .store(TYPE_ITEM_KEY, tv)))));
+                                                .store(Keys.TYPE_VALUES, tv)))));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class TypesFilterMultiSelect<T> implements IsElement<HTMLElement> {
         } else {
             List<TypeValues> types = new ArrayList<>();
             for (MenuItem item : selected) {
-                TypeValues type = item.get(TYPE_ITEM_KEY);
+                TypeValues type = item.get(Keys.TYPE_VALUES);
                 types.add(type);
             }
             filter.set(TypesFilterAttribute.NAME, types, ORIGIN);

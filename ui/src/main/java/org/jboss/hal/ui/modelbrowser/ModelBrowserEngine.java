@@ -27,6 +27,7 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.resources.Keys;
 import org.patternfly.component.popover.Popover;
 import org.patternfly.component.tree.TreeViewItem;
 import org.patternfly.style.Classes;
@@ -58,7 +59,6 @@ import static org.patternfly.style.Classes.modifier;
  */
 class ModelBrowserEngine {
 
-    static final String MODEL_BROWSER_NODE = "model-browser-node";
     private static final Logger logger = Logger.getLogger(ModelBrowserEngine.class.getName());
 
     /**
@@ -67,7 +67,7 @@ class ModelBrowserEngine {
      */
     static Function<TreeViewItem, Promise<Iterable<TreeViewItem>>> readChildrenOperation(Dispatcher dispatcher) {
         return tvi -> {
-            ModelBrowserNode mbn = tvi.get(MODEL_BROWSER_NODE);
+            ModelBrowserNode mbn = tvi.get(Keys.MODEL_BROWSER_NODE);
             if (mbn != null) {
                 Operation operation = null;
                 if (mbn.type == SINGLETON_FOLDER || mbn.type == FOLDER) {
@@ -156,7 +156,7 @@ class ModelBrowserEngine {
         return mbn -> treeViewItem(mbn.identifier)
                 .text(mbn.name)
                 .icon(mbn.type.icon.get())
-                .store(MODEL_BROWSER_NODE, mbn)
+                .store(Keys.MODEL_BROWSER_NODE, mbn)
                 .run(tvi -> {
                     if (mbn.exists) {
                         tvi.addItems(readChildrenOperation(dispatcher));
@@ -174,7 +174,7 @@ class ModelBrowserEngine {
                     if (expanded) {
                         for (TreeViewItem item : tvi.items()) {
                             if (item.element().classList.contains(modifier(Classes.disabled))) {
-                                ModelBrowserNode m = item.get(MODEL_BROWSER_NODE);
+                                ModelBrowserNode m = item.get(Keys.MODEL_BROWSER_NODE);
                                 if (m != null) {
                                     // This popover is used when the paren item is collapsed/expanded
                                     // This is necessary because the initial popover has been removed

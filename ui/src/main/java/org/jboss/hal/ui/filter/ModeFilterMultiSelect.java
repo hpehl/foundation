@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.resources.Keys;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
@@ -47,8 +48,6 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final String ORIGIN = "ModeFilterMultiSelect";
-    private static final String STORAGE_ITEM_KEY = "storageItem";
-    private static final String ACCESS_TYPE_ITEM_KEY = "accessTypeItem";
     private final MultiSelect multiSelect;
 
     ModeFilterMultiSelect(Filter<T> filter) {
@@ -61,12 +60,12 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
                                 .addGroup(menuGroup("Storage")
                                         .addList(menuList()
                                                 .addItems(storageValues(), sv -> menuItem(sv.identifier, sv.text)
-                                                        .store(STORAGE_ITEM_KEY, sv))))
+                                                        .store(Keys.STORAGE_VALUE, sv))))
                                 .addDivider()
                                 .addGroup(menuGroup("Access type")
                                         .addList(menuList()
                                                 .addItems(accessTypeValues(), atv -> menuItem(atv.identifier, atv.text)
-                                                        .store(ACCESS_TYPE_ITEM_KEY, atv))))));
+                                                        .store(Keys.ACCESS_TYPE_VALUE, atv))))));
     }
 
     @Override
@@ -78,8 +77,8 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
 
     private void setFilter(Filter<T> filter, List<MenuItem> menuItems) {
         Optional<StorageValue> storageValue = menuItems.stream()
-                .filter(menuItem -> menuItem.has(STORAGE_ITEM_KEY))
-                .map(menuItem -> menuItem.<StorageValue>get(STORAGE_ITEM_KEY))
+                .filter(menuItem -> menuItem.has(Keys.STORAGE_VALUE))
+                .map(menuItem -> menuItem.<StorageValue>get(Keys.STORAGE_VALUE))
                 .findFirst();
         if (storageValue.isPresent()) {
             filter.set(StorageFilterAttribute.NAME, storageValue.get(), ORIGIN);
@@ -87,8 +86,8 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
             filter.reset(StorageFilterAttribute.NAME, ORIGIN);
         }
         Optional<AccessTypeValue> accessTypeValue = menuItems.stream()
-                .filter(menuItem -> menuItem.has(ACCESS_TYPE_ITEM_KEY))
-                .map(menuItem -> menuItem.<AccessTypeValue>get(ACCESS_TYPE_ITEM_KEY))
+                .filter(menuItem -> menuItem.has(Keys.ACCESS_TYPE_VALUE))
+                .map(menuItem -> menuItem.<AccessTypeValue>get(Keys.ACCESS_TYPE_VALUE))
                 .findFirst();
         if (accessTypeValue.isPresent()) {
             filter.set(AccessTypeFilterAttribute.NAME, accessTypeValue.get(), ORIGIN);

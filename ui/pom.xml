@@ -51,6 +51,10 @@
             <artifactId>hal-meta</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-resources</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.patternfly</groupId>
             <artifactId>patternfly-java-j2cl</artifactId>
         </dependency>

@@ -18,12 +18,12 @@ package org.jboss.hal.resources;
 import org.jboss.elemento.Id;
 
 /**
- * IDs used in HTML elements and across multiple classes. Please add IDs to this interface even if there's already an equivalent
- * or similar constant in {@code ModelDescriptionConstants} (SoC).
+ * IDs used in HTML elements across multiple classes. Please add IDs to this interface even if there's already an equivalent or
+ * similar constant in {@code ModelDescriptionConstants} (SoC).
  * <p>
  * The IDs defined here are reused by QA. So please make sure that IDs are not spread over the code base but gathered in this
- * interface. This is not always possible - for instance if the ID contains dynamic parts like a resource name or selected
- * server. But IDs which only contain static strings should be part of this interface.
+ * interface. This is not always possible - if the ID contains dynamic parts like a resource name or selected server. But IDs
+ * which only contain static strings should be part of this interface.
  */
 public interface Ids {
 

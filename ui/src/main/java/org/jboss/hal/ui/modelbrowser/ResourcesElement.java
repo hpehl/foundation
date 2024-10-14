@@ -24,6 +24,7 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.resources.HalClasses;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.list.DataList;
 import org.patternfly.component.list.DataListCell;
@@ -73,7 +74,6 @@ import static org.patternfly.style.Size.sm;
 class ResourcesElement implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
-    private static final String MBN_KEY = "modelbrowser.mbn";
 
     private final UIContext uic;
     private final ModelBrowserTree tree;
@@ -183,7 +183,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
                     ? uic.metadataRepository().get(child.template)
                     : metadata;
             return dataListItem(childId)
-                    .store(MBN_KEY, child)
+                    .store(Keys.MODEL_BROWSER_NODE, child)
                     .addCell(nameCell(childId, child, childMetadata))
                     .addAction(dataListAction()
                             .run(dataListAction -> {
@@ -241,7 +241,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
             if (filter.defined()) {
                 matchingItems = 0;
                 for (DataListItem item : dataList.items()) {
-                    ModelBrowserNode mbn = item.get(MBN_KEY);
+                    ModelBrowserNode mbn = item.get(Keys.MODEL_BROWSER_NODE);
                     if (mbn != null) {
                         boolean match = filter.match(mbn);
                         item.classList().toggle(halModifier(HalClasses.filtered), !match);

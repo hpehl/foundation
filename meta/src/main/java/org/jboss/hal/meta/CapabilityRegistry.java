@@ -31,6 +31,7 @@ import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
+import org.jboss.hal.resources.Keys;
 
 import elemental2.promise.Promise;
 
@@ -47,8 +48,6 @@ public class CapabilityRegistry {
 
     private static final Logger logger = Logger.getLogger(CapabilityRegistry.class.getName());
     private static final AddressTemplate TEMPLATE = AddressTemplate.of("{domain.controller}/core-service=capability-registry");
-    private static final String PROVIDER_POINTS = "provider-points";
-    private static final String TEMPLATES = "templates";
 
     private final Dispatcher dispatcher;
     private final StatementContext statementContext;
@@ -73,9 +72,9 @@ public class CapabilityRegistry {
 
     public Promise<List<AddressTemplate>> findResources(String capability, String value) {
         List<Task<FlowContext>> tasks = List.of(
-                context -> providerPoints(capability).then(pps -> context.resolve(PROVIDER_POINTS, pps)),
+                context -> providerPoints(capability).then(pps -> context.resolve(Keys.PROVIDER_POINTS, pps)),
                 context -> {
-                    List<String> providerPoints = context.get(PROVIDER_POINTS);
+                    List<String> providerPoints = context.get(Keys.PROVIDER_POINTS);
                     List<Task<FlowContext>> nestedTasks = providerPoints.stream()
                             .map(pp -> new ReadProviderPoint(dispatcher, capability, value, pp))
                             .collect(toList());
@@ -85,10 +84,10 @@ public class CapabilityRegistry {
 
         List<AddressTemplate> templates = new ArrayList<>();
         FlowContext flowContext = new FlowContext();
-        flowContext.set(TEMPLATES, templates);
+        flowContext.set(Keys.ADDRESS_TEMPLATES, templates);
         return Flow.sequential(flowContext, tasks)
                 .failFast(false)
-                .then(context -> Promise.resolve(context.get(TEMPLATES, emptyList())))
+                .then(context -> Promise.resolve(context.get(Keys.ADDRESS_TEMPLATES, emptyList())))
                 .catch_(error -> {
                     logger.error("Unable to find resources for capability %s and value %s: %s", capability, value,
                             String.valueOf(error));
@@ -113,7 +112,7 @@ public class CapabilityRegistry {
         @Override
         public Promise<FlowContext> apply(FlowContext context) {
             logger.debug("Read provider point %s for %s and %s", providerPoint, capability, value);
-            List<AddressTemplate> foundTemplates = context.get(TEMPLATES);
+            List<AddressTemplate> foundTemplates = context.get(Keys.ADDRESS_TEMPLATES);
             ResourceAddress address = AddressTemplate.of(providerPoint).resolve();
             Operation operation = new Operation.Builder(address, READ_RESOURCE_OPERATION)
                     .param(ATTRIBUTES_ONLY, true)

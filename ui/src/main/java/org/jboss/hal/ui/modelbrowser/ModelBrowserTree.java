@@ -26,6 +26,7 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Segment;
 import org.jboss.hal.resources.HalClasses;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.tooltip.Tooltip;
@@ -39,7 +40,6 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.tree;
-import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.MODEL_BROWSER_NODE;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
@@ -197,7 +197,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     String selectedAddress() {
         if (!treeView.selectedItems().isEmpty()) {
             TreeViewItem tvi = treeView.selectedItems().get(0);
-            ModelBrowserNode mbn = tvi.get(MODEL_BROWSER_NODE);
+            ModelBrowserNode mbn = tvi.get(Keys.MODEL_BROWSER_NODE);
             if (mbn != null) {
                 return mbn.template.toString();
             }
@@ -266,7 +266,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
             history.navigate(treeViewItem);
         }
         updateNavigationButtons();
-        ModelBrowserNode node = treeViewItem.get(ModelBrowserEngine.MODEL_BROWSER_NODE);
+        ModelBrowserNode node = treeViewItem.get(Keys.MODEL_BROWSER_NODE);
         if (node != null) {
             modelBrowser.detail.show(node);
         }
@@ -280,7 +280,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
             ModelBrowserNode node = null;
             TreeViewItem treeViewItem = history.peekBack();
             if (treeViewItem != null) {
-                node = treeViewItem.get(ModelBrowserEngine.MODEL_BROWSER_NODE);
+                node = treeViewItem.get(Keys.MODEL_BROWSER_NODE);
             }
             if (backTooltip == null) {
                 backTooltip = tooltip(backButton.element(), "")
@@ -299,7 +299,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
             ModelBrowserNode node = null;
             TreeViewItem treeViewItem = history.peekForward();
             if (treeViewItem != null) {
-                node = treeViewItem.get(ModelBrowserEngine.MODEL_BROWSER_NODE);
+                node = treeViewItem.get(Keys.MODEL_BROWSER_NODE);
             }
             if (forwardTooltip == null) {
                 forwardTooltip = tooltip(forwardButton.element(), "")

@@ -27,6 +27,7 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.Placeholder;
 import org.jboss.hal.meta.StatementContext;
+import org.jboss.hal.resources.Keys;
 
 import elemental2.promise.Promise;
 
@@ -37,7 +38,6 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.NAME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.PRIMARY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.hal.op.bootstrap.ReadHostNames.HOST_NAMES;
 
 class FindDomainController implements Task<FlowContext> {
 
@@ -56,7 +56,7 @@ class FindDomainController implements Task<FlowContext> {
     @Override
     public Promise<FlowContext> apply(final FlowContext context) {
         if (environment.domain()) {
-            List<String> hosts = context.get(HOST_NAMES);
+            List<String> hosts = context.get(Keys.HOSTS);
             if (hosts == null) {
                 return Promise.resolve(context);
             } else {

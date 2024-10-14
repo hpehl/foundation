@@ -31,6 +31,7 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.modelbrowser.NoMatch;
 import org.patternfly.component.list.DescriptionList;
@@ -55,7 +56,6 @@ import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.resourceView;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
-import static org.jboss.hal.ui.resource.ResourceViewItem.RESOURCE_ATTRIBUTE_KEY;
 import static org.jboss.hal.ui.resource.ResourceViewItem.resourceViewItem;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -176,7 +176,6 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
                                     lg, "23ch",
                                     xl, "25ch",
                                     _2xl, "28ch"));
-                    int counter = 0;
                     for (ResourceAttribute ra : resourceAttributes) {
                         ResourceViewItem rvi = resourceViewItem(uic, metadata, ra);
                         dl.addItem(rvi.dlg);
@@ -281,7 +280,7 @@ public class ResourceView implements HasElement<HTMLElement, ResourceView>, Atta
             if (filter.defined()) {
                 matchingItems = 0;
                 for (DescriptionListGroup dlg : dl.items()) {
-                    ResourceAttribute ra = dlg.get(RESOURCE_ATTRIBUTE_KEY);
+                    ResourceAttribute ra = dlg.get(Keys.RESOURCE_ATTRIBUTE);
                     if (ra != null) {
                         boolean match = filter.match(ra);
                         dlg.classList().toggle(halModifier(filtered), !match);

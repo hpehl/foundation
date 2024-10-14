@@ -43,6 +43,10 @@
             <artifactId>hal-dmr</artifactId>
         </dependency>
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-resources</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.patternfly</groupId>
             <artifactId>patternfly-java-core</artifactId>
         </dependency>

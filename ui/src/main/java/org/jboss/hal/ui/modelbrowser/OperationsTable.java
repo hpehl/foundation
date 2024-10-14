@@ -23,6 +23,7 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.ResourceDescription;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
 import org.patternfly.component.emptystate.EmptyState;
@@ -81,7 +82,6 @@ import static org.patternfly.style.Width.width45;
 class OperationsTable implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(OperationsTable.class.getName());
-    private static final String OPERATION_KEY = "modelbrowser.operation";
     private final UIContext uic;
     private final Filter<OperationDescription> filter;
     private final ObservableValue<Integer> visible;
@@ -111,7 +111,7 @@ class OperationsTable implements IsElement<HTMLElement> {
                                     boolean executable = metadata.securityContext().executable(operation.name());
                                     AttributeDescription returnValue = operation.returnValue();
                                     return tr(operation.name())
-                                            .store(OPERATION_KEY, operation)
+                                            .store(Keys.OPERATION_DESCRIPTION, operation)
                                             .addItem(td("Name")
                                                     .add(operationName(metadata.resourceDescription(), operation))
                                                     .add(operationDescription(operation)))
@@ -208,7 +208,7 @@ class OperationsTable implements IsElement<HTMLElement> {
         if (filter.defined()) {
             matchingItems = 0;
             for (Tr tr : tbody.items()) {
-                OperationDescription od = tr.get(OPERATION_KEY);
+                OperationDescription od = tr.get(Keys.OPERATION_DESCRIPTION);
                 if (od != null) {
                     boolean match = filter.match(od);
                     tr.classList().toggle(halModifier(filtered), !match);

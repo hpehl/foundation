@@ -23,6 +23,7 @@ import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
+import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.codeblock.CodeBlock;
@@ -85,13 +86,11 @@ import static org.patternfly.style.Variable.utilVar;
 
 class ResourceViewItem {
 
-    static final String RESOURCE_ATTRIBUTE_KEY = "resourceViewItem";
-
     static ResourceViewItem resourceViewItem(UIContext uic, Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm dlt = term(uic, metadata, ra);
         Tuple<HTMLElement, UpdateValueFn> tuple = elementFn(uic, ra);
         DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.fqn, "dlg"))
-                .store(RESOURCE_ATTRIBUTE_KEY, ra)
+                .store(Keys.RESOURCE_ATTRIBUTE, ra)
                 .addTerm(dlt)
                 .addDescription(descriptionListDescription()
                         .add(tuple.key));
