@@ -129,8 +129,8 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         if (!treeView.selectedItems().isEmpty()) {
             treeView.selectedItems().get(0).reload();
         } else {
-            // no selection → reload root
-            modelBrowser.reload();
+            // no selection → load root
+            modelBrowser.load();
         }
     }
 
@@ -140,25 +140,25 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         treeView.select(identifier);
     }
 
-    void select(ModelBrowserNode parent, ModelBrowserNode child) {
-        TreeViewItem parentItem = treeView.findItem(parent.identifier);
+    void select(String parentIdentifier, String childIdentifier) {
+        TreeViewItem parentItem = treeView.findItem(parentIdentifier);
         if (parentItem != null) {
             if (!parentItem.expanded() && parentItem.status() == pending) {
                 parentItem.load().then(__ -> {
-                    treeView.select(child.identifier);
+                    treeView.select(childIdentifier);
                     return null;
                 });
-            } else if (!parentItem.contains(child.identifier)) {
+            } else if (!parentItem.contains(childIdentifier)) {
                 // child might have been added externally in CLI or other management tools
                 parentItem.reload().then(__ -> {
-                    treeView.select(child.identifier);
+                    treeView.select(childIdentifier);
                     return null;
                 });
             } else {
-                treeView.select(child.identifier);
+                treeView.select(childIdentifier);
             }
         } else {
-            treeView.select(child.identifier);
+            treeView.select(childIdentifier);
         }
     }
 

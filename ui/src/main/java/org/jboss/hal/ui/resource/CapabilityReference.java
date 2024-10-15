@@ -29,6 +29,7 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents;
 import org.patternfly.component.button.Button;
+import org.patternfly.component.tooltip.Tooltip;
 import org.patternfly.popper.Modifiers;
 import org.patternfly.popper.Popper;
 import org.patternfly.popper.PopperBuilder;
@@ -46,6 +47,7 @@ import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.body;
 import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.elemento.Elements.isVisible;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.small;
@@ -58,6 +60,7 @@ import static org.jboss.hal.resources.HalClasses.providedBy;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
+import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.Gap.sm;
@@ -97,6 +100,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     private State state;
     private String value;
     private AddressTemplate template;
+    private Tooltip tooltip;
     private Popper popper;
 
     CapabilityReference(UIContext uic, String attribute, String capability) {
@@ -193,6 +197,15 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
         setVisible(providedByButton, false);
         findResources().then(__ -> {
             setVisible(providedByButton, state == State.ONE_RESOURCE || state == State.MULTIPLE_RESOURCES);
+            if (state == State.ONE_RESOURCE && template != null) {
+                if (tooltip == null) {
+                    tooltip = tooltip(providedByButton.element()).appendToBody();
+                }
+                tooltip.text(template.toString());
+            } else if (state == State.MULTIPLE_RESOURCES) {
+                failSafeRemoveFromParent(tooltip);
+                tooltip = null;
+            }
             return null;
         });
     }

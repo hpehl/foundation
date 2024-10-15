@@ -21,6 +21,8 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 
 import elemental2.dom.HTMLElement;
 
@@ -76,9 +78,8 @@ public class ModelBrowser implements IsElement<HTMLElement> {
                 .addItem(gridItem().add(detail))
                 .element();
 
-        ModelBrowserEvents.SelectInTree.listen(root, this::select);
-        ModelBrowserEvents.AddResource.listen(root, details ->
-                console.warn("### Adding resources noy yet implemented: %o", details));
+        SelectInTree.listen(root, this::select);
+        AddResource.listen(root, this::add);
         load();
     }
 
@@ -87,35 +88,16 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         return root;
     }
 
-    // ------------------------------------------------------ api
+    // ------------------------------------------------------ internal
 
-    public void home() {
+    void home() {
         if (rootMbn != null) {
             tree.unselect();
             detail.show(rootMbn);
         }
     }
 
-    public void select(AddressTemplate template) {
-        if (rootMbn != null) {
-            if (template.template.startsWith(rootMbn.template.template)) {
-                tree.select(template);
-            } else {
-                logger.error("Unable to select %s: %s is not a sub-template of %s",
-                        template, template, rootMbn.template);
-            }
-        } else {
-            logger.error("Unable to select %s: Root template is null!", template);
-        }
-    }
-
-    public void reload() {
-        load();
-    }
-
-    // ------------------------------------------------------ internal
-
-    private void load() {
+    void load() {
         if (template.fullyQualified()) {
             uic.metadataRepository().lookup(template, metadata -> {
                 ResourceAddress address = template.resolve(uic.statementContext());
@@ -132,6 +114,34 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         } else {
             // TODO Add error empty state
             logger.error("Illegal address: %s. Please specify a fully qualified address not ending with '*'", template);
+        }
+    }
+
+    private void add(AddResource.Details details) {
+        console.warn("### Adding resources noy yet implemented: %o", details);
+    }
+
+    private void select(SelectInTree.Details details) {
+        if (rootMbn != null) {
+            if (details.template != null) {
+                // select by address template
+                if (details.template.template.startsWith(rootMbn.template.template)) {
+                    tree.select(details.template);
+                } else {
+                    logger.error("Unable to select %s: %s is not a sub-template of %s",
+                            details.template, details.template, rootMbn.template);
+                }
+            } else if (details.identifier != null) {
+                if (details.parentIdentifier != null) {
+                    // select by parent/child identifier
+                    tree.select(details.parentIdentifier, details.identifier);
+                } else {
+                    // select by identifier
+                    tree.select(details.identifier);
+                }
+            }
+        } else {
+            logger.error("Unable to select %s: Root template is null!", template);
         }
     }
 }

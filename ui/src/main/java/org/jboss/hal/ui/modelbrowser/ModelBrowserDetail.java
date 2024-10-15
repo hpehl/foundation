@@ -113,11 +113,11 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             switch (mbn.type) {
                 case SINGLETON_FOLDER:
                 case FOLDER:
-                    pageMainSection.add(new ResourcesElement(uic, modelBrowser.tree, mbn, metadata));
+                    pageMainSection.add(new ResourceList(uic, mbn, metadata));
                     break;
                 case SINGLETON_RESOURCE:
                 case RESOURCE:
-                    pageMainSection.add(new ResourceElement(uic, mbn, metadata));
+                    pageMainSection.add(new ResourceDetails(uic, mbn, metadata));
                     break;
             }
         });

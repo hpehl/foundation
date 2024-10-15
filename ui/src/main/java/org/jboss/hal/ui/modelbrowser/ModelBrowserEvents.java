@@ -23,9 +23,6 @@ import org.jboss.hal.meta.AddressTemplate;
 import elemental2.dom.CustomEvent;
 import elemental2.dom.CustomEventInit;
 import elemental2.dom.HTMLElement;
-import jsinterop.annotations.JsOverlay;
-import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsType;
 
 /**
  * Umbrella interface for custom model browser UI events.
@@ -41,35 +38,11 @@ public interface ModelBrowserEvents {
 
         String TYPE = UIEvent.type("model-browser", "add");
 
-        @JsType(namespace = JsPackage.GLOBAL, name = "Object", isNative = true)
         class Details {
 
-            private static @JsOverlay Details create(AddressTemplate parent, String child, boolean singleton) {
-                Details details = new Details();
-                details.parent = parent.template;
-                details.child = child;
-                details.singleton = singleton;
-                return details;
-            }
-
-            private String parent;
-            private String child;
-            private boolean singleton;
-
-            @JsOverlay
-            public final AddressTemplate parent() {
-                return AddressTemplate.of(parent);
-            }
-
-            @JsOverlay
-            public final String child() {
-                return child;
-            }
-
-            @JsOverlay
-            public final boolean singleton() {
-                return singleton;
-            }
+            public AddressTemplate parent;
+            public String child;
+            public boolean singleton;
         }
 
         /**
@@ -80,11 +53,15 @@ public interface ModelBrowserEvents {
          * @param child  the address used to create the event's detail.
          */
         static void dispatch(HTMLElement source, AddressTemplate parent, String child, boolean singleton) {
+            Details details = new Details();
+            details.parent = parent;
+            details.child = child;
+            details.singleton = singleton;
             //noinspection unchecked
             CustomEventInit<Details> init = CustomEventInit.create();
             init.setBubbles(true);
             init.setCancelable(true);
-            init.setDetail(Details.create(parent, child, singleton));
+            init.setDetail(details);
             CustomEvent<Details> event = new CustomEvent<>(TYPE, init);
             source.dispatchEvent(event);
         }
@@ -104,28 +81,47 @@ public interface ModelBrowserEvents {
 
         String TYPE = UIEvent.type("model-browser", "select-in-tree");
 
-        /**
-         * Creates and returns a custom event to select a resource in the model browser tree.
-         *
-         * @param source   the source element used to dispatch the event.
-         * @param template the address used to create the event's detail.
-         */
+        class Details {
+
+            public String identifier;
+            public String parentIdentifier;
+            public AddressTemplate template;
+        }
+
         static void dispatch(HTMLElement source, AddressTemplate template) {
+            Details details = new Details();
+            details.template = template;
+            dispatch(source, details);
+        }
+
+        static void dispatch(HTMLElement source, String identifier) {
+            Details details = new Details();
+            details.identifier = identifier;
+            dispatch(source, details);
+        }
+
+        static void dispatch(HTMLElement source, String parentIdentifier, String childIdentifier) {
+            Details details = new Details();
+            details.parentIdentifier = parentIdentifier;
+            details.identifier = childIdentifier;
+            dispatch(source, details);
+        }
+
+        private static void dispatch(HTMLElement source, Details details) {
             //noinspection unchecked
-            CustomEventInit<String> init = CustomEventInit.create();
+            CustomEventInit<Details> init = CustomEventInit.create();
             init.setBubbles(true);
             init.setCancelable(true);
-            init.setDetail(template.template);
-            CustomEvent<String> event = new CustomEvent<>(TYPE, init);
+            init.setDetail(details);
+            CustomEvent<Details> event = new CustomEvent<>(TYPE, init);
             source.dispatchEvent(event);
         }
 
-        static void listen(HTMLElement element, Consumer<AddressTemplate> listener) {
+        static void listen(HTMLElement element, Consumer<Details> listener) {
             element.addEventListener(TYPE, event -> {
                 //noinspection unchecked
-                CustomEvent<String> customEvent = (CustomEvent<String>) event;
-                AddressTemplate template = AddressTemplate.of(customEvent.detail);
-                listener.accept(template);
+                CustomEvent<Details> customEvent = (CustomEvent<Details>) event;
+                listener.accept(customEvent.detail);
             });
         }
     }

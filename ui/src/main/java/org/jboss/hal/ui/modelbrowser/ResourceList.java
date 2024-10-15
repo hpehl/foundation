@@ -17,6 +17,7 @@ package org.jboss.hal.ui.modelbrowser;
 
 import java.util.List;
 
+import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
@@ -26,12 +27,23 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.filter.NameFilterAttribute;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
+import org.patternfly.component.emptystate.EmptyStateActions;
 import org.patternfly.component.list.DataList;
 import org.patternfly.component.list.DataListCell;
 import org.patternfly.component.list.DataListItem;
+import org.patternfly.component.menu.Menu;
+import org.patternfly.component.toolbar.Toolbar;
+import org.patternfly.component.toolbar.ToolbarItem;
+import org.patternfly.component.tooltip.Tooltip;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
+import org.patternfly.filter.FilterOperator;
 import org.patternfly.layout.flex.Flex;
+import org.patternfly.style.Classes;
+import org.patternfly.style.Variable;
 
 import elemental2.dom.HTMLElement;
 import elemental2.promise.Promise;
@@ -48,10 +60,11 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OP
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.filter.ItemCount.itemCount;
+import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
-import static org.jboss.hal.ui.modelbrowser.ResourcesToolbar.resourcesToolbar;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
@@ -62,21 +75,40 @@ import static org.patternfly.component.list.DataList.dataList;
 import static org.patternfly.component.list.DataListAction.dataListAction;
 import static org.patternfly.component.list.DataListCell.dataListCell;
 import static org.patternfly.component.list.DataListItem.dataListItem;
+import static org.patternfly.component.menu.Dropdown.dropdown;
+import static org.patternfly.component.menu.DropdownMenu.dropdownMenu;
+import static org.patternfly.component.menu.MenuContent.menuContent;
+import static org.patternfly.component.menu.MenuItem.menuItem;
+import static org.patternfly.component.menu.MenuList.menuList;
+import static org.patternfly.component.menu.MenuToggle.menuToggle;
+import static org.patternfly.component.menu.MenuToggleType.plainText;
+import static org.patternfly.component.toolbar.Toolbar.toolbar;
+import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
+import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
+import static org.patternfly.component.toolbar.ToolbarGroupType.iconButtonGroup;
+import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
+import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
+import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.ban;
+import static org.patternfly.icon.IconSets.fas.plus;
+import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Direction.column;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.Gap.md;
+import static org.patternfly.popper.Placement.auto;
+import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Size.sm;
+import static org.patternfly.style.Variable.componentVar;
 
-class ResourcesElement implements IsElement<HTMLElement> {
+class ResourceList implements IsElement<HTMLElement> {
 
-    private static final Logger logger = Logger.getLogger(AttributesTable.class.getName());
+    private static final Logger logger = Logger.getLogger(ResourceList.class.getName());
 
     private final UIContext uic;
-    private final ModelBrowserTree tree;
     private final ModelBrowserNode parent;
     private final Metadata metadata;
     private final ObservableValue<Integer> visible;
@@ -84,50 +116,88 @@ class ResourcesElement implements IsElement<HTMLElement> {
     private final Filter<ModelBrowserNode> filter;
     private final NoMatch<ModelBrowserNode> noMatch;
     private final Operation operation;
-    private final ResourcesToolbar toolbar;
-    private final HTMLElement resourcesElement;
+    private final ToolbarItem addItem;
+    private final Toolbar toolbar;
+    private final HTMLElement listContainer;
     private final HTMLElement root;
-    private String missingChild;
     private DataList dataList;
 
-    ResourcesElement(UIContext uic, ModelBrowserTree tree, ModelBrowserNode parent, Metadata metadata) {
+    ResourceList(UIContext uic, ModelBrowserNode parent, Metadata metadata) {
         this.uic = uic;
-        this.tree = tree;
         this.parent = parent;
         this.metadata = metadata;
         this.visible = ov(0);
         this.total = ov(0);
-        this.filter = new ResourcesFilter().onChange(this::onFilterChanged);
+        this.filter = new Filter<ModelBrowserNode>(FilterOperator.AND)
+                .add(new NameFilterAttribute<>(mbn -> mbn.name))
+                .onChange(this::onFilterChanged);
         this.noMatch = new NoMatch<>(filter);
         this.operation = new Operation.Builder(parent.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
                 .param(CHILD_TYPE, parent.name)
                 .build();
-        this.root = div()
-                .add(toolbar = resourcesToolbar(this, filter, visible, total))
-                .add(resourcesElement = div().element())
-                .element();
 
+        addItem = toolbarItem();
+        Tooltip.tooltip(addItem.element(), "Add").appendToBody();
+        String refreshId = Id.unique("refresh");
+        ToolbarItem refreshItem = toolbarItem()
+                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> refresh()))
+                .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
+
+        Variable spacer = componentVar(component(Classes.toolbar), "spacer");
+        Variable filterGroupSpacer = componentVar(component(Classes.toolbar, Classes.group), "m-filter-group", "spacer");
+        toolbar = toolbar()
+                .addContent(toolbarContent()
+                        .addItem(toolbarItem(searchFilter)
+                                .style(spacer.name, filterGroupSpacer.asVar()) // override spacing
+                                .add(nameFilterTextInputGroup(filter)))
+                        .addItem(toolbarItem()
+                                .style("align-self", "center")
+                                .add(itemCount(visible, total, "resource", "resources")))
+                        .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
+                                .addItem(addItem)
+                                .addItem(refreshItem)));
+
+        root = div()
+                .add(toolbar)
+                .add(listContainer = div().element())
+                .element();
         load();
     }
 
     private Promise<List<ModelBrowserNode>> load() {
-        setVisible(toolbar, false);
-        removeChildrenFrom(resourcesElement);
-        if (dataList != null) {
-            dataList.clear();
-        }
         return uic.dispatcher().execute(operation).then(result -> {
             List<ModelBrowserNode> allChildren = parseChildren(parent, result, true);
             List<ModelBrowserNode> existingChildren = allChildren.stream().filter(child -> child.exists).collect(toList());
             List<ModelBrowserNode> missingChildren = allChildren.stream().filter(child -> !child.exists).collect(toList());
-            missingChild = missingChildren.size() == 1 ? missingChildren.get(0).name : null;
+
             if (existingChildren.isEmpty()) {
-                empty();
+                empty(missingChildren);
                 return Promise.resolve(emptyList());
+
             } else {
+                removeChildrenFrom(addItem);
+                if (supportsAdd(parent, missingChildren)) {
+                    boolean singleton = parent.type == SINGLETON_FOLDER;
+                    if (missingChildren.isEmpty()) {
+                        addItem.add(button().plain()
+                                .icon(plus())
+                                .onClick((e, b) -> AddResource.dispatch(element(),
+                                        parent.template, null, singleton)));
+                    } else if (missingChildren.size() == 1) {
+                        addItem.add(button().plain()
+                                .icon(plus())
+                                .onClick((e, b) -> AddResource.dispatch(element(),
+                                        parent.template, missingChildren.get(0).name, singleton)));
+                    } else {
+                        addItem.add(dropdown(plus(), "Add")
+                                .addMenu(missingChildrenMenu(missingChildren)));
+                    }
+                    setVisible(addItem, true);
+                } else {
+                    setVisible(addItem, false);
+                }
                 visible.set(existingChildren.size());
                 total.set(existingChildren.size());
-                toolbar.toggleAddButton(supportsAdd(parent, allChildren));
                 children(existingChildren);
                 return Promise.resolve(existingChildren);
             }
@@ -135,18 +205,23 @@ class ResourcesElement implements IsElement<HTMLElement> {
     }
 
     private boolean supportsAdd(ModelBrowserNode parent, List<ModelBrowserNode> children) {
+        // TODO RBAC
         if (parent.type == ModelBrowserNode.Type.FOLDER) {
             return true;
         } else if (parent.type == ModelBrowserNode.Type.SINGLETON_FOLDER) {
-            for (ModelBrowserNode child : children) {
-                if (!child.exists) {
-                    return true;
-                }
-            }
-            return false;
+            return !children.isEmpty();
         } else {
             return false;
         }
+    }
+
+    private Menu missingChildrenMenu(List<ModelBrowserNode> missingChildren) {
+        return dropdownMenu().scrollable()
+                .addContent(menuContent()
+                        .addList(menuList()
+                                .addItems(missingChildren, mbn -> menuItem(mbn.template.identifier(), mbn.name)
+                                        .onClick((e, mi) -> AddResource.dispatch(element(), parent.template, mbn.name,
+                                                parent.type == SINGLETON_FOLDER)))));
     }
 
     @Override
@@ -156,19 +231,32 @@ class ResourcesElement implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ status
 
-    private void empty() {
+    private void empty(List<ModelBrowserNode> missingChildren) {
         setVisible(toolbar, false);
-        removeChildrenFrom(resourcesElement);
-        resourcesElement.appendChild(emptyState().size(sm)
+        removeChildrenFrom(listContainer);
+
+        boolean singleton = parent.type == SINGLETON_FOLDER;
+        EmptyStateActions actions = emptyStateActions();
+        if (missingChildren.isEmpty()) {
+            actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
+                    parent.template, null, singleton)));
+        } else if (missingChildren.size() == 1) {
+            actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
+                    parent.template, missingChildren.get(0).name, singleton)));
+        } else {
+            actions.add(dropdown(menuToggle(plainText).text("Add"))
+                    .addMenu(missingChildrenMenu(missingChildren)));
+        }
+        actions.add(button("Refresh").link().onClick((e, b) -> refresh()));
+
+        listContainer.appendChild(emptyState().size(sm)
                 .addHeader(emptyStateHeader()
                         .icon(ban())
                         .text("No child resources"))
                 .addBody(emptyStateBody()
                         .textContent("This resource has no child resources."))
                 .addFooter(emptyStateFooter()
-                        .addActions(emptyStateActions()
-                                .add(button("Add").link().onClick((e, b) -> add()))
-                                .add(button("Refresh").link().onClick((e, b) -> refresh()))))
+                        .addActions(actions))
                 .element());
     }
 
@@ -192,10 +280,12 @@ class ResourcesElement implements IsElement<HTMLElement> {
                                     dataListAction.style("align-items", "center");
                                 }
                             })
-                            .add(button("View")
+                            .add(button("View") // TODO RBAC
                                     .tertiary()
-                                    .onClick((e, c) -> tree.select(parent, child)))
+                                    .onClick((e, b) -> SelectInTree.dispatch(b.element(),
+                                            parent.identifier, child.identifier)))
                             .run(dataListAction -> {
+                                // TODO RBAC
                                 if (childMetadata.resourceDescription().operations().supports(REMOVE)) {
                                     dataListAction.add(button("Remove")
                                             .tertiary()
@@ -204,7 +294,7 @@ class ResourcesElement implements IsElement<HTMLElement> {
                             }));
         });
         if (!isAttached(dataList)) {
-            resourcesElement.appendChild(dataList.element());
+            listContainer.appendChild(dataList.element());
         }
     }
 
@@ -250,10 +340,10 @@ class ResourcesElement implements IsElement<HTMLElement> {
                         }
                     }
                 }
-                noMatch.toggle(resourcesElement, matchingItems == 0);
+                noMatch.toggle(listContainer, matchingItems == 0);
             } else {
                 matchingItems = total.get();
-                noMatch.toggle(resourcesElement, false);
+                noMatch.toggle(listContainer, false);
                 dataList.items().forEach(dlg -> dlg.classList().remove(halModifier(HalClasses.filtered)));
             }
             visible.set(matchingItems);
@@ -262,13 +352,9 @@ class ResourcesElement implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ action handlers
 
-    void add() {
-        ModelBrowserEvents.AddResource.dispatch(element(), parent.template, missingChild, parent.type == SINGLETON_FOLDER);
-    }
-
     void refresh() {
         load().then(children -> {
-            if (filter.defined()) {
+            if (!children.isEmpty() && filter.defined()) {
                 onFilterChanged(filter, null);
             }
             return null;
@@ -276,6 +362,6 @@ class ResourcesElement implements IsElement<HTMLElement> {
     }
 
     private void remove(ModelBrowserNode child) {
-
+        // TODO Implement me
     }
 }

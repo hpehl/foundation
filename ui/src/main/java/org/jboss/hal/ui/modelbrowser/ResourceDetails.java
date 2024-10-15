@@ -26,11 +26,11 @@ import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
 import static org.patternfly.component.tabs.Tabs.tabs;
 
-class ResourceElement implements IsElement<HTMLElement> {
+class ResourceDetails implements IsElement<HTMLElement> {
 
     private final HTMLElement root;
 
-    ResourceElement(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
+    ResourceDetails(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
         this.root = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
