@@ -186,7 +186,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                 });
             }
         } else {
-            logger.error("Unable to select %s: Invalid template for selection", template);
+            logger.error("Unable to select %s: Template is empty or not fully qualified.", template);
         }
     }
 

@@ -24,7 +24,7 @@ import "./variables.css"
 // Remaining third (a-z)
 import "./capability.css"
 import "./model-browser.css"
-import "./resource-view.css"
+import "./resource.css"
 import "./stability.css"
 import "./tree-view.css"
 import "./ui.css"

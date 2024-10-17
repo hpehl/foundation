@@ -15,11 +15,51 @@
  */
 package org.jboss.hal.ui.resource;
 
-import org.jboss.hal.dmr.ModelNode;
-import org.jboss.hal.meta.description.AttributeDescription;
+import java.util.ArrayList;
+import java.util.List;
 
-/** Simple record for an attribute name/value/description triple in {@link ResourceView} and {@link ResourceForm}. */
+import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelNodeHelper;
+import org.jboss.hal.dmr.Property;
+import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.description.AttributeDescriptions;
+
+/** Simple record for an attribute name/value/description triple. */
 class ResourceAttribute {
+
+    static List<ResourceAttribute> resourceAttributes(Metadata metadata, ModelNode resource, List<String> attributes) {
+        List<ResourceAttribute> resourceAttributes = new ArrayList<>();
+        if (attributes.isEmpty()) {
+            // collect all properties (including nested, record-like properties)
+            for (Property property : resource.asPropertyList()) {
+                String name = property.getName();
+                ModelNode value = property.getValue();
+                AttributeDescription description = metadata.resourceDescription().attributes().get(name);
+                if (description.simpleValueType()) {
+                    AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
+                    for (AttributeDescription nestedDescription : nestedDescriptions) {
+                        ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.fullyQualifiedName());
+                        resourceAttributes.add(new ResourceAttribute(nestedValue, nestedDescription));
+                    }
+                } else {
+                    resourceAttributes.add(new ResourceAttribute(value, description));
+                }
+            }
+        } else {
+            // collect only the specified attributes (which can be nested)
+            for (String attribute : attributes) {
+                if (attribute.contains(".")) {
+                    // TODO Support nested attributes
+                } else {
+                    ModelNode value = resource.get(attribute);
+                    AttributeDescription description = metadata.resourceDescription().attributes().get(attribute);
+                    resourceAttributes.add(new ResourceAttribute(value, description));
+                }
+            }
+        }
+        return resourceAttributes;
+    }
 
     final String fqn;
     final String name;
@@ -31,5 +71,10 @@ class ResourceAttribute {
         this.name = description.name();
         this.value = value;
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return fqn + "=" + value.asString();
     }
 }

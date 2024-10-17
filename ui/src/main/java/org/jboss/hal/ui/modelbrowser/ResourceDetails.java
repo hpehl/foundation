@@ -21,7 +21,7 @@ import org.jboss.hal.ui.UIContext;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.ui.resource.ResourceView.resourceView;
+import static org.jboss.hal.ui.resource.ResourceManager.resourceManager;
 import static org.patternfly.component.tabs.Tab.tab;
 import static org.patternfly.component.tabs.TabContent.tabContent;
 import static org.patternfly.component.tabs.Tabs.tabs;
@@ -34,7 +34,7 @@ class ResourceDetails implements IsElement<HTMLElement> {
         this.root = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
-                        .addContent(tabContent().add(resourceView(uic, mbn.template, metadata))))
+                        .addContent(tabContent().add(resourceManager(uic, mbn.template, metadata))))
                 .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tbs.addItem(tab("attributes", "Attributes")

@@ -15,16 +15,28 @@
  */
 package org.jboss.hal.ui.filter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelType;
 import org.patternfly.filter.FilterAttribute;
 
-public class DefinedFilterAttribute<T> extends FilterAttribute<T, Boolean> {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 
-    public static final String NAME = "defined";
+public class TypesAttribute<T> extends FilterAttribute<T, List<TypeValues>> {
 
-    public DefinedFilterAttribute(Function<T, ModelNode> modelNodeFn) {
-        super(NAME, (object, defined) -> defined == null || defined == modelNodeFn.apply(object).isDefined());
+    public static final String NAME = "types";
+
+    public TypesAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, types) -> {
+            ModelType attributeType = modelNodeFn.apply(object).get(TYPE).asType();
+            List<ModelType> modelTypes = new ArrayList<>();
+            for (TypeValues type : types) {
+                modelTypes.addAll(type.types);
+            }
+            return modelTypes.contains(attributeType);
+        });
     }
 }

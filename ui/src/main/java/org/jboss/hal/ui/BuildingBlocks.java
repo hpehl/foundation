@@ -28,12 +28,13 @@ import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.RestartMode;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.ListItem;
+import org.patternfly.component.popover.Popover;
 import org.patternfly.filter.Filter;
 import org.patternfly.icon.PredefinedIcon;
 import org.patternfly.layout.flex.Flex;
 import org.patternfly.style.Color;
-import org.patternfly.style.Size;
 import org.patternfly.style.Variable;
+import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -66,6 +67,8 @@ import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFoo
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
+import static org.patternfly.component.popover.Popover.popover;
+import static org.patternfly.component.popover.PopoverBody.popoverBody;
 import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
 import static org.patternfly.icon.IconSets.fas.flask;
 import static org.patternfly.icon.IconSets.fas.infoCircle;
@@ -81,6 +84,7 @@ import static org.patternfly.style.Color.blue;
 import static org.patternfly.style.Color.gold;
 import static org.patternfly.style.Color.red;
 import static org.patternfly.style.Variable.componentVar;
+import static org.patternfly.style.Variable.utilVar;
 
 /** Contains various UI-related methods used across the UI module. */
 public class BuildingBlocks {
@@ -174,6 +178,15 @@ public class BuildingBlocks {
         });
     }
 
+    public static Popover attributeDescriptionPopover(String header, AttributeDescription attribute) {
+        return popover()
+                .css(util("min-width"))
+                .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
+                .addHeader(header)
+                .addBody(popoverBody()
+                        .add(attributeDescription(attribute)));
+    }
+
     private static HTMLContainerBuilder<HTMLDivElement> description(Description description) {
         HTMLContainerBuilder<HTMLDivElement> div = div();
         div.add(div().textContent(description.description()));
@@ -206,7 +219,7 @@ public class BuildingBlocks {
     // ------------------------------------------------------ empty
 
     public static <T> EmptyState emptyRow(Filter<T> filter) {
-        return emptyState().size(Size.sm)
+        return emptyState()
                 .addHeader(emptyStateHeader()
                         .icon(search())
                         .text("No results found"))

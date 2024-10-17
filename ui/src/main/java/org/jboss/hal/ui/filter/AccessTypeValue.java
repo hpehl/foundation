@@ -20,9 +20,9 @@ import java.util.List;
 public class AccessTypeValue {
 
     public static List<AccessTypeValue> accessTypeValues() {
-        return List.of(new AccessTypeValue(AccessTypeFilterAttribute.NAME, "Read-write", "read-write"),
-                new AccessTypeValue(AccessTypeFilterAttribute.NAME, "Read-only", "read-only"),
-                new AccessTypeValue(AccessTypeFilterAttribute.NAME, "Metric", "metric"));
+        return List.of(new AccessTypeValue(AccessTypeAttribute.NAME, "Read-write", "read-write"),
+                new AccessTypeValue(AccessTypeAttribute.NAME, "Read-only", "read-only"),
+                new AccessTypeValue(AccessTypeAttribute.NAME, "Metric", "metric"));
     }
 
     public final String identifier;

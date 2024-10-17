@@ -17,14 +17,13 @@ package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.meta.description.Description;
 import org.patternfly.filter.FilterAttribute;
 
-public class DeprecatedFilterAttribute<T> extends FilterAttribute<T, Boolean> {
+public class NameAttribute<T> extends FilterAttribute<T, String> {
 
-    public static final String NAME = "deprecated";
+    public static final String NAME = "name";
 
-    public DeprecatedFilterAttribute(Function<T, Description> descriptionFn) {
-        super(NAME, (object, deprecated) -> deprecated == descriptionFn.apply(object).deprecation().isDefined());
+    public NameAttribute(Function<T, String> nameFn) {
+        super(NAME, (object, name) -> nameFn.apply(object).toLowerCase().contains(name.toLowerCase()));
     }
 }

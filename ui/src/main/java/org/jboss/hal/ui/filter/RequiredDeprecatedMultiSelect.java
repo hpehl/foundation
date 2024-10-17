@@ -32,38 +32,38 @@ import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
 
-public class SignatureFilterMultiSelect<T> implements IsElement<HTMLElement> {
+public class RequiredDeprecatedMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> SignatureFilterMultiSelect<T> signatureFilterMultiSelect(Filter<T> filter) {
-        return new SignatureFilterMultiSelect<>(filter);
+    public static <T> RequiredDeprecatedMultiSelect<T> requiredDeprecatedMultiSelect(Filter<T> filter) {
+        return new RequiredDeprecatedMultiSelect<>(filter);
     }
 
     // ------------------------------------------------------ instance
 
-    private static final String ORIGIN = "SignatureFilterMultiSelect";
+    private static final String ORIGIN = "RequiredDeprecatedMultiSelect";
     private final MultiSelect multiSelect;
 
-    SignatureFilterMultiSelect(Filter<T> filter) {
+    RequiredDeprecatedMultiSelect(Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
-        this.multiSelect = multiSelect(menuToggle().text("Signature"))
+        this.multiSelect = multiSelect(menuToggle().text("Status"))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
                         .onMultiSelect((e, c, menuItems) -> {
-                            setBooleanFilter(filter, ParametersFilterAttribute.NAME, menuItems, ORIGIN);
-                            setBooleanFilter(filter, ReturnValueFilterAttribute.NAME, menuItems, ORIGIN);
+                            setBooleanFilter(filter, RequiredAttribute.NAME, menuItems, ORIGIN);
+                            setBooleanFilter(filter, DeprecatedAttribute.NAME, menuItems, ORIGIN);
                         })
                         .addContent(menuContent()
-                                .addGroup(menuGroup("Parameters")
+                                .addGroup(menuGroup("Required")
                                         .addList(menuList()
-                                                .addItem(ParametersFilterAttribute.NAME + "-true", "Parameters")
-                                                .addItem(ParametersFilterAttribute.NAME + "-false", "No parameters")))
+                                                .addItem(RequiredAttribute.NAME + "-true", "Required")
+                                                .addItem(RequiredAttribute.NAME + "-false", "Not required")))
                                 .addDivider()
-                                .addGroup(menuGroup("Return value")
+                                .addGroup(menuGroup("Deprecated")
                                         .addList(menuList()
-                                                .addItem(ReturnValueFilterAttribute.NAME + "-true", "Return value")
-                                                .addItem(ReturnValueFilterAttribute.NAME + "-false", "No return value")))));
+                                                .addItem(DeprecatedAttribute.NAME + "-true", "Deprecated")
+                                                .addItem(DeprecatedAttribute.NAME + "-false", "Not deprecated")))));
     }
 
     @Override
@@ -77,10 +77,10 @@ public class SignatureFilterMultiSelect<T> implements IsElement<HTMLElement> {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
             List<String> identifiers = new ArrayList<>();
-            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, ParametersFilterAttribute.NAME,
-                    value -> ParametersFilterAttribute.NAME + "-" + value);
-            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, ReturnValueFilterAttribute.NAME,
-                    value -> ReturnValueFilterAttribute.NAME + "-" + value);
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, RequiredAttribute.NAME,
+                    value -> RequiredAttribute.NAME + "-" + value);
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DeprecatedAttribute.NAME,
+                    value -> DeprecatedAttribute.NAME + "-" + value);
             multiSelect.selectIdentifiers(identifiers, false);
         }
     }

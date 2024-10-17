@@ -25,7 +25,7 @@ import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
+import org.jboss.hal.ui.filter.GlobalOperationsAttribute;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Tbody;
@@ -137,7 +137,7 @@ class OperationsTable implements IsElement<HTMLElement> {
                                                     }));
                                 })))
                 .element();
-        filter.set(GlobalOperationsFilterAttribute.NAME, showGlobalOperations);
+        filter.set(GlobalOperationsAttribute.NAME, showGlobalOperations);
     }
 
     private void execute(OperationDescription operation) {

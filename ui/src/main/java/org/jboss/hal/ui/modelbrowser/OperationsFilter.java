@@ -17,11 +17,11 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.meta.description.OperationDescription;
-import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
-import org.jboss.hal.ui.filter.GlobalOperationsFilterAttribute;
-import org.jboss.hal.ui.filter.NameFilterAttribute;
-import org.jboss.hal.ui.filter.ParametersFilterAttribute;
-import org.jboss.hal.ui.filter.ReturnValueFilterAttribute;
+import org.jboss.hal.ui.filter.DeprecatedAttribute;
+import org.jboss.hal.ui.filter.GlobalOperationsAttribute;
+import org.jboss.hal.ui.filter.NameAttribute;
+import org.jboss.hal.ui.filter.ParametersAttribute;
+import org.jboss.hal.ui.filter.ReturnValueAttribute;
 import org.patternfly.filter.Filter;
 import org.patternfly.filter.FilterOperator;
 
@@ -32,17 +32,17 @@ public class OperationsFilter extends Filter<OperationDescription> {
     public OperationsFilter(boolean showGlobalOperations) {
         super(FilterOperator.AND);
         this.showGlobalOperations = showGlobalOperations;
-        add(new NameFilterAttribute<>(NamedNode::name));
-        add(new ParametersFilterAttribute<>());
-        add(new ReturnValueFilterAttribute<>());
-        add(new DeprecatedFilterAttribute<>(od -> od));
-        add(new GlobalOperationsFilterAttribute<>());
+        add(new NameAttribute<>(NamedNode::name));
+        add(new ParametersAttribute<>());
+        add(new ReturnValueAttribute<>());
+        add(new DeprecatedAttribute<>(od -> od));
+        add(new GlobalOperationsAttribute<>());
     }
 
     @Override
     public void resetAll(String origin) {
         super.resetAll(origin);
         // respect user setting!
-        set(GlobalOperationsFilterAttribute.NAME, showGlobalOperations);
+        set(GlobalOperationsAttribute.NAME, showGlobalOperations);
     }
 }

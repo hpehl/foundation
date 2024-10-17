@@ -1,4 +1,4 @@
-/**
+/*
  *  Copyright 2024 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,18 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.jboss.hal.ui.filter;
 
-.hal-c-resource-view {
-    padding: var(--pf-v5-global--spacer--md);
-    --pf-v5-c-description-list__group--ColumnGap: var(--pf-v5-global--spacer--md);
-}
+import org.jboss.hal.meta.description.OperationDescription;
+import org.patternfly.filter.FilterAttribute;
 
-.hal-c-resource-view__unit {
-    margin-left: var(--pf-v5-global--spacer--sm);
-    color: var(--pf-v5-global--Color--200);
-    font-size: var(--pf-v5-global--FontSize--sm);
-}
+public class ParametersAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
 
-.hal-c-resource-view__undefined {
-    color: var(--pf-v5-global--disabled-color--100);
+    public static final String NAME = "parameters";
+
+    public ParametersAttribute() {
+        super(NAME, (operation, parameter) -> parameter == !operation.parameters().isEmpty());
+    }
 }

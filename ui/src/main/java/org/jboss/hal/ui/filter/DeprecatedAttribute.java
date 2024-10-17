@@ -17,16 +17,14 @@ package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.description.Description;
 import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+public class DeprecatedAttribute<T> extends FilterAttribute<T, Boolean> {
 
-public class AccessTypeFilterAttribute<T> extends FilterAttribute<T, AccessTypeValue> {
+    public static final String NAME = "deprecated";
 
-    public static final String NAME = "access-type";
-
-    public AccessTypeFilterAttribute(Function<T, AttributeDescription> adf) {
-        super(NAME, (object, accessType) -> accessType.value.equals(adf.apply(object).find(ACCESS_TYPE).asString()));
+    public DeprecatedAttribute(Function<T, Description> descriptionFn) {
+        super(NAME, (object, deprecated) -> deprecated == descriptionFn.apply(object).deprecation().isDefined());
     }
 }

@@ -20,13 +20,13 @@ import java.util.function.Function;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
 
-public class StorageFilterAttribute<T> extends FilterAttribute<T, StorageValue> {
+public class AccessTypeAttribute<T> extends FilterAttribute<T, AccessTypeValue> {
 
-    public static final String NAME = "storage";
+    public static final String NAME = "access-type";
 
-    public StorageFilterAttribute(Function<T, AttributeDescription> adf) {
-        super(NAME, (object, storage) -> storage.value.equals(adf.apply(object).find(STORAGE).asString()));
+    public AccessTypeAttribute(Function<T, AttributeDescription> adf) {
+        super(NAME, (object, accessType) -> accessType.value.equals(adf.apply(object).find(ACCESS_TYPE).asString()));
     }
 }

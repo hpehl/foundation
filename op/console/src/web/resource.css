@@ -1,0 +1,69 @@
+/**
+ *  Copyright 2024 Red Hat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+.hal-c-resource-manager {
+    --hal-resource-manager-label-width-on-md: 20ch;
+    --hal-resource-manager-label-width-on-lg: 23ch;
+    --hal-resource-manager-label-width-on-xl: 25ch;
+    --hal-resource-manager-label-width-on-2xl: 28ch;
+    padding-left: var(--pf-v5-global--spacer--md);
+    padding-right: var(--pf-v5-global--spacer--md);
+    padding-bottom: var(--pf-v5-global--spacer--md);
+}
+
+.hal-c-resource-manager__body {
+    margin-top: var(--pf-v5-global--spacer--md);
+}
+
+.hal-c-resource-manager__view {
+    --pf-v5-c-description-list__group--ColumnGap: var(--pf-v5-global--spacer--md);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-md: var(--hal-resource-manager-label-width-on-md);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-lg: var(--hal-resource-manager-label-width-on-lg);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-xl: var(--hal-resource-manager-label-width-on-xl);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-2xl: var(--hal-resource-manager-label-width-on-2xl);
+}
+
+.hal-c-resource-manager__view-unit {
+    color: var(--pf-v5-global--Color--200);
+    font-size: var(--pf-v5-global--FontSize--sm);
+    margin-left: var(--pf-v5-global--spacer--sm);
+}
+
+.hal-c-resource-manager__view-undefined {
+    color: var(--pf-v5-global--disabled-color--100);
+}
+
+.hal-c-resource-manager__edit {
+    --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-md);
+}
+
+@media (min-width: 992px) {
+    .hal-c-resource-manager__edit {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-lg);
+    }
+}
+
+@media (min-width: 1200px) {
+    .hal-c-resource-manager__edit {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-xl);
+    }
+}
+
+@media (min-width: 1450px) {
+    .hal-c-resource-manager__edit {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-2xl);
+    }
+}

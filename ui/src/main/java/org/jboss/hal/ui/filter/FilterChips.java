@@ -26,18 +26,26 @@ import static org.patternfly.filter.FilterAttributeModifier.collectionRemove;
 
 public class FilterChips {
 
-    public static <T> List<Chip> statusChips(Filter<T> filter) {
+    public static <T> List<Chip> definedRequiredDeprecatedChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        chips.addAll(booleanChips(filter, DefinedFilterAttribute.NAME, "Defined", "Undefined"));
+        chips.addAll(booleanChips(filter, DefinedAttribute.NAME, "Defined", "Undefined"));
+        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Not required"));
+        chips.addAll(deprecatedChips(filter));
+        return chips;
+    }
+
+    public static <T> List<Chip> requiredDeprecatedChips(Filter<T> filter) {
+        List<Chip> chips = new ArrayList<>();
+        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Not required"));
         chips.addAll(deprecatedChips(filter));
         return chips;
     }
 
     public static <T> List<Chip> deprecatedChips(Filter<T> filter) {
-        return booleanChips(filter, DeprecatedFilterAttribute.NAME, "Deprecated", "Not deprecated");
+        return booleanChips(filter, DeprecatedAttribute.NAME, "Deprecated", "Not deprecated");
     }
 
-    public static <T> List<Chip> modeChips(Filter<T> filter) {
+    public static <T> List<Chip> storageAccessTypeChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
         chips.addAll(storageChips(filter));
         chips.addAll(accessTypeChips(filter));
@@ -46,40 +54,40 @@ public class FilterChips {
 
     public static <T> List<Chip> storageChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        if (filter.defined(StorageFilterAttribute.NAME)) {
-            StorageValue storageValue = filter.<StorageValue>get(StorageFilterAttribute.NAME).value();
+        if (filter.defined(StorageAttribute.NAME)) {
+            StorageValue storageValue = filter.<StorageValue>get(StorageAttribute.NAME).value();
             chips.add(chip(storageValue.text)
-                    .onClose((e, c) -> filter.reset(StorageFilterAttribute.NAME)));
+                    .onClose((e, c) -> filter.reset(StorageAttribute.NAME)));
         }
         return chips;
     }
 
     public static <T> List<Chip> accessTypeChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        if (filter.defined(AccessTypeFilterAttribute.NAME)) {
-            AccessTypeValue accessTypeValue = filter.<AccessTypeValue>get(AccessTypeFilterAttribute.NAME).value();
+        if (filter.defined(AccessTypeAttribute.NAME)) {
+            AccessTypeValue accessTypeValue = filter.<AccessTypeValue>get(AccessTypeAttribute.NAME).value();
             chips.add(chip(accessTypeValue.text)
-                    .onClose((e, c) -> filter.reset(AccessTypeFilterAttribute.NAME)));
+                    .onClose((e, c) -> filter.reset(AccessTypeAttribute.NAME)));
         }
         return chips;
     }
 
     public static <T> List<Chip> typeChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        if (filter.defined(TypesFilterAttribute.NAME)) {
-            List<TypeValues> value = filter.<List<TypeValues>>get(TypesFilterAttribute.NAME).value();
+        if (filter.defined(TypesAttribute.NAME)) {
+            List<TypeValues> value = filter.<List<TypeValues>>get(TypesAttribute.NAME).value();
             for (TypeValues type : value) {
                 chips.add(chip(type.name).onClose((event, chip) ->
-                        filter.set(TypesFilterAttribute.NAME, List.of(type), collectionRemove(ArrayList::new))));
+                        filter.set(TypesAttribute.NAME, List.of(type), collectionRemove(ArrayList::new))));
             }
         }
         return chips;
     }
 
-    public static <T> List<Chip> signatureChips(Filter<T> filter) {
+    public static <T> List<Chip> parametersReturnValueChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        chips.addAll(booleanChips(filter, ParametersFilterAttribute.NAME, "Parameters", "No parameters"));
-        chips.addAll(booleanChips(filter, ReturnValueFilterAttribute.NAME, "Return value", "No return value"));
+        chips.addAll(booleanChips(filter, ParametersAttribute.NAME, "Parameters", "No parameters"));
+        chips.addAll(booleanChips(filter, ReturnValueAttribute.NAME, "Return value", "No return value"));
         return chips;
     }
 

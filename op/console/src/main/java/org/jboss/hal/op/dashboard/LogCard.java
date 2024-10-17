@@ -41,6 +41,7 @@ import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LINES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_LOG_FILE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TAIL;
+import static org.jboss.hal.op.dashboard.DashboardCard.emptyState;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
@@ -50,7 +51,6 @@ import static org.patternfly.component.card.CardHeader.cardHeader;
 import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.component.divider.Divider.divider;
 import static org.patternfly.component.divider.DividerType.hr;
-import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
@@ -66,7 +66,6 @@ import static org.patternfly.layout.flex.JustifyContent.center;
 import static org.patternfly.layout.flex.SpaceItems.md;
 import static org.patternfly.layout.flex.SpaceItems.sm;
 import static org.patternfly.style.Orientation.vertical;
-import static org.patternfly.style.Size.xs;
 import static org.patternfly.style.Variable.globalVar;
 
 class LogCard implements DashboardCard {
@@ -162,7 +161,7 @@ class LogCard implements DashboardCard {
                         }
                     }
                 },
-                (op, error) -> cardBody.add(emptyState().size(xs)
+                (op, error) -> cardBody.add(emptyState()
                         .addHeader(emptyStateHeader()
                                 .icon(exclamationCircle().attr("color", globalVar("danger-color", "100").asVar()))
                                 .text("Log file not found"))

@@ -20,27 +20,22 @@ import java.util.List;
 import org.jboss.elemento.Id;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
+import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.LabelBuilder;
 import org.jboss.hal.ui.UIContext;
-import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionListGroup;
 import org.patternfly.component.list.DescriptionListTerm;
-import org.patternfly.component.switch_.Switch;
 import org.patternfly.core.Roles;
-import org.patternfly.core.Tuple;
-import org.patternfly.style.Variables;
 
 import elemental2.dom.HTMLElement;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toList;
-import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.wrapHtmlContainer;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
@@ -55,9 +50,10 @@ import static org.jboss.hal.dmr.ModelType.OBJECT;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
-import static org.jboss.hal.resources.HalClasses.resourceView;
+import static org.jboss.hal.resources.HalClasses.resourceManager;
 import static org.jboss.hal.resources.HalClasses.undefined;
-import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
+import static org.jboss.hal.resources.HalClasses.view;
+import static org.jboss.hal.ui.BuildingBlocks.attributeDescriptionPopover;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.resource.CapabilityReference.capabilityReference;
 import static org.patternfly.component.button.Button.button;
@@ -68,11 +64,9 @@ import static org.patternfly.component.list.DescriptionListGroup.descriptionList
 import static org.patternfly.component.list.DescriptionListTerm.descriptionListTerm;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
-import static org.patternfly.component.popover.Popover.popover;
-import static org.patternfly.component.popover.PopoverBody.popoverBody;
+import static org.patternfly.component.switch_.Switch.switch_;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Attributes.role;
-import static org.patternfly.core.Tuple.tuple;
 import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.descriptionList;
@@ -82,22 +76,20 @@ import static org.patternfly.style.Classes.text;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
 import static org.patternfly.style.Variable.globalVar;
-import static org.patternfly.style.Variable.utilVar;
 
-class ResourceViewItem {
+class ViewFactory {
 
-    static ResourceViewItem resourceViewItem(UIContext uic, Metadata metadata, ResourceAttribute ra) {
-        DescriptionListTerm dlt = term(uic, metadata, ra);
-        Tuple<HTMLElement, UpdateValueFn> tuple = elementFn(uic, ra);
-        DescriptionListGroup dlg = descriptionListGroup(Id.build(ra.fqn, "dlg"))
+    // ------------------------------------------------------ view
+
+    static DescriptionListGroup viewItem(UIContext uic, AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
+        return descriptionListGroup(Id.build(ra.fqn, "view"))
                 .store(Keys.RESOURCE_ATTRIBUTE, ra)
-                .addTerm(dlt)
+                .addTerm(label(uic, metadata, ra))
                 .addDescription(descriptionListDescription()
-                        .add(tuple.key));
-        return new ResourceViewItem(dlg, tuple.value);
+                        .add(value(uic, template, ra)));
     }
 
-    private static DescriptionListTerm term(UIContext uic, Metadata metadata, ResourceAttribute ra) {
+    private static DescriptionListTerm label(UIContext uic, Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm term;
         LabelBuilder labelBuilder = new LabelBuilder();
         if (ra.description != null) {
@@ -112,12 +104,7 @@ class ResourceViewItem {
                 String parentLabel = labelBuilder.label(parentDescription.name());
                 String nestedLabel = labelBuilder.label(ra.name);
                 term = descriptionListTerm(parentLabel)
-                        .help(popover()
-                                .css(util("min-width"))
-                                .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
-                                .addHeader(parentLabel)
-                                .addBody(popoverBody()
-                                        .add(attributeDescription(parentDescription))));
+                        .help(attributeDescriptionPopover(parentLabel, parentDescription));
                 HTMLElement nestedTextElement = span()
                         .css(component(descriptionList, text), modifier(helpText))
                         .attr(role, Roles.button)
@@ -125,12 +112,7 @@ class ResourceViewItem {
                         .apply(element -> element.tabIndex = 0)
                         .textContent(nestedLabel)
                         .element();
-                popover()
-                        .css(util("min-width"))
-                        .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
-                        .addHeader(nestedLabel)
-                        .addBody(popoverBody()
-                                .add(attributeDescription(nestedDescription)))
+                attributeDescriptionPopover(nestedLabel, nestedDescription)
                         .trigger(nestedTextElement)
                         .appendToBody();
                 wrapHtmlContainer(term.element())
@@ -141,13 +123,8 @@ class ResourceViewItem {
                 // </unstable>
             } else {
                 String label = labelBuilder.label(ra.name);
-                term = descriptionListTerm(label);
-                term.help(popover()
-                        .css(util("min-width"))
-                        .style(utilVar("min-width", Variables.MinWidth).name, "40ch")
-                        .addHeader(label)
-                        .addBody(popoverBody()
-                                .add(attributeDescription(ra.description))));
+                term = descriptionListTerm(label)
+                        .help(attributeDescriptionPopover(label, ra.description));
 
                 // only the top level attribute is stability-labeled
                 if (uic.environment()
@@ -175,67 +152,64 @@ class ResourceViewItem {
         return term;
     }
 
-    private static Tuple<HTMLElement, UpdateValueFn> elementFn(UIContext uic, ResourceAttribute ra) {
-        UpdateValueFn fn;
+    private static HTMLElement value(UIContext uic, AddressTemplate resource, ResourceAttribute ra) {
         HTMLElement element;
 
-        // TODO Implement default values and sensitive
+        // TODO Implement sensitive constraints
         if (ra.value.isDefined()) {
             if (ra.value.getType() == EXPRESSION) {
                 HTMLElement resolveButton = button().plain().inline().icon(link()).element();
                 HTMLElement expressionElement = span().element();
                 element = span()
+                        .textContent(ra.value.asString())
                         .add(tooltip(resolveButton, "Resolve expression (nyi)"))
                         .add(expressionElement)
-                        .add(resolveButton).element();
-                fn = value -> expressionElement.textContent = value.asString();
+                        .add(resolveButton)
+                        .element();
             } else {
                 if (ra.description != null) {
                     if (ra.description.hasDefined(TYPE)) {
                         ModelType type = ra.description.get(TYPE).asType();
                         if (type == BOOLEAN) {
                             String unique = Id.unique(ra.name);
-                            Switch switch_ = Switch.switch_(unique, unique)
+                            element = switch_(unique, unique)
+                                    .value(ra.value.asBoolean())
                                     .ariaLabel(ra.name)
                                     .checkIcon()
-                                    .readonly();
-                            element = switch_.element();
-                            fn = value -> switch_.value(value.asBoolean());
+                                    .readonly()
+                                    .element();
                         } else if (type.simple()) {
                             String unit = ra.description.hasDefined(UNIT) ? ra.description.get(UNIT)
                                     .asString() : null;
                             if (unit != null) {
-                                HTMLElement valueElement = span().element();
-                                HTMLElement unitElement = span().css(halComponent(resourceView, HalClasses.unit))
-                                        .textContent(unit)
+                                element = span()
+                                        .add(span().textContent(ra.value.asString()))
+                                        .add(span().css(halComponent(resourceManager, view, HalClasses.unit))
+                                                .textContent(unit))
                                         .element();
-                                element = span().add(valueElement).add(unitElement).element();
-                                fn = value -> valueElement.textContent = value.asString();
                             } else if (ra.description.hasDefined(ALLOWED)) {
                                 List<String> allowed = ra.description.get(ALLOWED)
                                         .asList()
                                         .stream()
                                         .map(ModelNode::asString)
+                                        .sorted(naturalOrder())
                                         .collect(toList());
                                 allowed.remove(ra.value.asString());
-                                allowed.sort(naturalOrder());
-                                Label label = Label.label("", grey);
                                 element = labelGroup()
                                         .numLabels(1)
                                         .collapsedText("Allowed values")
-                                        .addItem(label)
+                                        .addItem(Label.label("", grey).text(ra.value.asString()))
                                         .addItems(allowed, a -> Label.label(a, grey).disabled())
                                         .element();
-                                fn = value -> label.text(value.asString());
                             } else {
                                 if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
                                     String capability = ra.description.get(CAPABILITY_REFERENCE).asString();
-                                    CapabilityReference capabilityReference = capabilityReference(uic, ra.name, capability);
-                                    element = capabilityReference.element();
-                                    fn = value -> capabilityReference.updateValue(value.asString());
+                                    element = capabilityReference(uic, resource, capability, ra)
+                                            .element();
                                 } else {
-                                    element = span().element();
-                                    fn = value -> element.textContent = value.asString();
+                                    element = span()
+                                            .textContent(ra.value.asString())
+                                            .element();
                                 }
                             }
                         } else if (type == LIST) {
@@ -244,48 +218,36 @@ class ResourceViewItem {
                                     ? ra.description.get(VALUE_TYPE).asType()
                                     : null;
                             if (valueType != null && valueType.simple()) {
-                                element = div().element();
-                                fn = value -> {
-                                    removeChildrenFrom(element);
-                                    List<String> values = value.asList().stream().map(ModelNode::asString).collect(toList());
-                                    element.append(list().plain()
-                                            .addItems(values, v -> listItem(Id.build(v, "value")).text(v))
-                                            .element());
-                                };
+                                element = list().plain()
+                                        .addItems(ra.value.asList().stream().map(ModelNode::asString).collect(toList()),
+                                                v -> listItem(Id.build(v, "value")).text(v))
+                                        .element();
                             } else {
-                                CodeBlock codeBlock = codeBlock().truncate(5);
-                                element = codeBlock.element();
-                                fn = value -> codeBlock.code(value.toJSONString().replace("\\/", "/"));
+                                element = codeBlock()
+                                        .truncate(5)
+                                        .code(ra.value.toJSONString().replace("\\/", "/"))
+                                        .element();
                             }
                         } else if (type == OBJECT) {
-                            CodeBlock codeBlock = codeBlock().truncate(5);
-                            element = codeBlock.element();
-                            fn = value -> codeBlock.code(value.toJSONString().replace("\\/", "/"));
+                            element = codeBlock()
+                                    .truncate(5)
+                                    .code(ra.value.toJSONString().replace("\\/", "/"))
+                                    .element();
                         } else {
-                            element = span().element();
-                            fn = value -> element.textContent = value.asString();
+                            element = span().textContent(ra.value.asString()).element();
                         }
                     } else {
-                        element = span().element();
-                        fn = value -> element.textContent = value.asString();
+                        element = span().textContent(ra.value.asString()).element();
                     }
                 } else {
-                    element = span().element();
-                    fn = value -> element.textContent = value.asString();
+                    element = span().textContent(ra.value.asString()).element();
                 }
             }
         } else {
-            element = span().css(halComponent(resourceView, undefined)).element();
-            fn = value -> element.textContent = value.asString();
+            element = span().css(halComponent(resourceManager, view, undefined))
+                    .textContent(ra.value.asString())
+                    .element();
         }
-        return tuple(element, fn);
-    }
-
-    final DescriptionListGroup dlg;
-    final UpdateValueFn update;
-
-    ResourceViewItem(DescriptionListGroup dlg, UpdateValueFn update) {
-        this.dlg = dlg;
-        this.update = update;
+        return element;
     }
 }

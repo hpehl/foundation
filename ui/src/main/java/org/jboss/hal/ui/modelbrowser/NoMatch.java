@@ -18,7 +18,6 @@ package org.jboss.hal.ui.modelbrowser;
 import org.jboss.elemento.IsElement;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.filter.Filter;
-import org.patternfly.style.Size;
 
 import elemental2.dom.HTMLElement;
 
@@ -37,7 +36,7 @@ public class NoMatch<T> implements IsElement<HTMLElement> {
     private final EmptyState emptyState;
 
     public NoMatch(Filter<T> filter) {
-        this.emptyState = emptyState().size(Size.sm)
+        this.emptyState = emptyState()
                 .addHeader(emptyStateHeader()
                         .icon(search())
                         .text("No results found"))

@@ -34,7 +34,6 @@ import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFoo
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
-import static org.patternfly.style.Size.lg;
 import static org.patternfly.style.Variable.globalVar;
 
 public class BootstrapErrorElement implements IsElement<HTMLElement> {
@@ -51,7 +50,7 @@ public class BootstrapErrorElement implements IsElement<HTMLElement> {
 
     BootstrapErrorElement(BootstrapError error) {
         String selectUrl = location.origin + location.pathname;
-        this.root = emptyState().size(lg)
+        this.root = emptyState()
                 .addHeader(emptyStateHeader()
                         .icon(exclamationCircle(), globalVar("danger-color", "100"))
                         .text(header(error)))

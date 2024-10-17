@@ -19,24 +19,25 @@ public interface HalClasses {
 
     // ------------------------------------------------------ constants (a-z)
 
+    String body = "body";
     String capabilityReference = "capability-reference";
+    String content = "content";
     String copy = "copy";
     String deprecated = "deprecated";
     String detail = "detail";
-    String content = "content";
+    String edit = "edit";
     String filtered = "filtered";
     String goto_ = "goto";
-    String handle = "handle";
     String modelBrowser = "model-browser";
     String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";
-    String resourceView = "resource-view";
-    String resize = "resize";
+    String resourceManager = "resource-manager";
     String results = "results";
     String stabilityLevel = "stability-level";
     String tree = "tree";
     String unit = "unit";
     String undefined = "undefined";
+    String view = "view";
 
     // ------------------------------------------------------ api
 

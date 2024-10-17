@@ -18,6 +18,9 @@ package org.jboss.hal.ui.resource;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.gwtproject.event.shared.HandlerRegistration;
 import org.jboss.elemento.Attachable;
@@ -27,9 +30,8 @@ import org.jboss.elemento.Key;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.button.Button;
-import org.patternfly.component.tooltip.Tooltip;
 import org.patternfly.popper.Modifiers;
 import org.patternfly.popper.Popper;
 import org.patternfly.popper.PopperBuilder;
@@ -43,17 +45,20 @@ import elemental2.promise.Promise;
 
 import static elemental2.dom.DomGlobal.document;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static org.jboss.elemento.Elements.body;
+import static org.jboss.elemento.Elements.br;
 import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
-import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.elemento.Elements.isVisible;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.small;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
 import static org.jboss.elemento.EventType.bind;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.PROFILE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.hal.resources.HalClasses.capabilityReference;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.providedBy;
@@ -66,20 +71,21 @@ import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.Gap.sm;
 import static org.patternfly.layout.stack.Stack.stack;
 import static org.patternfly.layout.stack.StackItem.stackItem;
-import static org.patternfly.popper.Placement.auto;
+import static org.patternfly.popper.Placement.bottom;
 
 class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
     // ------------------------------------------------------ factory
 
-    static CapabilityReference capabilityReference(UIContext uic, String attribute, String capability) {
-        return new CapabilityReference(uic, attribute, capability);
+    static CapabilityReference capabilityReference(UIContext uic, AddressTemplate origin, String capability,
+            ResourceAttribute ra) {
+        return new CapabilityReference(uic, origin, capability, ra);
     }
 
     // ------------------------------------------------------ instance
 
     private enum State {
-        VOID, NO_RESOURCES, ONE_RESOURCE, MULTIPLE_RESOURCES, FAILED, NO_VALUE
+        NO_RESOURCES, ONE_RESOURCE, MULTIPLE_RESOURCES, FAILED
     }
 
     private static final int DISTANCE = 10;
@@ -87,33 +93,33 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     private static final Logger logger = Logger.getLogger(CapabilityReference.class.getName());
 
     private final UIContext uic;
-    private final String attribute;
+    private final AddressTemplate origin;
     private final String capability;
+    private final ResourceAttribute ra;
     private final List<HandlerRegistration> handlerRegistrations;
-    private final HTMLElement valueElement;
     private final Button providedByButton;
     private final HTMLElement menuElement;
-    private final HTMLElement menuNameElement;
     private final HTMLElement menuCountElement;
     private final org.patternfly.component.list.List menuList;
     private final HTMLElement root;
     private State state;
-    private String value;
-    private AddressTemplate template;
-    private Tooltip tooltip;
+    private AddressTemplate singleTemplate;
     private Popper popper;
 
-    CapabilityReference(UIContext uic, String attribute, String capability) {
+    CapabilityReference(UIContext uic, AddressTemplate origin, String capability, ResourceAttribute ra) {
         this.uic = uic;
-        this.attribute = attribute;
+        this.origin = origin;
         this.capability = capability;
+        this.ra = ra;
         this.handlerRegistrations = new ArrayList<>();
-        this.state = State.VOID;
-        this.template = null;
+        this.state = null;
+        this.singleTemplate = null;
 
         this.root = flex().css(halComponent(capabilityReference))
                 .alignItems(center).columnGap(sm)
-                .add(valueElement = span().css(halComponent(capabilityReference, Classes.value)).element())
+                .add(span().css(halComponent(capabilityReference, Classes.value))
+                        .textContent(ra.value.asString())
+                        .element())
                 .add(small().css(halComponent(capabilityReference, providedBy))
                         .add(providedByButton = button("").link().inline().onClick((e, btn) -> onClick())))
                 .element();
@@ -123,10 +129,12 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                         .gutter()
                         .addItem(stackItem()
                                 .add("Attribute ")
-                                .add(menuNameElement = strong().element())
-                                .add(" references the capability ")
+                                .add(strong().textContent(ra.value.asString()).element())
+                                .add(" references the capability")
+                                .add(br())
                                 .add(strong().add(code().textContent(capability)))
-                                .add(" provided by ")
+                                .add(br())
+                                .add("provided by ")
                                 .add(menuCountElement = strong().element())
                                 .add(" resources:"))
                         .addItem(stackItem().fill()
@@ -144,7 +152,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     public void attach(MutationRecord mutationRecord) {
         popper = new PopperBuilder("CapabilityReference", providedByButton.element(), menuElement)
                 .zIndex(Z_INDEX)
-                .placement(auto)
+                .placement(bottom)
                 .addModifier(Modifiers.offset(DISTANCE),
                         Modifiers.noOverflow(),
                         Modifiers.hide(),
@@ -169,6 +177,14 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                 popper.hide(null);
             }
         }));
+
+        findResources().then(__ -> {
+            setVisible(providedByButton, state == State.ONE_RESOURCE || state == State.MULTIPLE_RESOURCES);
+            if (state == State.ONE_RESOURCE && singleTemplate != null) {
+                tooltip(providedByButton.element(), singleTemplate.toString()).appendToBody();
+            }
+            return null;
+        });
     }
 
     @Override
@@ -186,40 +202,16 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
         return root;
     }
 
-    // ------------------------------------------------------ api
-
-    void updateValue(String value) {
-        this.value = value;
-        this.valueElement.textContent = value;
-        this.menuNameElement.textContent = value;
-
-        menuList.clear();
-        setVisible(providedByButton, false);
-        findResources().then(__ -> {
-            setVisible(providedByButton, state == State.ONE_RESOURCE || state == State.MULTIPLE_RESOURCES);
-            if (state == State.ONE_RESOURCE && template != null) {
-                if (tooltip == null) {
-                    tooltip = tooltip(providedByButton.element()).appendToBody();
-                }
-                tooltip.text(template.toString());
-            } else if (state == State.MULTIPLE_RESOURCES) {
-                failSafeRemoveFromParent(tooltip);
-                tooltip = null;
-            }
-            return null;
-        });
-    }
-
     // ------------------------------------------------------ event
 
     private void onClick() {
-        if (state == State.ONE_RESOURCE && template != null) {
-            ModelBrowserEvents.SelectInTree.dispatch(element(), template);
+        if (state == State.ONE_RESOURCE && singleTemplate != null) {
+            SelectInTree.dispatch(element(), singleTemplate);
         } else if (state == State.MULTIPLE_RESOURCES) {
             popper.show(null);
         } else {
-            logger.error("Invalid state %s in capability reference with attribute %s, capability % and value %s",
-                    state.name(), attribute, capability, value);
+            logger.error("Invalid state %s in capability reference for capability %s and attribute %s",
+                    state.name(), capability, ra);
         }
     }
 
@@ -227,47 +219,62 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
     // Only this method may change the state!
     private Promise<Void> findResources() {
-        if (value != null && !value.isEmpty()) {
-            return uic.capabilityRegistry().findResources(capability, value)
-                    .then(templates -> {
+        return uic.capabilityRegistry().findResources(capability, ra.value.asString())
+                .then(templates -> {
 
-                        if (templates.isEmpty()) {
-                            state = State.NO_RESOURCES;
-                            setVisible(providedByButton.element(), false);
-                            logger.warn("No resources found for attribute %s, capability % and value %s",
-                                    attribute, capability, value);
+                    if (templates.isEmpty()) {
+                        state = State.NO_RESOURCES;
+                        setVisible(providedByButton.element(), false);
+                        logger.warn("No resources found for capability %s and attribute %s", capability, ra);
 
-                        } else if (templates.size() == 1) {
-                            state = State.ONE_RESOURCE;
-                            template = templates.get(0);
-                            providedByButton.text("provided by 1 resource");
+                    } else if (templates.size() == 1) {
+                        state = State.ONE_RESOURCE;
+                        singleTemplate = templates.get(0);
+                        providedByButton.text("provided by 1 resource");
 
-                        } else {
-                            state = State.MULTIPLE_RESOURCES;
-                            String size = String.valueOf(templates.size());
-                            List<AddressTemplate> sortedTemplates = templates.stream()
-                                    .sorted(comparing(AddressTemplate::toString))
-                                    .collect(toList());
-
-                            menuCountElement.textContent = size;
-                            menuList.addItems(sortedTemplates, tpl -> listItem()
+                    } else {
+                        state = State.MULTIPLE_RESOURCES;
+                        String size = String.valueOf(templates.size());
+                        SortedMap<Integer, List<AddressTemplate>> ranked = rank(templates);
+                        for (List<AddressTemplate> rank : ranked.values()) {
+                            menuList.addItems(rank, tpl -> listItem()
                                     .add(button(tpl.toString()).link().inline()
-                                            .onClick((e, btn) -> ModelBrowserEvents.SelectInTree.dispatch(element(), tpl))));
-                            providedByButton.text("provided by " + size + " resources");
+                                            .onClick((e, btn) -> SelectInTree.dispatch(element(), tpl))));
                         }
-                        return Promise.resolve((Void) null);
-                    })
-                    .catch_(error -> {
-                        state = State.FAILED;
-                        logger.error("Unable to find resources for attribute %s, capability % and value %s: %s",
-                                attribute, capability, value, String.valueOf(error));
-                        return Promise.resolve((Void) null);
-                    });
-        } else {
-            state = State.NO_VALUE;
-            logger.error("Unable to find resources for attribute %s and capability %s: No value has been assigned!",
-                    attribute, capability);
-            return Promise.resolve((Void) null);
-        }
+                        menuCountElement.textContent = size;
+                        providedByButton.text("provided by " + size + " resources");
+                    }
+                    return Promise.resolve((Void) null);
+                })
+                .catch_(error -> {
+                    state = State.FAILED;
+                    logger.error("Unable to find resources for capability %s and attribute %s: %s",
+                            capability, ra, String.valueOf(error));
+                    return Promise.resolve((Void) null);
+                });
+    }
+
+    private SortedMap<Integer, List<AddressTemplate>> rank(List<AddressTemplate> templates) {
+        // rank -> list of templates
+        //   1: template starts with origin (current resource)
+        //   2: same profile or server group
+        //   3: anything else
+        return templates.stream()
+                .sorted(comparing(AddressTemplate::toString))
+                .collect(groupingBy(template -> {
+                    if (template.template.startsWith(origin.template)) {
+                        return 1;
+                    } else if (uic.environment().domain()) {
+                        if (PROFILE.equals(origin.first().key) && PROFILE.equals(template.first().key)) {
+                            return Objects.equals(origin.first().value, template.first().value) ? 2 : 3;
+                        } else if (SERVER_GROUP.equals(origin.first().key) && SERVER_GROUP.equals(template.first().key)) {
+                            return Objects.equals(origin.first().value, template.first().value) ? 2 : 3;
+                        } else {
+                            return 3;
+                        }
+                    } else {
+                        return 3;
+                    }
+                }, TreeMap::new, toList()));
     }
 }

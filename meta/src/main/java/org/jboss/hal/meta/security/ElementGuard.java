@@ -20,12 +20,14 @@ import java.util.function.Predicate;
 
 import org.jboss.elemento.By;
 import org.jboss.elemento.Elements;
+import org.jboss.hal.resources.HalClasses;
 
 import elemental2.dom.HTMLElement;
 
 import static elemental2.dom.DomGlobal.document;
 import static java.util.stream.StreamSupport.stream;
 import static org.jboss.elemento.Elements.findAll;
+import static org.jboss.hal.resources.HalClasses.rbacHidden;
 import static org.patternfly.style.Classes.util;
 
 /**
@@ -34,11 +36,10 @@ import static org.patternfly.style.Classes.util;
  */
 public class ElementGuard {
 
-    public static final String rbacHidden = "rbac-hidden";
     public static final String constraint = "constraint";
 
     /**
-     * Adds the {@link #rbacHidden} CSS class if {@code condition == true}, removes it otherwise.
+     * Adds the {@link HalClasses#rbacHidden} CSS class if {@code condition == true}, removes it otherwise.
      */
     public static void toggle(HTMLElement element, boolean condition) {
         if (new Visible().test(element)) {
@@ -74,7 +75,7 @@ public class ElementGuard {
     }
 
 
-    /** Toggle the CSS class {@link #rbacHidden} based on the element's constraints. */
+    /** Toggle the CSS class {@link HalClasses#rbacHidden} based on the element's constraints. */
     public static class Toggle implements Consumer<HTMLElement> {
 
         private final AuthorisationDecision authorisationDecision;

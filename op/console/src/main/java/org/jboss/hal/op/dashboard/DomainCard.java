@@ -17,13 +17,15 @@ package org.jboss.hal.op.dashboard;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.op.skeleton.EmptyStates.domainModeNotSupported;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
 import static org.patternfly.component.card.CardHeader.cardHeader;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
+import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.redo;
-import static org.patternfly.style.Size.sm;
 
 class DomainCard implements DashboardCard {
 
@@ -35,7 +37,11 @@ class DomainCard implements DashboardCard {
                         // .addTitle(cardTitle().textContent("Domain"))
                         .addActions(cardActions()
                                 .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
-                .add(domainModeNotSupported(sm))
+                .add(emptyState()
+                        .addHeader(emptyStateHeader()
+                                .icon(exclamationCircle())
+                                .text("Domain mode"))
+                        .addBody(emptyStateBody().textContent("Domain mode is not supported yet.")))
                 .element();
     }
 

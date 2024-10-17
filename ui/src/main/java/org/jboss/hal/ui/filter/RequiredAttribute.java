@@ -15,14 +15,18 @@
  */
 package org.jboss.hal.ui.filter;
 
-import org.jboss.hal.meta.description.OperationDescription;
+import java.util.function.Function;
+
+import org.jboss.hal.meta.description.AttributeDescription;
 import org.patternfly.filter.FilterAttribute;
 
-public class ReturnValueFilterAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
 
-    public static final String NAME = "return-value";
+public class RequiredAttribute<T> extends FilterAttribute<T, Boolean> {
 
-    public ReturnValueFilterAttribute() {
-        super(NAME, (operation, hasReturnValue) -> hasReturnValue == operation.returnValue().isDefined());
+    public static final String NAME = "required";
+
+    public RequiredAttribute(Function<T, AttributeDescription> adf) {
+        super(NAME, (object, required) -> required == adf.apply(object).find(REQUIRED).asBoolean());
     }
 }

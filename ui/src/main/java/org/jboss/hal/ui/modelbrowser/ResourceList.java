@@ -27,7 +27,7 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.UIContext;
-import org.jboss.hal.ui.filter.NameFilterAttribute;
+import org.jboss.hal.ui.filter.NameAttribute;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.emptystate.EmptyStateActions;
@@ -61,7 +61,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
-import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
+import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.SINGLETON_FOLDER;
@@ -101,7 +101,6 @@ import static org.patternfly.layout.flex.Gap.md;
 import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.modifier;
-import static org.patternfly.style.Size.sm;
 import static org.patternfly.style.Variable.componentVar;
 
 class ResourceList implements IsElement<HTMLElement> {
@@ -129,7 +128,7 @@ class ResourceList implements IsElement<HTMLElement> {
         this.visible = ov(0);
         this.total = ov(0);
         this.filter = new Filter<ModelBrowserNode>(FilterOperator.AND)
-                .add(new NameFilterAttribute<>(mbn -> mbn.name))
+                .add(new NameAttribute<>(mbn -> mbn.name))
                 .onChange(this::onFilterChanged);
         this.noMatch = new NoMatch<>(filter);
         this.operation = new Operation.Builder(parent.template.parent().resolve(), READ_CHILDREN_NAMES_OPERATION)
@@ -249,7 +248,7 @@ class ResourceList implements IsElement<HTMLElement> {
         }
         actions.add(button("Refresh").link().onClick((e, b) -> refresh()));
 
-        listContainer.appendChild(emptyState().size(sm)
+        listContainer.appendChild(emptyState()
                 .addHeader(emptyStateHeader()
                         .icon(ban())
                         .text("No child resources"))
@@ -265,6 +264,7 @@ class ResourceList implements IsElement<HTMLElement> {
         if (dataList == null) {
             dataList = dataList();
         }
+        dataList.clear();
         dataList.addItems(children, child -> {
             String childId = Id.build(child.name);
             Metadata childMetadata = parent.type == SINGLETON_FOLDER

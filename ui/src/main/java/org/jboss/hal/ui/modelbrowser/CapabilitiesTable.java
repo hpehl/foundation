@@ -24,7 +24,6 @@ import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Table;
 import org.patternfly.layout.flex.Flex;
-import org.patternfly.style.Size;
 
 import elemental2.dom.HTMLElement;
 
@@ -69,7 +68,7 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
                                 tbody.addRow(tr(Id.unique("empty"))
                                         .addItem(td().colSpan(3)
                                                 .add(bullseye()
-                                                        .add(emptyState().size(Size.sm)
+                                                        .add(emptyState()
                                                                 .addHeader(emptyStateHeader()
                                                                         .icon(ban())
                                                                         .text("No capabilities"))

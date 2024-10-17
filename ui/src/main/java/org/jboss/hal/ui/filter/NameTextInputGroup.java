@@ -23,23 +23,23 @@ import elemental2.dom.HTMLElement;
 
 import static org.patternfly.component.textinputgroup.TextInputGroup.searchInputGroup;
 
-public class NameFilterTextInputGroup<T> implements IsElement<HTMLElement> {
+public class NameTextInputGroup<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> NameFilterTextInputGroup<T> nameFilterTextInputGroup(Filter<T> filter) {
-        return new NameFilterTextInputGroup<>(filter);
+    public static <T> NameTextInputGroup<T> nameFilterTextInputGroup(Filter<T> filter) {
+        return new NameTextInputGroup<>(filter);
     }
 
     // ------------------------------------------------------ instance
 
     private final TextInputGroup textInputGroup;
 
-    NameFilterTextInputGroup(Filter<T> filter) {
+    NameTextInputGroup(Filter<T> filter) {
         textInputGroup = searchInputGroup("Filter by name")
-                .onChange((event, textInputGroup, value) -> filter.set(NameFilterAttribute.NAME, value));
+                .onChange((event, textInputGroup, value) -> filter.set(NameAttribute.NAME, value));
         filter.onChange((f, origin) -> {
-            if (!f.defined(NameFilterAttribute.NAME)) {
+            if (!f.defined(NameAttribute.NAME)) {
                 textInputGroup.clear(false);
             }
         });

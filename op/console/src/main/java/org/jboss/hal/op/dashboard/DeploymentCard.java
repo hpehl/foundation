@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
-import static org.jboss.hal.op.skeleton.EmptyStates.domainModeNotSupported;
+import static org.jboss.hal.op.dashboard.DashboardCard.emptyState;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardActions.cardActions;
@@ -44,10 +44,10 @@ import static org.patternfly.component.card.CardHeader.cardHeader;
 import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.component.divider.Divider.divider;
 import static org.patternfly.component.divider.DividerType.hr;
-import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
 import static org.patternfly.icon.IconSets.fas.checkCircle;
+import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.pauseCircle;
 import static org.patternfly.icon.IconSets.fas.question;
 import static org.patternfly.icon.IconSets.fas.redo;
@@ -56,7 +56,6 @@ import static org.patternfly.layout.flex.Display.inlineFlex;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.SpaceItems.sm;
 import static org.patternfly.style.Orientation.vertical;
-import static org.patternfly.style.Size.xs;
 import static org.patternfly.style.Variable.globalVar;
 
 class DeploymentCard implements DashboardCard {
@@ -92,18 +91,19 @@ class DeploymentCard implements DashboardCard {
         if (environment.standalone()) {
             deployments.readStandaloneDeployments().then(deployments -> {
                 if (deployments.isEmpty()) {
-                    cardBody.add(emptyState().size(xs)
+                    cardBody.add(emptyState()
                             .addHeader(emptyStateHeader()
                                     .icon(IconSets.fas.ban())
                                     .text("No deployments"))
                             .addBody(emptyStateBody().textContent("This server contains no deployments.")));
                 } else {
-                    if (deployments.size() ==1) {
+                    if (deployments.size() == 1) {
                         cardTitle.textContent("1 Deployment");
                     } else {
                         cardTitle.textContent(deployments.size() + " Deployments");
                     }
-                    Map<DeploymentStatus, Long> status = deployments.stream().collect(groupingBy(Deployment::status, counting()));
+                    Map<DeploymentStatus, Long> status = deployments.stream()
+                            .collect(groupingBy(Deployment::status, counting()));
                     if (status.size() == 1) {
                         cardBody.add(status(status.keySet().iterator().next()));
                     } else {
@@ -126,7 +126,11 @@ class DeploymentCard implements DashboardCard {
             });
         } else {
             // TODO Add support for domain mode
-            cardBody.add(domainModeNotSupported(xs));
+            cardBody.add(emptyState()
+                    .addHeader(emptyStateHeader()
+                            .icon(exclamationCircle())
+                            .text("Domain mode"))
+                    .addBody(emptyStateBody().textContent("Domain mode is not supported yet.")));
         }
     }
 

@@ -13,12 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.resource;
+package org.jboss.hal.ui.filter;
 
-import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.meta.description.OperationDescription;
+import org.patternfly.filter.FilterAttribute;
 
-@FunctionalInterface
-interface UpdateValueFn {
+public class ReturnValueAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
 
-    void update(ModelNode value);
+    public static final String NAME = "return-value";
+
+    public ReturnValueAttribute() {
+        super(NAME, (operation, hasReturnValue) -> hasReturnValue == operation.returnValue().isDefined());
+    }
 }

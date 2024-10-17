@@ -20,8 +20,8 @@ import java.util.List;
 public class StorageValue {
 
     public static List<StorageValue> storageValues() {
-        return List.of(new StorageValue(StorageFilterAttribute.NAME, "Configuration", "configuration"),
-                new StorageValue(StorageFilterAttribute.NAME, "Runtime", "runtime"));
+        return List.of(new StorageValue(StorageAttribute.NAME, "Configuration", "configuration"),
+                new StorageValue(StorageAttribute.NAME, "Runtime", "runtime"));
     }
 
     public final String identifier;

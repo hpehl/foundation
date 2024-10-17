@@ -42,7 +42,6 @@ import static org.patternfly.component.table.Wrap.fitContent;
 import static org.patternfly.icon.IconSets.fas.pencilAlt;
 import static org.patternfly.icon.IconSets.fas.trash;
 import static org.patternfly.layout.bullseye.Bullseye.bullseye;
-import static org.patternfly.style.Size.sm;
 
 class EndpointTable implements IsElement<HTMLElement> {
 
@@ -55,7 +54,7 @@ class EndpointTable implements IsElement<HTMLElement> {
         emptyRow = tr("endpoint-empty")
                 .addItem(td().colSpan(4)
                         .add(bullseye()
-                                .add(emptyState().size(sm)
+                                .add(emptyState()
                                         .addHeader(emptyStateHeader(2)
                                                 .icon(IconSets.fas.ban())
                                                 .text("No management interfaces found"))

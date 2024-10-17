@@ -42,7 +42,6 @@ import org.patternfly.icon.IconSets;
 import org.patternfly.layout.flex.FlexItem;
 import org.patternfly.layout.flex.Gap;
 import org.patternfly.style.Breakpoint;
-import org.patternfly.style.Size;
 
 import static elemental2.dom.DomGlobal.clearTimeout;
 import static elemental2.dom.DomGlobal.setTimeout;
@@ -281,7 +280,7 @@ class FindResource {
                                         .plain())));
 
         noResults = flexItem()
-                .add(emptyState().size(Size.sm)
+                .add(emptyState()
                         .addHeader(emptyStateHeader()
                                 .icon(IconSets.fas.search())
                                 .text("No results found"))

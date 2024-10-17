@@ -13,23 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.resource;
+package org.jboss.hal.ui.filter;
 
-import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.meta.Metadata;
-import org.jboss.hal.ui.UIContext;
+import java.util.function.Function;
 
-public class ResourceForm {
+import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.filter.FilterAttribute;
 
-    // ------------------------------------------------------ factory
+public class DefinedAttribute<T> extends FilterAttribute<T, Boolean> {
 
-    public static ResourceForm resourceForm(UIContext uic, AddressTemplate template, Metadata metadata) {
-        return new ResourceForm(uic, template, metadata);
-    }
+    public static final String NAME = "defined";
 
-    // ------------------------------------------------------ instance
-
-    ResourceForm(UIContext uic, AddressTemplate template, Metadata metadata) {
-
+    public DefinedAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, defined) -> defined == null || defined == modelNodeFn.apply(object).isDefined());
     }
 }

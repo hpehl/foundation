@@ -16,10 +16,21 @@
 package org.jboss.hal.op.dashboard;
 
 import org.jboss.elemento.IsElement;
+import org.patternfly.component.emptystate.EmptyState;
+import org.patternfly.style.Size;
 
 import elemental2.dom.HTMLElement;
+
+import static org.patternfly.style.Size.xs;
 
 interface DashboardCard extends IsElement<HTMLElement> {
 
     void refresh();
+
+    /**
+     * @return an empty state of size {@link Size#sm} for usage in a dashboard card.
+     */
+    static EmptyState emptyState() {
+        return EmptyState.emptyState().size(xs);
+    }
 }

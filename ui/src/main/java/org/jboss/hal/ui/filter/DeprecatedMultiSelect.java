@@ -32,31 +32,31 @@ import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
 
-public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
+public class DeprecatedMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> DeprecatedFilterMultiSelect<T> deprecatedFilterMultiSelect(Filter<T> filter, String text) {
-        return new DeprecatedFilterMultiSelect<>(filter, text);
+    public static <T> DeprecatedMultiSelect<T> deprecatedMultiSelect(Filter<T> filter, String text) {
+        return new DeprecatedMultiSelect<>(filter, text);
     }
 
     // ------------------------------------------------------ instance
 
-    private static final String ORIGIN = "DeprecatedFilterMultiSelect";
+    private static final String ORIGIN = "DeprecatedMultiSelect";
     private final MultiSelect multiSelect;
 
-    DeprecatedFilterMultiSelect(Filter<T> filter, String text) {
+    DeprecatedMultiSelect(Filter<T> filter, String text) {
         filter.onChange(this::onFilterChanged);
         this.multiSelect = multiSelect(menuToggle().text(text))
                 .stayOpen()
                 .addMenu(multiSelectGroupMenu()
-                        .onMultiSelect((e, c, menuItems) -> setBooleanFilter(filter, DeprecatedFilterAttribute.NAME, menuItems,
+                        .onMultiSelect((e, c, menuItems) -> setBooleanFilter(filter, DeprecatedAttribute.NAME, menuItems,
                                 ORIGIN))
                         .addContent(menuContent()
                                 .addGroup(menuGroup()
                                         .addList(menuList()
-                                                .addItem(DeprecatedFilterAttribute.NAME + "-true", "Deprecated")
-                                                .addItem(DeprecatedFilterAttribute.NAME + "-false", "Not deprecated")))));
+                                                .addItem(DeprecatedAttribute.NAME + "-true", "Deprecated")
+                                                .addItem(DeprecatedAttribute.NAME + "-false", "Not deprecated")))));
     }
 
     @Override
@@ -70,8 +70,8 @@ public class DeprecatedFilterMultiSelect<T> implements IsElement<HTMLElement> {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
             List<String> identifiers = new ArrayList<>();
-            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DeprecatedFilterAttribute.NAME,
-                    value -> DeprecatedFilterAttribute.NAME + "-" + value);
+            MultiSelects.<T, Boolean>collectIdentifiers(identifiers, filter, DeprecatedAttribute.NAME,
+                    value -> DeprecatedAttribute.NAME + "-" + value);
             multiSelect.selectIdentifiers(identifiers, false);
         }
     }

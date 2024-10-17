@@ -18,28 +18,38 @@ package org.jboss.hal.ui.resource;
 import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
-import org.jboss.hal.ui.filter.AccessTypeFilterAttribute;
-import org.jboss.hal.ui.filter.DefinedFilterAttribute;
-import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
+import org.jboss.hal.meta.security.ElementGuard;
+import org.jboss.hal.meta.security.SecurityContext;
+import org.jboss.hal.ui.filter.AccessTypeAttribute;
+import org.jboss.hal.ui.filter.DefinedAttribute;
+import org.jboss.hal.ui.filter.DeprecatedAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
-import org.jboss.hal.ui.filter.StorageFilterAttribute;
+import org.jboss.hal.ui.filter.RequiredAttribute;
+import org.jboss.hal.ui.filter.StorageAttribute;
+import org.jboss.hal.ui.resource.ResourceManager.State;
 import org.patternfly.component.toolbar.Toolbar;
+import org.patternfly.component.toolbar.ToolbarContent;
+import org.patternfly.component.toolbar.ToolbarGroup;
 import org.patternfly.component.toolbar.ToolbarItem;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
+import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
+import static org.jboss.hal.ui.filter.DefinedRequiredDeprecatedMultiSelect.definedRequiredDeprecatedMultiSelect;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
-import static org.jboss.hal.ui.filter.ModeFilterMultiSelect.modeFilterMultiSelect;
-import static org.jboss.hal.ui.filter.NameFilterTextInputGroup.nameFilterTextInputGroup;
-import static org.jboss.hal.ui.filter.StatusFilterMultiSelect.statusFilterMultiSelect;
+import static org.jboss.hal.ui.filter.StorageAccessTypeMultiSelect.storageAccessTypeMultiSelect;
+import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
+import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
+import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.toolbar.Toolbar.toolbar;
 import static org.patternfly.component.toolbar.ToolbarContent.toolbarContent;
 import static org.patternfly.component.toolbar.ToolbarFilterChipGroup.toolbarFilterChipGroup;
 import static org.patternfly.component.toolbar.ToolbarFilterContent.toolbarFilterContent;
 import static org.patternfly.component.toolbar.ToolbarGroup.toolbarGroup;
+import static org.patternfly.component.toolbar.ToolbarGroupType.buttonGroup;
 import static org.patternfly.component.toolbar.ToolbarGroupType.filterGroup;
 import static org.patternfly.component.toolbar.ToolbarGroupType.iconButtonGroup;
 import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
@@ -56,62 +66,80 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static ResourceToolbar resourceToolbar(ResourceView resourceView, Filter<ResourceAttribute> filter,
+    static ResourceToolbar resourceToolbar(ResourceManager resourceManager, Filter<ResourceAttribute> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        return new ResourceToolbar(resourceView, filter, visible, total);
+        return new ResourceToolbar(resourceManager, filter, visible, total);
     }
 
     // ------------------------------------------------------ instance
 
     private final Toolbar toolbar;
+    private final ToolbarContent toolbarContent;
+    private final ToolbarGroup viewActionGroup;
+    private final ToolbarGroup editActionGroup;
+    private final ToolbarItem resetItem;
+    private final ToolbarItem editItem;
 
-    private ResourceToolbar(ResourceView resourceView, Filter<ResourceAttribute> filter,
+    private ResourceToolbar(ResourceManager resourceManager, Filter<ResourceAttribute> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        // TODO RBAC
         String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
         String refreshId = Id.unique("refresh");
         String editId = Id.unique("edit");
 
         ToolbarItem resolveItem = toolbarItem()
-                .add(button().id(resolveId).plain().icon(link()).onClick((e, b) -> resourceView.resolve()))
+                .add(button().id(resolveId).plain().icon(link()).onClick((e, b) -> resourceManager.resolve()))
                 .add(tooltip(By.id(resolveId), "Resolve all expressions").placement(auto));
-        ToolbarItem resetItem = toolbarItem()
-                .add(button().id(resetId).plain().icon(undo()).onClick((e, b) -> resourceView.reset()))
+        resetItem = toolbarItem()
+                .add(button().id(resetId).plain().icon(undo()).onClick((e, b) -> resourceManager.reset()))
                 .add(tooltip(By.id(resetId),
                         "Reset attributes to their initial or default value. Applied only to nillable attributes without relationships to other attributes.")
                         .placement(auto));
         ToolbarItem refreshItem = toolbarItem()
-                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> resourceView.refresh()))
+                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> resourceManager.refresh()))
                 .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
-        ToolbarItem editItem = toolbarItem()
-                .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceView.edit()))
+        editItem = toolbarItem()
+                .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceManager.manage(EDIT)))
                 .add(tooltip(By.id(editId), "Edit resource").placement(auto));
+        viewActionGroup = toolbarGroup(iconButtonGroup).css(modifier("align-right"))
+                .addItem(refreshItem)
+                .addItem(resolveItem)
+                .addItem(resetItem)
+                .addItem(editItem);
 
-        toolbar = toolbar()
-                .addContent(toolbarContent()
+        ToolbarItem saveItem = toolbarItem()
+                .add(button("Save").primary().onClick((e, b) -> resourceManager.save()));
+        ToolbarItem cancelItem = toolbarItem()
+                .add(button("Cancel").secondary().onClick((e, b) -> resourceManager.cancel()));
+        editActionGroup = toolbarGroup(buttonGroup).css(modifier("align-right"))
+                .addItem(saveItem)
+                .addItem(cancelItem);
+
+        toolbar = toolbar().css(modifier("inset-none"))
+                .addContent(toolbarContent = toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
                         .addGroup(toolbarGroup(filterGroup)
-                                .addItem(toolbarItem().add(statusFilterMultiSelect(filter)))
-                                .addItem(toolbarItem().add(modeFilterMultiSelect(filter))))
+                                .addItem(toolbarItem().add(definedRequiredDeprecatedMultiSelect(filter)))
+                                .addItem(toolbarItem().add(storageAccessTypeMultiSelect(filter))))
                         .addItem(toolbarItem()
                                 .style("align-self", "center")
-                                .add(itemCount(visible, total, "attribute", "attributes")))
-                        .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
-                                .addItem(refreshItem)
-                                .addItem(resolveItem)
-                                .addItem(resetItem)
-                                .addItem(editItem)))
+                                .add(itemCount(visible, total, "attribute", "attributes"))))
                 .addFilterContent(toolbarFilterContent()
-                        .bindVisibility(filter, DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME,
-                                StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
+                        .bindVisibility(filter,
+                                DefinedAttribute.NAME,
+                                RequiredAttribute.NAME,
+                                DeprecatedAttribute.NAME,
+                                StorageAttribute.NAME,
+                                AccessTypeAttribute.NAME)
                         .addGroup(toolbarGroup()
                                 .add(toolbarFilterChipGroup(filter, "Status")
-                                        .filterAttributes(DefinedFilterAttribute.NAME, DeprecatedFilterAttribute.NAME)
-                                        .filterToChips(FilterChips::statusChips))
+                                        .filterAttributes(DefinedAttribute.NAME,
+                                                RequiredAttribute.NAME,
+                                                DeprecatedAttribute.NAME)
+                                        .filterToChips(FilterChips::definedRequiredDeprecatedChips))
                                 .add(toolbarFilterChipGroup(filter, "Mode")
-                                        .filterAttributes(StorageFilterAttribute.NAME, AccessTypeFilterAttribute.NAME)
-                                        .filterToChips(FilterChips::modeChips)))
+                                        .filterAttributes(StorageAttribute.NAME, AccessTypeAttribute.NAME)
+                                        .filterToChips(FilterChips::storageAccessTypeChips)))
                         .addItem(toolbarItem()
                                 .add(button("Clear all filters").link().inline()
                                         .onClick((e, c) -> filter.resetAll()))));
@@ -120,5 +148,20 @@ class ResourceToolbar implements IsElement<HTMLElement> {
     @Override
     public HTMLElement element() {
         return toolbar.element();
+    }
+
+    void adjust(State state, SecurityContext securityContext) {
+        if (state == VIEW) {
+            failSafeRemoveFromParent(editActionGroup);
+            ElementGuard.toggle(resetItem.element(), securityContext.writable());
+            ElementGuard.toggle(editItem.element(), securityContext.writable());
+            toolbarContent.addGroup(viewActionGroup);
+        } else if (state == EDIT) {
+            failSafeRemoveFromParent(viewActionGroup);
+            toolbarContent.addGroup(editActionGroup);
+        } else {
+            failSafeRemoveFromParent(editActionGroup);
+            failSafeRemoveFromParent(viewActionGroup);
+        }
     }
 }

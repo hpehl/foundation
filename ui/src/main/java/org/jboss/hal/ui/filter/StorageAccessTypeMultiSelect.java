@@ -37,20 +37,20 @@ import static org.patternfly.component.menu.MenuToggle.menuToggle;
 import static org.patternfly.component.menu.MultiSelect.multiSelect;
 import static org.patternfly.component.menu.MultiSelectMenu.multiSelectGroupMenu;
 
-public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
+public class StorageAccessTypeMultiSelect<T> implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static <T> ModeFilterMultiSelect<T> modeFilterMultiSelect(Filter<T> filter) {
-        return new ModeFilterMultiSelect<>(filter);
+    public static <T> StorageAccessTypeMultiSelect<T> storageAccessTypeMultiSelect(Filter<T> filter) {
+        return new StorageAccessTypeMultiSelect<>(filter);
     }
 
     // ------------------------------------------------------ instance
 
-    private static final String ORIGIN = "ModeFilterMultiSelect";
+    private static final String ORIGIN = "StorageAccessTypeMultiSelect";
     private final MultiSelect multiSelect;
 
-    ModeFilterMultiSelect(Filter<T> filter) {
+    StorageAccessTypeMultiSelect(Filter<T> filter) {
         filter.onChange(this::onFilterChanged);
         this.multiSelect = multiSelect(menuToggle().text("Mode"))
                 .stayOpen()
@@ -81,18 +81,18 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
                 .map(menuItem -> menuItem.<StorageValue>get(Keys.STORAGE_VALUE))
                 .findFirst();
         if (storageValue.isPresent()) {
-            filter.set(StorageFilterAttribute.NAME, storageValue.get(), ORIGIN);
+            filter.set(StorageAttribute.NAME, storageValue.get(), ORIGIN);
         } else {
-            filter.reset(StorageFilterAttribute.NAME, ORIGIN);
+            filter.reset(StorageAttribute.NAME, ORIGIN);
         }
         Optional<AccessTypeValue> accessTypeValue = menuItems.stream()
                 .filter(menuItem -> menuItem.has(Keys.ACCESS_TYPE_VALUE))
                 .map(menuItem -> menuItem.<AccessTypeValue>get(Keys.ACCESS_TYPE_VALUE))
                 .findFirst();
         if (accessTypeValue.isPresent()) {
-            filter.set(AccessTypeFilterAttribute.NAME, accessTypeValue.get(), ORIGIN);
+            filter.set(AccessTypeAttribute.NAME, accessTypeValue.get(), ORIGIN);
         } else {
-            filter.reset(AccessTypeFilterAttribute.NAME, ORIGIN);
+            filter.reset(AccessTypeAttribute.NAME, ORIGIN);
         }
     }
 
@@ -100,9 +100,9 @@ public class ModeFilterMultiSelect<T> implements IsElement<HTMLElement> {
         if (!origin.equals(ORIGIN)) {
             multiSelect.clear(false);
             List<String> identifiers = new ArrayList<>();
-            MultiSelects.<T, StorageValue>collectIdentifiers(identifiers, filter, StorageFilterAttribute.NAME,
+            MultiSelects.<T, StorageValue>collectIdentifiers(identifiers, filter, StorageAttribute.NAME,
                     value -> value.identifier);
-            MultiSelects.<T, AccessTypeValue>collectIdentifiers(identifiers, filter, AccessTypeFilterAttribute.NAME,
+            MultiSelects.<T, AccessTypeValue>collectIdentifiers(identifiers, filter, AccessTypeAttribute.NAME,
                     value -> value.identifier);
             multiSelect.selectIdentifiers(identifiers, false);
         }

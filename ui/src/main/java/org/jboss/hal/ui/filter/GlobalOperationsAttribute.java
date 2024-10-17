@@ -18,11 +18,11 @@ package org.jboss.hal.ui.filter;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.patternfly.filter.FilterAttribute;
 
-public class ParametersFilterAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
+public class GlobalOperationsAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
 
-    public static final String NAME = "parameters";
+    public static final String NAME = "global-operations";
 
-    public ParametersFilterAttribute() {
-        super(NAME, (operation, parameter) -> parameter == !operation.parameters().isEmpty());
+    public GlobalOperationsAttribute() {
+        super(NAME, (operation, value) -> value || !operation.global());
     }
 }

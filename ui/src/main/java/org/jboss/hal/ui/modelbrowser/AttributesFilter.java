@@ -17,11 +17,12 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.meta.description.AttributeDescription;
-import org.jboss.hal.ui.filter.AccessTypeFilterAttribute;
-import org.jboss.hal.ui.filter.DeprecatedFilterAttribute;
-import org.jboss.hal.ui.filter.NameFilterAttribute;
-import org.jboss.hal.ui.filter.StorageFilterAttribute;
-import org.jboss.hal.ui.filter.TypesFilterAttribute;
+import org.jboss.hal.ui.filter.AccessTypeAttribute;
+import org.jboss.hal.ui.filter.DeprecatedAttribute;
+import org.jboss.hal.ui.filter.NameAttribute;
+import org.jboss.hal.ui.filter.RequiredAttribute;
+import org.jboss.hal.ui.filter.StorageAttribute;
+import org.jboss.hal.ui.filter.TypesAttribute;
 import org.patternfly.filter.Filter;
 import org.patternfly.filter.FilterOperator;
 
@@ -29,10 +30,11 @@ public class AttributesFilter extends Filter<AttributeDescription> {
 
     public AttributesFilter() {
         super(FilterOperator.AND);
-        add(new NameFilterAttribute<>(NamedNode::name));
-        add(new TypesFilterAttribute<>(ad -> ad));
-        add(new DeprecatedFilterAttribute<>(ad -> ad));
-        add(new StorageFilterAttribute<>(ad -> ad));
-        add(new AccessTypeFilterAttribute<>(ad -> ad));
+        add(new NameAttribute<>(NamedNode::name));
+        add(new TypesAttribute<>(ad -> ad));
+        add(new RequiredAttribute<>(ad -> ad));
+        add(new DeprecatedAttribute<>(ad -> ad));
+        add(new StorageAttribute<>(ad -> ad));
+        add(new AccessTypeAttribute<>(ad -> ad));
     }
 }

@@ -17,13 +17,16 @@ package org.jboss.hal.ui.filter;
 
 import java.util.function.Function;
 
+import org.jboss.hal.meta.description.AttributeDescription;
 import org.patternfly.filter.FilterAttribute;
 
-public class NameFilterAttribute<T> extends FilterAttribute<T, String> {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 
-    public static final String NAME = "name";
+public class StorageAttribute<T> extends FilterAttribute<T, StorageValue> {
 
-    public NameFilterAttribute(Function<T, String> nameFn) {
-        super(NAME, (object, name) -> nameFn.apply(object).toLowerCase().contains(name.toLowerCase()));
+    public static final String NAME = "storage";
+
+    public StorageAttribute(Function<T, AttributeDescription> adf) {
+        super(NAME, (object, storage) -> storage.value.equals(adf.apply(object).find(STORAGE).asString()));
     }
 }

@@ -1,0 +1,349 @@
+/*
+ *  Copyright 2024 Red Hat
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.jboss.hal.ui.resource;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jboss.elemento.Attachable;
+import org.jboss.elemento.HasElement;
+import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.Operation;
+import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.resources.Keys;
+import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.modelbrowser.NoMatch;
+import org.patternfly.component.HasItems;
+import org.patternfly.component.form.Form;
+import org.patternfly.component.list.DescriptionList;
+import org.patternfly.core.ComponentContext;
+import org.patternfly.core.ObservableValue;
+import org.patternfly.filter.Filter;
+
+import elemental2.dom.HTMLElement;
+import elemental2.dom.MutationRecord;
+
+import static org.jboss.elemento.Elements.code;
+import static org.jboss.elemento.Elements.div;
+import static org.jboss.elemento.Elements.isAttached;
+import static org.jboss.elemento.Elements.removeChildrenFrom;
+import static org.jboss.elemento.Elements.setVisible;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.hal.resources.HalClasses.body;
+import static org.jboss.hal.resources.HalClasses.edit;
+import static org.jboss.hal.resources.HalClasses.filtered;
+import static org.jboss.hal.resources.HalClasses.halComponent;
+import static org.jboss.hal.resources.HalClasses.halModifier;
+import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.view;
+import static org.jboss.hal.ui.resource.FormFactory.formItem;
+import static org.jboss.hal.ui.resource.ResourceAttribute.resourceAttributes;
+import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
+import static org.jboss.hal.ui.resource.ResourceManager.State.EMPTY;
+import static org.jboss.hal.ui.resource.ResourceManager.State.ERROR;
+import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
+import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
+import static org.jboss.hal.ui.resource.ViewFactory.viewItem;
+import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
+import static org.patternfly.component.emptystate.EmptyState.emptyState;
+import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
+import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
+import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
+import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
+import static org.patternfly.component.form.Form.form;
+import static org.patternfly.component.list.DescriptionList.descriptionList;
+import static org.patternfly.core.ObservableValue.ov;
+import static org.patternfly.icon.IconSets.fas.ban;
+import static org.patternfly.icon.IconSets.fas.exclamationCircle;
+import static org.patternfly.style.Breakpoint._2xl;
+import static org.patternfly.style.Breakpoint.lg;
+import static org.patternfly.style.Breakpoint.md;
+import static org.patternfly.style.Breakpoint.sm;
+import static org.patternfly.style.Breakpoint.xl;
+import static org.patternfly.style.Breakpoints.breakpoints;
+import static org.patternfly.style.Orientation.horizontal;
+import static org.patternfly.style.Orientation.vertical;
+import static org.patternfly.style.Variable.globalVar;
+
+// TODO Implement resolve all expressions, reset, and edit actions
+public class ResourceManager implements HasElement<HTMLElement, ResourceManager>, Attachable {
+
+    // ------------------------------------------------------ factory
+
+    public static ResourceManager resourceManager(UIContext uic, AddressTemplate template, Metadata metadata) {
+        return new ResourceManager(uic, template, metadata);
+    }
+
+    // ------------------------------------------------------ instance
+
+    enum State {
+        EMPTY, VIEW, EDIT, ERROR
+    }
+
+    private static final Logger logger = Logger.getLogger(ResourceManager.class.getName());
+
+    private final UIContext uic;
+    private final AddressTemplate template;
+    private final Metadata metadata;
+    private final List<String> attributes;
+    private final ObservableValue<Integer> visible;
+    private final ObservableValue<Integer> total;
+    private final Filter<ResourceAttribute> filter;
+    private final NoMatch<ResourceAttribute> noMatch;
+    private final ResourceToolbar toolbar;
+    private final HTMLElement rootContainer;
+    private final HTMLElement root;
+    private boolean inlineEdit;
+    private State state;
+    private Operation operation;
+    private HasItems<?, ?, ? extends ComponentContext<? extends HTMLElement, ?>> hasItems;
+
+    ResourceManager(UIContext uic, AddressTemplate template, Metadata metadata) {
+        this.uic = uic;
+        this.template = template;
+        this.metadata = metadata;
+        this.attributes = new ArrayList<>();
+        this.visible = ov(0);
+        this.total = ov(0);
+        this.filter = new ResourceFilter().onChange(this::onFilterChanged);
+        this.noMatch = new NoMatch<>(filter);
+        this.inlineEdit = false;
+        this.state = null;
+        this.operation = new Operation.Builder(template.resolve(), READ_RESOURCE_OPERATION)
+                .param(ATTRIBUTES_ONLY, true)
+                .param(INCLUDE_RUNTIME, true)
+                .build();
+        this.root = div().css(halComponent(resourceManager))
+                .add(toolbar = resourceToolbar(this, filter, visible, total))
+                .add(rootContainer = div().css(halComponent(resourceManager, body))
+                        .element())
+                .element();
+
+        setVisible(toolbar, false);
+        Attachable.register(this, this);
+    }
+
+    @Override
+    public void attach(MutationRecord mutationRecord) {
+        manage(VIEW);
+    }
+
+    @Override
+    public HTMLElement element() {
+        return root;
+    }
+
+    // ------------------------------------------------------ builder
+
+    public ResourceManager inlineEdit() {
+        return inlineEdit(true);
+    }
+
+    public ResourceManager inlineEdit(boolean inlineEdit) {
+        this.inlineEdit = inlineEdit;
+        return this;
+    }
+
+    public ResourceManager operation(Operation operation) {
+        if (operation != null) {
+            this.operation = operation;
+        } else {
+            logger.error("Operation is null!");
+        }
+        return this;
+    }
+
+    public ResourceManager attributes(Iterable<String> attributes) {
+        for (String attribute : attributes) {
+            this.attributes.add(attribute);
+        }
+        return this;
+    }
+
+    @Override
+    public ResourceManager that() {
+        return this;
+    }
+
+    // ------------------------------------------------------ status
+
+    void manage(State state) {
+        changeState(state);
+        if (metadata.isDefined()) {
+            uic.dispatcher().execute(operation, resource -> {
+                if (valid(resource)) {
+                    List<ResourceAttribute> resourceAttributes = resourceAttributes(metadata, resource, attributes);
+
+                    if (state == VIEW) {
+                        DescriptionList descriptionList = descriptionList().css(halComponent(resourceManager, view))
+                                .orientation(breakpoints(
+                                        sm, vertical,
+                                        md, horizontal,
+                                        lg, horizontal,
+                                        xl, horizontal,
+                                        _2xl, horizontal));
+                        for (ResourceAttribute ra : resourceAttributes) {
+                            descriptionList.addItem(viewItem(uic, template, metadata, ra));
+                        }
+                        hasItems = descriptionList;
+
+                    } else if (state == EDIT) {
+                        Form form = form().css(halComponent(resourceManager, edit))
+                                .horizontal();
+                        for (ResourceAttribute ra : resourceAttributes) {
+                            form.addItem(formItem(uic, template, metadata, ra));
+                        }
+                        hasItems = form;
+                    }
+
+                    if (state == VIEW || state == EDIT) {
+                        total.set(resourceAttributes.size());
+                        if (filter.defined()) {
+                            onFilterChanged(filter, null);
+                        } else {
+                            visible.set(resourceAttributes.size());
+                        }
+                        toolbar.adjust(state, metadata.securityContext());
+                        setVisible(toolbar, true);
+                        rootContainer.append(hasItems.element());
+                    }
+                } else {
+                    empty();
+                }
+            }, (op, error) -> operationError(op.asCli(), error));
+        } else {
+            metadataError();
+        }
+    }
+
+    private void empty() {
+        changeState(EMPTY);
+        rootContainer.append(emptyState()
+                .addHeader(emptyStateHeader()
+                        .icon(ban())
+                        .text("No attributes"))
+                .addBody(emptyStateBody()
+                        .textContent("This resource contains no attributes."))
+                .element());
+    }
+
+    private void operationError(String operation, String error) {
+        changeState(ERROR);
+        rootContainer.append(emptyState()
+                .addHeader(emptyStateHeader()
+                        .icon(exclamationCircle(), globalVar("danger-color", "100"))
+                        .text("Operation failed"))
+                .addBody(emptyStateBody()
+                        .add("Unable to view resource. Operation ")
+                        .add(code().textContent(operation))
+                        .add(" failed:")
+                        .add(codeBlock().code(error)))
+                .addFooter(emptyStateFooter()
+                        .addActions(emptyStateActions()
+                                .add(button("Try again").link().onClick((e, b) -> refresh()))))
+                .element());
+    }
+
+    private void metadataError() {
+        changeState(ERROR);
+        rootContainer.append(emptyState()
+                .addHeader(emptyStateHeader()
+                        .icon(exclamationCircle(), globalVar("danger-color", "100"))
+                        .text("No metadata"))
+                .addBody(emptyStateBody()
+                        .textContent("Unable to view resource: No metadata found!"))
+                .element());
+    }
+
+    // ------------------------------------------------------ filter
+
+    private void onFilterChanged(Filter<ResourceAttribute> filter, String origin) {
+        if ((state == VIEW || (state == EDIT)) && hasItems != null && isAttached(element())) {
+            logger.debug("Filter attributes: %s", filter);
+            int matchingItems;
+            if (filter.defined()) {
+                matchingItems = 0;
+                for (ComponentContext<? extends HTMLElement, ?> item : hasItems) {
+                    ResourceAttribute ra = item.get(Keys.RESOURCE_ATTRIBUTE);
+                    if (ra != null) {
+                        boolean match = filter.match(ra);
+                        item.element().classList.toggle(halModifier(filtered), !match);
+                        if (match) {
+                            matchingItems++;
+                        }
+                    }
+                }
+                noMatch.toggle(rootContainer, matchingItems == 0);
+            } else {
+                matchingItems = total.get();
+                noMatch.toggle(rootContainer, false);
+                hasItems.items().forEach(item -> item.element().classList.remove(halModifier(filtered)));
+            }
+            visible.set(matchingItems);
+        }
+    }
+
+    // ------------------------------------------------------ actions
+
+    void refresh() {
+        if (state == VIEW && isAttached(element())) {
+            manage(VIEW);
+        }
+    }
+
+    void resolve() {
+        if (state == VIEW && isAttached(element())) {
+
+        }
+    }
+
+    void reset() {
+        if (state == VIEW && isAttached(element())) {
+
+        }
+    }
+
+    void save() {
+        // TODO Save changes
+        manage(VIEW);
+    }
+
+    void cancel() {
+        manage(VIEW);
+    }
+
+    // ------------------------------------------------------ internal
+
+    private void changeState(State state) {
+        boolean stateChange = state != this.state;
+        boolean viewOrEdit = (state == VIEW || state == EDIT) && (this.state == VIEW || this.state == EDIT);
+        this.state = state;
+        if (stateChange) {
+            removeChildrenFrom(rootContainer);
+            setVisible(toolbar, viewOrEdit); // only hide the toolbar if there's a change from VIEW|EDIT to some other state
+        }
+    }
+
+    private boolean valid(ModelNode resource) {
+        return resource != null && resource.isDefined() && !resource.asPropertyList().isEmpty();
+    }
+
+}
