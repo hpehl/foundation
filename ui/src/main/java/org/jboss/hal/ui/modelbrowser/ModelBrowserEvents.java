@@ -40,9 +40,9 @@ public interface ModelBrowserEvents {
 
         class Details {
 
-            public AddressTemplate parent;
-            public String child;
-            public boolean singleton;
+            AddressTemplate parent;
+            String child;
+            boolean singleton;
         }
 
         /**
@@ -52,12 +52,13 @@ public interface ModelBrowserEvents {
          * @param parent the parent address used to create the event's detail.
          * @param child  the address used to create the event's detail.
          */
+        @SuppressWarnings("unchecked")
         static void dispatch(HTMLElement source, AddressTemplate parent, String child, boolean singleton) {
             Details details = new Details();
             details.parent = parent;
             details.child = child;
             details.singleton = singleton;
-            //noinspection unchecked
+            //noinspection DuplicatedCode
             CustomEventInit<Details> init = CustomEventInit.create();
             init.setBubbles(true);
             init.setCancelable(true);
@@ -83,9 +84,9 @@ public interface ModelBrowserEvents {
 
         class Details {
 
-            public String identifier;
-            public String parentIdentifier;
-            public AddressTemplate template;
+            String identifier;
+            String parentIdentifier;
+            AddressTemplate template;
         }
 
         static void dispatch(HTMLElement source, AddressTemplate template) {
@@ -107,8 +108,9 @@ public interface ModelBrowserEvents {
             dispatch(source, details);
         }
 
+        @SuppressWarnings("unchecked")
         private static void dispatch(HTMLElement source, Details details) {
-            //noinspection unchecked
+            //noinspection DuplicatedCode
             CustomEventInit<Details> init = CustomEventInit.create();
             init.setBubbles(true);
             init.setCancelable(true);

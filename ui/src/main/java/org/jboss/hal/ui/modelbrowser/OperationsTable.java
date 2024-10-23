@@ -24,7 +24,6 @@ import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.ResourceDescription;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.GlobalOperationsAttribute;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.List;
@@ -33,7 +32,6 @@ import org.patternfly.component.table.Tr;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 import org.patternfly.layout.flex.Flex;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -51,6 +49,7 @@ import static org.jboss.hal.ui.BuildingBlocks.attributeName;
 import static org.jboss.hal.ui.BuildingBlocks.emptyRow;
 import static org.jboss.hal.ui.BuildingBlocks.operationDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.OperationsToolbar.operationsToolbar;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.label.Label.label;
@@ -72,6 +71,7 @@ import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.fitContent;
 import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.screenReader;
+import static org.patternfly.style.Classes.table;
 import static org.patternfly.style.Classes.text;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.blue;
@@ -82,7 +82,6 @@ import static org.patternfly.style.Width.width45;
 class OperationsTable implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(OperationsTable.class.getName());
-    private final UIContext uic;
     private final Filter<OperationDescription> filter;
     private final ObservableValue<Integer> visible;
     private final ObservableValue<Integer> total;
@@ -90,14 +89,13 @@ class OperationsTable implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private EmptyState noAttributes;
 
-    OperationsTable(UIContext uic, Metadata metadata) {
-        boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
-        this.uic = uic;
+    OperationsTable(Metadata metadata) {
+        boolean showGlobalOperations = uic().settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         this.filter = new OperationsFilter(showGlobalOperations).onChange(this::onFilterChanged);
         this.visible = ov(metadata.resourceDescription().operations().size());
         this.total = ov(metadata.resourceDescription().operations().size());
         this.root = div()
-                .add(operationsToolbar(uic, filter, visible, total))
+                .add(operationsToolbar(filter, visible, total))
                 .add(table()
                         .addHead(thead()
                                 .addRow(tr("operations-head")
@@ -130,7 +128,7 @@ class OperationsTable implements IsElement<HTMLElement> {
                                             .addItem(td("Execute operation").css(modifier(fitContent))
                                                     .run(td -> {
                                                         if (executable) {
-                                                            td.add(span().css(component(Classes.table, text))
+                                                            td.add(span().css(component(table, text))
                                                                     .add(button("Execute").tertiary()
                                                                             .onClick((e, c) -> execute(operation))));
                                                         }
@@ -162,7 +160,7 @@ class OperationsTable implements IsElement<HTMLElement> {
             return flex().spaceItems(sm)
                     .addItem(flexItem().add(name))
                     .add(flexItem().add(label("global", blue)));
-        } else if (uic.environment().highlightStability(resource.stability(), operation.stability())) {
+        } else if (uic().environment().highlightStability(resource.stability(), operation.stability())) {
             return flex().spaceItems(sm)
                     .addItem(flexItem().add(name))
                     .add(flexItem().add(stabilityLabel(operation.stability())));
@@ -174,7 +172,7 @@ class OperationsTable implements IsElement<HTMLElement> {
     private List parameters(ResourceDescription resource, OperationDescription operation) {
         return list().plain().bordered()
                 .addItems(operation.parameters(), parameter -> listItem()
-                        .add(attributeName(parameter, true, () -> uic.environment()
+                        .add(attributeName(parameter, true, () -> uic().environment()
                                 .highlightStability(resource.stability(), operation.stability(),
                                         parameter.stability()))
                                 .alignItems(center).spaceItems(xs)

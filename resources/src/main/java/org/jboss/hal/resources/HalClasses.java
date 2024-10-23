@@ -26,17 +26,21 @@ public interface HalClasses {
     String deprecated = "deprecated";
     String detail = "detail";
     String edit = "edit";
+    String expression = "expression";
     String filtered = "filtered";
     String goto_ = "goto";
     String modelBrowser = "model-browser";
+    String nestedLabel = "nested-label";
     String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";
     String resourceManager = "resource-manager";
+    String restricted = "restricted";
     String results = "results";
     String stabilityLevel = "stability-level";
     String tree = "tree";
     String unit = "unit";
     String undefined = "undefined";
+    String value = "value";
     String view = "view";
 
     // ------------------------------------------------------ api

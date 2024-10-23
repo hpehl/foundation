@@ -21,6 +21,7 @@ import org.jboss.elemento.Attachable;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.Key;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.form.TextInput;
 import org.patternfly.popper.Modifiers;
 import org.patternfly.popper.Popper;
@@ -47,14 +48,12 @@ class GotoResource implements IsElement<HTMLElement>, Attachable {
     static final int DISTANCE = 10;
     static final int Z_INDEX = 9999;
 
-    private final ModelBrowserTree modelBrowserTree;
     private final HTMLElement button;
     private final HTMLElement menu;
     private final TextInput input;
     private Popper popper;
 
-    GotoResource(ModelBrowserTree modelBrowserTree) {
-        this.modelBrowserTree = modelBrowserTree;
+    GotoResource() {
         this.button = button().plain().icon(compass()).element();
         this.input = textInput("goto").placeholder("Goto resource");
         this.menu = div().css(halComponent(modelBrowser, goto_))
@@ -102,7 +101,7 @@ class GotoResource implements IsElement<HTMLElement>, Attachable {
         if (Key.Enter.match(event)) {
             HTMLInputElement inputElement = (HTMLInputElement) event.target;
             AddressTemplate template = AddressTemplate.of(inputElement.value);
-            modelBrowserTree.select(template);
+            SelectInTree.dispatch(button, template);
             inputElement.value = "";
             event.stopPropagation();
             event.preventDefault();

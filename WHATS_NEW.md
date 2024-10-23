@@ -22,18 +22,18 @@ The model browser has been greatly improved:
 - Descriptions in resources list views
 - Follow capability references
 
-### Data / View
+### Data
 
-- Filter by name, status (defined/undefined, deprecated/not deprecated) and mode (storage/access type)
+- Filter by name, status (defined/undefined, required/not required, deprecated/not deprecated) and mode (storage/access type)
 - Attribute description as popovers
-- Links for referenced capabilities
+- Links for referenced capabilities (popup for multiple references)
 - Support for simple nested attributes
-- Support for complex attributes in the read-only view
+- Support for complex attributes in read-only view
 - Info of allowed values
 
 ### Attributes
 
-- Filter by name, type, status (deprecated/not deprecated) and mode (storage/access type)
+- Filter by name, type, status (required/not required, deprecated/not deprecated) and mode (storage/access type)
 - Support for nested attributes
 
 ### Operations
@@ -45,3 +45,17 @@ The model browser has been greatly improved:
 ### Capabilities
 
 - New tab that shows the capabilities of the selected resource
+
+## JavaScript API
+
+Some classes expose a JavaScript API. You have to call the methods using the fully qualified name.
+
+### Metadata
+
+- `org.jboss.hal.meta.MetadataRepository.get(String address)` return the metadata as JSON
+- `org.jboss.hal.meta.MetadataRepository.lookup(address)` lookup the metadata as JSON and return a promise
+- `org.jboss.hal.meta.MetadataRepository.dump()` dump internal data of the metadata repository
+
+### Logging
+
+See https://hal-console.gitbook.io/elemento/logger#controlling-log-levels-from-javascript

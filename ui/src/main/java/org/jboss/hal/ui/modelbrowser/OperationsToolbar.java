@@ -19,7 +19,6 @@ import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.description.OperationDescription;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.DeprecatedAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
 import org.jboss.hal.ui.filter.GlobalOperationsAttribute;
@@ -32,6 +31,7 @@ import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.filter.DeprecatedMultiSelect.deprecatedMultiSelect;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
 import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
@@ -52,9 +52,9 @@ class OperationsToolbar implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    static OperationsToolbar operationsToolbar(UIContext uic, Filter<OperationDescription> filter,
+    static OperationsToolbar operationsToolbar(Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        return new OperationsToolbar(uic, filter, visible, total);
+        return new OperationsToolbar(filter, visible, total);
     }
 
     // ------------------------------------------------------ instance
@@ -63,9 +63,9 @@ class OperationsToolbar implements IsElement<HTMLElement> {
     private final Switch globalOperationsSwitch;
     private final Toolbar toolbar;
 
-    private OperationsToolbar(UIContext uic, Filter<OperationDescription> filter,
+    private OperationsToolbar(Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        boolean showGlobalOperations = uic.settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
+        boolean showGlobalOperations = uic().settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
         toolbar = toolbar()
                 .addContent(toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
@@ -77,7 +77,7 @@ class OperationsToolbar implements IsElement<HTMLElement> {
                                         .label("Show global operations", "Omit global operations")
                                         .value(showGlobalOperations, false)
                                         .onChange((e, c, v) -> {
-                                            uic.settings().set(Settings.Key.SHOW_GLOBAL_OPERATIONS, v);
+                                            uic().settings().set(Settings.Key.SHOW_GLOBAL_OPERATIONS, v);
                                             filter.set(GlobalOperationsAttribute.NAME, v, ORIGIN);
                                         })))
                         .addItem(toolbarItem()

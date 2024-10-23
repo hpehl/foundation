@@ -39,8 +39,8 @@ import elemental2.dom.HTMLElement;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.ui.filter.DefinedRequiredDeprecatedMultiSelect.definedRequiredDeprecatedMultiSelect;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
-import static org.jboss.hal.ui.filter.StorageAccessTypeMultiSelect.storageAccessTypeMultiSelect;
 import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
+import static org.jboss.hal.ui.filter.StorageAccessTypeMultiSelect.storageAccessTypeMultiSelect;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
 import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.patternfly.component.button.Button.button;
@@ -99,7 +99,7 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> resourceManager.refresh()))
                 .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
         editItem = toolbarItem()
-                .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceManager.manage(EDIT)))
+                .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceManager.load(EDIT)))
                 .add(tooltip(By.id(editId), "Edit resource").placement(auto));
         viewActionGroup = toolbarGroup(iconButtonGroup).css(modifier("align-right"))
                 .addItem(refreshItem)

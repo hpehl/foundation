@@ -18,6 +18,7 @@ package org.jboss.hal.ui.resource;
 import java.util.List;
 
 import org.jboss.elemento.Id;
+import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.meta.AddressTemplate;
@@ -26,9 +27,8 @@ import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.LabelBuilder;
-import org.jboss.hal.ui.UIContext;
+import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
-import org.patternfly.component.list.DescriptionListGroup;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.core.Roles;
 
@@ -44,23 +44,25 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.hal.dmr.ModelType.BOOLEAN;
-import static org.jboss.hal.dmr.ModelType.EXPRESSION;
 import static org.jboss.hal.dmr.ModelType.LIST;
 import static org.jboss.hal.dmr.ModelType.OBJECT;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.restricted;
+import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.resources.HalClasses.view;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescriptionPopover;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.resource.CapabilityReference.capabilityReference;
+import static org.jboss.hal.ui.resource.ItemIdentifier.identifier;
+import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
+import static org.patternfly.component.icon.Icon.icon;
 import static org.patternfly.component.label.LabelGroup.labelGroup;
-import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
-import static org.patternfly.component.list.DescriptionListGroup.descriptionListGroup;
 import static org.patternfly.component.list.DescriptionListTerm.descriptionListTerm;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
@@ -68,6 +70,7 @@ import static org.patternfly.component.switch_.Switch.switch_;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Attributes.role;
 import static org.patternfly.icon.IconSets.fas.link;
+import static org.patternfly.icon.IconSets.fas.lock;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.descriptionList;
 import static org.patternfly.style.Classes.helpText;
@@ -75,99 +78,99 @@ import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.text;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.grey;
-import static org.patternfly.style.Variable.globalVar;
 
-class ViewFactory {
+class ViewItemFactory {
 
-    // ------------------------------------------------------ view
+    private static final Logger logger = Logger.getLogger(ViewItemFactory.class.getName());
 
-    static DescriptionListGroup viewItem(UIContext uic, AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
-        return descriptionListGroup(Id.build(ra.fqn, "view"))
-                .store(Keys.RESOURCE_ATTRIBUTE, ra)
-                .addTerm(label(uic, metadata, ra))
-                .addDescription(descriptionListDescription()
-                        .add(value(uic, template, ra)));
+    static ViewItem viewItem(AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
+        DescriptionListTerm descriptionListTerm = label(metadata, ra);
+        HTMLElement valueElement = value(template, metadata, ra);
+        return new ViewItem(identifier(ra, VIEW), descriptionListTerm, valueElement)
+                .store(Keys.RESOURCE_ATTRIBUTE, ra);
     }
 
-    private static DescriptionListTerm label(UIContext uic, Metadata metadata, ResourceAttribute ra) {
+    private static DescriptionListTerm label(Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm term;
         LabelBuilder labelBuilder = new LabelBuilder();
-        if (ra.description != null) {
-            if (ra.description.nested()) {
+        if (ra.description.nested()) {
+            // <unstable>
+            // If the internal DOM of DescriptionListTerm changes, this will no longer work
+            // By default, DescriptionListTerm supports only one text element. But in this case we
+            // want to have one for the parent and one for the nested attribute description.
+            // So we set up the internals of DescriptionListTerm manually.
+            AttributeDescription parentDescription = ra.description.parent();
+            AttributeDescription nestedDescription = ra.description;
+            String parentLabel = labelBuilder.label(parentDescription.name());
+            String nestedLabel = labelBuilder.label(ra.name);
+            term = descriptionListTerm(parentLabel)
+                    .css(halComponent(resourceManager, HalClasses.nestedLabel))
+                    .help(attributeDescriptionPopover(parentLabel, parentDescription));
+            HTMLElement nestedTextElement = span()
+                    .css(component(descriptionList, text), modifier(helpText))
+                    .attr(role, Roles.button)
+                    .attr("type", "button")
+                    .apply(element -> element.tabIndex = 0)
+                    .textContent(nestedLabel)
+                    .element();
+            attributeDescriptionPopover(nestedLabel, nestedDescription)
+                    .trigger(nestedTextElement)
+                    .appendToBody();
+            wrapHtmlContainer(term.element())
+                    .add("/")
+                    .add(nestedTextElement);
+            // </unstable>
+        } else {
+            String label = labelBuilder.label(ra.name);
+            term = descriptionListTerm(label)
+                    .help(attributeDescriptionPopover(label, ra.description));
+
+            // only the top level attribute is stability-labeled
+            if (uic().environment()
+                    .highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
                 // <unstable>
                 // If the internal DOM of DescriptionListTerm changes, this will no longer work
-                // By default, DescriptionListTerm supports only one text element. But in this case we
-                // want to have one for the parent and one for the nested attribute description.
-                // So we set up the internals of DescriptionListTerm manually.
-                AttributeDescription parentDescription = ra.description.parent();
-                AttributeDescription nestedDescription = ra.description;
-                String parentLabel = labelBuilder.label(parentDescription.name());
-                String nestedLabel = labelBuilder.label(ra.name);
-                term = descriptionListTerm(parentLabel)
-                        .help(attributeDescriptionPopover(parentLabel, parentDescription));
-                HTMLElement nestedTextElement = span()
-                        .css(component(descriptionList, text), modifier(helpText))
-                        .attr(role, Roles.button)
-                        .attr("type", "button")
-                        .apply(element -> element.tabIndex = 0)
-                        .textContent(nestedLabel)
-                        .element();
-                attributeDescriptionPopover(nestedLabel, nestedDescription)
-                        .trigger(nestedTextElement)
-                        .appendToBody();
-                wrapHtmlContainer(term.element())
-                        .style("flex-wrap", "wrap")
-                        .style("gap", globalVar("spacer", "xs").asVar())
-                        .add("/")
-                        .add(nestedTextElement);
+                // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
+                // That's why we must use term.element.appendChild() instead of term.add() to add the
+                // stability label after the text element instead of into the text element. Then we must
+                // reset the font weight to normal (DescriptionListTerm uses bold)
+                term.element().classList.add(halComponent(resourceManager, stabilityLevel));
+                term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
+                        .style("align-self", "baseline")
+                        .css(util("ml-sm"), util("font-weight-normal"))
+                        .element());
                 // </unstable>
-            } else {
-                String label = labelBuilder.label(ra.name);
-                term = descriptionListTerm(label)
-                        .help(attributeDescriptionPopover(label, ra.description));
-
-                // only the top level attribute is stability-labeled
-                if (uic.environment()
-                        .highlightStability(metadata.resourceDescription().stability(), ra.description.stability())) {
-                    // <unstable>
-                    // If the internal DOM of DescriptionListTerm changes, this will no longer work
-                    // DescriptionListTerm implements ElementDelegate and delegates to the internal text element.
-                    // That's why we must use term.element.appendChild() instead of term.add() to add the
-                    // stability label after the text element instead of into the text element. Then we must
-                    // reset the font weight to normal (DescriptionListTerm uses bold)
-                    term.element().style.setProperty("align-items", "center");
-                    term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
-                            .style("align-self", "baseline")
-                            .css(util("ml-sm"), util("font-weight-normal"))
-                            .element());
-                    // </unstable>
-                }
             }
-            if (ra.description.deprecation().isDefined()) {
-                term.delegate().classList.add(halModifier(deprecated));
-            }
-        } else {
-            term = descriptionListTerm(labelBuilder.label(ra.name));
+        }
+        if (ra.description.deprecation().isDefined()) {
+            term.delegate().classList.add(halModifier(deprecated));
         }
         return term;
     }
 
-    private static HTMLElement value(UIContext uic, AddressTemplate resource, ResourceAttribute ra) {
+    private static HTMLElement value(AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
         HTMLElement element;
 
         // TODO Implement sensitive constraints
-        if (ra.value.isDefined()) {
-            if (ra.value.getType() == EXPRESSION) {
-                HTMLElement resolveButton = button().plain().inline().icon(link()).element();
-                HTMLElement expressionElement = span().element();
+        if (!metadata.securityContext().readable(ra.name)) {
+            element = span().css(halModifier(restricted))
+                    .textContent("restricted")
+                    .add(icon(lock().css(util("ml-sm"))))
+                    .element();
+
+        } else {
+            if (ra.expression) {
+                HTMLElement resolveButton = button().plain().inline().icon(link())
+                        .onClick((e, b) -> resolveExpression())
+                        .element();
                 element = span()
                         .textContent(ra.value.asString())
-                        .add(tooltip(resolveButton, "Resolve expression (nyi)"))
-                        .add(expressionElement)
                         .add(resolveButton)
+                        .add(tooltip(resolveButton, "Resolve expression"))
                         .element();
+
             } else {
-                if (ra.description != null) {
+                if (ra.value.isDefined()) {
                     if (ra.description.hasDefined(TYPE)) {
                         ModelType type = ra.description.get(TYPE).asType();
                         if (type == BOOLEAN) {
@@ -204,12 +207,10 @@ class ViewFactory {
                             } else {
                                 if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
                                     String capability = ra.description.get(CAPABILITY_REFERENCE).asString();
-                                    element = capabilityReference(uic, resource, capability, ra)
+                                    element = capabilityReference(template, capability, ra)
                                             .element();
                                 } else {
-                                    element = span()
-                                            .textContent(ra.value.asString())
-                                            .element();
+                                    element = plainText(ra);
                                 }
                             }
                         } else if (type == LIST) {
@@ -223,31 +224,42 @@ class ViewFactory {
                                                 v -> listItem(Id.build(v, "value")).text(v))
                                         .element();
                             } else {
-                                element = codeBlock()
-                                        .truncate(5)
-                                        .code(ra.value.toJSONString().replace("\\/", "/"))
-                                        .element();
+                                element = codeBlock(ra);
                             }
                         } else if (type == OBJECT) {
-                            element = codeBlock()
-                                    .truncate(5)
-                                    .code(ra.value.toJSONString().replace("\\/", "/"))
-                                    .element();
+                            element = codeBlock(ra);
                         } else {
-                            element = span().textContent(ra.value.asString()).element();
+                            element = plainText(ra);
                         }
                     } else {
-                        element = span().textContent(ra.value.asString()).element();
+                        logger.warn("No type information found in resource description for attribute %s in resource %s. " +
+                                "Fallback to plain text representation.", ra.name, template);
+                        element = plainText(ra);
                     }
                 } else {
-                    element = span().textContent(ra.value.asString()).element();
+                    element = plainText(ra);
+                    element.classList.add(halComponent(resourceManager, view, undefined));
                 }
             }
-        } else {
-            element = span().css(halComponent(resourceManager, view, undefined))
-                    .textContent(ra.value.asString())
-                    .element();
         }
+
         return element;
+    }
+
+    private static HTMLElement codeBlock(ResourceAttribute ra) {
+        return CodeBlock.codeBlock()
+                .truncate(5)
+                .code(ra.value.toJSONString().replace("\\/", "/"))
+                .element();
+    }
+
+    private static HTMLElement plainText(ResourceAttribute ra) {
+        return span()
+                .textContent(ra.value.asString())
+                .element();
+    }
+
+    private static void resolveExpression() {
+
     }
 }

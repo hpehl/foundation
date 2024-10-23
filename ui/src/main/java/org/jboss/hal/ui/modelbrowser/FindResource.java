@@ -24,7 +24,7 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.tree.TraverseContext;
 import org.jboss.hal.meta.tree.TraverseContinuation;
 import org.jboss.hal.meta.tree.TraverseType;
-import org.jboss.hal.ui.UIContext;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.form.Form;
 import org.patternfly.component.form.FormGroup;
@@ -43,6 +43,8 @@ import org.patternfly.layout.flex.FlexItem;
 import org.patternfly.layout.flex.Gap;
 import org.patternfly.style.Breakpoint;
 
+import elemental2.dom.HTMLElement;
+
 import static elemental2.dom.DomGlobal.clearTimeout;
 import static elemental2.dom.DomGlobal.setTimeout;
 import static java.util.Arrays.stream;
@@ -56,6 +58,7 @@ import static org.jboss.elemento.EventType.keydown;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.resources.HalClasses.results;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.divider.Divider.divider;
@@ -101,8 +104,7 @@ import static org.patternfly.style.Variable.globalVar;
 
 class FindResource {
 
-    private final UIContext uic;
-    private final ModelBrowserTree modelBrowserTree;
+    private final HTMLElement trigger;
     private final TraverseContinuation continuation;
     private final Modal searchModal;
     private final FlexItem searchResults;
@@ -122,9 +124,8 @@ class FindResource {
 
     // ------------------------------------------------------ ui
 
-    FindResource(UIContext uic, ModelBrowserTree modelBrowserTree) {
-        this.uic = uic;
-        this.modelBrowserTree = modelBrowserTree;
+    FindResource(HTMLElement trigger, String rootAddress) {
+        this.trigger = trigger;
         this.continuation = new TraverseContinuation();
 
         String baseId = "search-resource";
@@ -216,7 +217,7 @@ class FindResource {
                                 .addItem(flexItem().add(comparisonDescription))
                                 .addItem(flexItem().add(div().textContent("The search is case insensitive by default.")))));
 
-        FormGroup nameFormGroup = formGroup().fieldId(nameId).required()
+        FormGroup nameFormGroup = formGroup(nameId).required()
                 .addLabel(formGroupLabel("Name"))
                 .addControl(nameControl = formGroupControl()
                         .addControl(nameInput = textInput(nameId)
@@ -226,10 +227,10 @@ class FindResource {
                                     }
                                 })));
 
-        FormGroup rootFormGroup = formGroup().fieldId(rootId)
+        FormGroup rootFormGroup = formGroup(rootId)
                 .addLabel(formGroupLabel("Root"))
                 .addControl(formGroupControl()
-                        .addControl(rootInput = textInput(rootId).value(modelBrowserTree.selectedAddress())
+                        .addControl(rootInput = textInput(rootId).value(rootAddress)
                                 .on(keydown, e -> {
                                     if (Key.Enter.match(e)) {
                                         search();
@@ -237,7 +238,7 @@ class FindResource {
                                 }))
                         .addHelperText(helperText("Leave empty to search the whole model.")));
 
-        FormGroup excludeFormGroup = formGroup().fieldId(excludeId)
+        FormGroup excludeFormGroup = formGroup(excludeId)
                 .addLabel(formGroupLabel("Exclude"))
                 .addControl(formGroupControl()
                         .addControl(excludeTextArea = textArea(excludeId)
@@ -247,7 +248,7 @@ class FindResource {
                                 .value("/core-service"))
                         .addHelperText(helperText("Enter resource addresses to exclude (separated by line breaks)")));
 
-        FormGroup scopeFormGroup = formGroup().fieldId(scopeId).role(radiogroup)
+        FormGroup scopeFormGroup = formGroup(scopeId).role(radiogroup)
                 .addLabel(formGroupLabel("Scope").noPaddingTop().help("Where to search", scopeInfo))
                 .addControl(formGroupControl().inline()
                         .addRadio(scopeAddressRadio = radio(Id.build(scopeId, "address"), scopeId, "Address"))
@@ -255,7 +256,7 @@ class FindResource {
                         .addRadio(scopeNameRadio = radio(Id.build(scopeId, "name"), scopeId, "Name")
                                 .value(true, false)));
 
-        FormGroup comparisonFormGroup = formGroup().fieldId(comparisonId).role(radiogroup)
+        FormGroup comparisonFormGroup = formGroup(comparisonId).role(radiogroup)
                 .addLabel(formGroupLabel("Comparison").noPaddingTop().help("How to search", comparisonInfo))
                 .addControl(formGroupControl().inline()
                         .addRadio(comparisonContainsRadio = radio(Id.build(comparisonId, "contains"),
@@ -342,7 +343,7 @@ class FindResource {
                 boolean contains = comparisonContainsRadio.value();
                 AddressTemplate rootTemplate = AddressTemplate.of(rootInput.value());
                 timeout = setTimeout(__ -> searchButton.text("Stop").startProgress(), Timeouts.LOADING_TIMEOUT);
-                uic.modelTree().traverse(continuation, rootTemplate, exclude, EnumSet.noneOf(TraverseType.class),
+                uic().modelTree().traverse(continuation, rootTemplate, exclude, EnumSet.noneOf(TraverseType.class),
                                 (template, traverseContext) -> {
                                     status.textContent("Process " + template.toString());
                                     String argument = "";
@@ -360,7 +361,7 @@ class FindResource {
                                         ListItem listItem = listItem()
                                                 .add(button().link().inline().textContent(template.toString())
                                                         .onClick((e, b) -> {
-                                                            modelBrowserTree.select(template);
+                                                            SelectInTree.dispatch(trigger, template);
                                                             close();
                                                         }));
                                         matchingResources.addItem(listItem);

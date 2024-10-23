@@ -29,14 +29,14 @@ public class FilterChips {
     public static <T> List<Chip> definedRequiredDeprecatedChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
         chips.addAll(booleanChips(filter, DefinedAttribute.NAME, "Defined", "Undefined"));
-        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Not required"));
+        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Optional"));
         chips.addAll(deprecatedChips(filter));
         return chips;
     }
 
     public static <T> List<Chip> requiredDeprecatedChips(Filter<T> filter) {
         List<Chip> chips = new ArrayList<>();
-        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Not required"));
+        chips.addAll(booleanChips(filter, RequiredAttribute.NAME, "Required", "Optional"));
         chips.addAll(deprecatedChips(filter));
         return chips;
     }

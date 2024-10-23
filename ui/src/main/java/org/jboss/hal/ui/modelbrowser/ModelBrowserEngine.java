@@ -30,7 +30,6 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.resources.Keys;
 import org.patternfly.component.popover.Popover;
 import org.patternfly.component.tree.TreeViewItem;
-import org.patternfly.style.Classes;
 
 import elemental2.promise.Promise;
 
@@ -173,7 +172,7 @@ class ModelBrowserEngine {
                 .onToggle((event, tvi, expanded) -> {
                     if (expanded) {
                         for (TreeViewItem item : tvi.items()) {
-                            if (item.element().classList.contains(modifier(Classes.disabled))) {
+                            if (item.element().classList.contains(modifier(disabled))) {
                                 ModelBrowserNode m = item.get(Keys.MODEL_BROWSER_NODE);
                                 if (m != null) {
                                     // This popover is used when the paren item is collapsed/expanded

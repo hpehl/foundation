@@ -22,7 +22,6 @@ import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.table.Td;
 import org.patternfly.component.table.TitleCell;
 import org.patternfly.component.table.Tr;
@@ -39,6 +38,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.STORAGE;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescription;
 import static org.jboss.hal.ui.BuildingBlocks.attributeName;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.patternfly.component.table.Td.td;
 import static org.patternfly.component.table.TitleCell.titleCell;
 import static org.patternfly.component.table.Tr.tr;
@@ -53,12 +53,10 @@ import static org.patternfly.style.Variable.utilVar;
 
 class AttributeRow implements Function<AttributeDescription, Tr> {
 
-    private final UIContext uic;
     private final ResourceDescription resource;
     private final boolean anyComplexAttributes;
 
-    AttributeRow(UIContext uic, ResourceDescription resource, boolean anyComplexAttributes) {
-        this.uic = uic;
+    AttributeRow(ResourceDescription resource, boolean anyComplexAttributes) {
         this.resource = resource;
         this.anyComplexAttributes = anyComplexAttributes;
     }
@@ -70,20 +68,20 @@ class AttributeRow implements Function<AttributeDescription, Tr> {
                     if (anyComplexAttributes) {
                         TitleCell titleCell = titleCell();
                         tr.addTitleCell(titleCell
-                                .add(attributeName(attribute, () -> uic.environment().highlightStability(resource.stability(),
+                                .add(attributeName(attribute, () -> uic().environment().highlightStability(resource.stability(),
                                         attribute.stability())))
                                 .add(attributeDescription(attribute)
                                         .style("cursor", "initial")
                                         .css(util("mt-sm"))));
                         if (attribute.listOrObjectValueType()) {
                             tr.addChildren(attribute.valueTypeAttributeDescriptions(),
-                                    new AttributeRow(uic, resource, true));
+                                    new AttributeRow(resource, true));
                         } else {
                             titleCell.delegate().style.setProperty("cursor", "initial");
                         }
                     } else {
                         tr.addItem(td("Name")
-                                .add(attributeName(attribute, () -> uic.environment().highlightStability(resource.stability(),
+                                .add(attributeName(attribute, () -> uic().environment().highlightStability(resource.stability(),
                                         attribute.stability())))
                                 .add(attributeDescription(attribute).css(util("mt-sm"))));
                     }

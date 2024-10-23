@@ -64,7 +64,7 @@ public class DefinedRequiredDeprecatedMultiSelect<T> implements IsElement<HTMLEl
                                 .addGroup(menuGroup("Required")
                                         .addList(menuList()
                                                 .addItem(RequiredAttribute.NAME + "-true", "Required")
-                                                .addItem(RequiredAttribute.NAME + "-false", "Not required")))
+                                                .addItem(RequiredAttribute.NAME + "-false", "Optional")))
                                 .addDivider()
                                 .addGroup(menuGroup("Deprecated")
                                         .addList(menuList()

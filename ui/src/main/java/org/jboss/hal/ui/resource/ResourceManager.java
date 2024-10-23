@@ -25,13 +25,8 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
-import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.modelbrowser.NoMatch;
 import org.patternfly.component.HasItems;
-import org.patternfly.component.form.Form;
-import org.patternfly.component.list.DescriptionList;
-import org.patternfly.core.ComponentContext;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
 
@@ -47,20 +42,19 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.ATTRIBUTES_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.hal.resources.HalClasses.body;
-import static org.jboss.hal.resources.HalClasses.edit;
 import static org.jboss.hal.resources.HalClasses.filtered;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.resourceManager;
-import static org.jboss.hal.resources.HalClasses.view;
-import static org.jboss.hal.ui.resource.FormFactory.formItem;
+import static org.jboss.hal.ui.UIContext.uic;
+import static org.jboss.hal.ui.resource.FormItemFactory.formItem;
 import static org.jboss.hal.ui.resource.ResourceAttribute.resourceAttributes;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EMPTY;
 import static org.jboss.hal.ui.resource.ResourceManager.State.ERROR;
 import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
-import static org.jboss.hal.ui.resource.ViewFactory.viewItem;
+import static org.jboss.hal.ui.resource.ViewItemFactory.viewItem;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -68,28 +62,20 @@ import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateAc
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateFooter.emptyStateFooter;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
-import static org.patternfly.component.form.Form.form;
-import static org.patternfly.component.list.DescriptionList.descriptionList;
 import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
-import static org.patternfly.style.Breakpoint._2xl;
-import static org.patternfly.style.Breakpoint.lg;
-import static org.patternfly.style.Breakpoint.md;
-import static org.patternfly.style.Breakpoint.sm;
-import static org.patternfly.style.Breakpoint.xl;
-import static org.patternfly.style.Breakpoints.breakpoints;
-import static org.patternfly.style.Orientation.horizontal;
-import static org.patternfly.style.Orientation.vertical;
 import static org.patternfly.style.Variable.globalVar;
 
-// TODO Implement resolve all expressions, reset, and edit actions
+/**
+ * Combines a {@link ResourceFilter} and {@link ResourceToolbar} with a {@link ResourceView} and {@link ResourceForm}.
+ */
 public class ResourceManager implements HasElement<HTMLElement, ResourceManager>, Attachable {
 
     // ------------------------------------------------------ factory
 
-    public static ResourceManager resourceManager(UIContext uic, AddressTemplate template, Metadata metadata) {
-        return new ResourceManager(uic, template, metadata);
+    public static ResourceManager resourceManager(AddressTemplate template, Metadata metadata) {
+        return new ResourceManager(template, metadata);
     }
 
     // ------------------------------------------------------ instance
@@ -100,7 +86,6 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     private static final Logger logger = Logger.getLogger(ResourceManager.class.getName());
 
-    private final UIContext uic;
     private final AddressTemplate template;
     private final Metadata metadata;
     private final List<String> attributes;
@@ -114,10 +99,10 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
     private boolean inlineEdit;
     private State state;
     private Operation operation;
-    private HasItems<?, ?, ? extends ComponentContext<? extends HTMLElement, ?>> hasItems;
+    private HasItems<HTMLElement, ?, ? extends ManagerItem<?>> items;
+    private ResourceForm resourceForm;
 
-    ResourceManager(UIContext uic, AddressTemplate template, Metadata metadata) {
-        this.uic = uic;
+    ResourceManager(AddressTemplate template, Metadata metadata) {
         this.template = template;
         this.metadata = metadata;
         this.attributes = new ArrayList<>();
@@ -143,7 +128,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     @Override
     public void attach(MutationRecord mutationRecord) {
-        manage(VIEW);
+        load(VIEW);
     }
 
     @Override
@@ -185,33 +170,26 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     // ------------------------------------------------------ status
 
-    void manage(State state) {
+    void load(State state) {
         changeState(state);
         if (metadata.isDefined()) {
-            uic.dispatcher().execute(operation, resource -> {
+            uic().dispatcher().execute(operation, resource -> {
                 if (valid(resource)) {
-                    List<ResourceAttribute> resourceAttributes = resourceAttributes(metadata, resource, attributes);
+                    List<ResourceAttribute> resourceAttributes = resourceAttributes(resource, metadata, attributes);
 
                     if (state == VIEW) {
-                        DescriptionList descriptionList = descriptionList().css(halComponent(resourceManager, view))
-                                .orientation(breakpoints(
-                                        sm, vertical,
-                                        md, horizontal,
-                                        lg, horizontal,
-                                        xl, horizontal,
-                                        _2xl, horizontal));
+                        ResourceView resourceView = new ResourceView();
                         for (ResourceAttribute ra : resourceAttributes) {
-                            descriptionList.addItem(viewItem(uic, template, metadata, ra));
+                            resourceView.addItem(viewItem(template, metadata, ra));
                         }
-                        hasItems = descriptionList;
+                        items = resourceView;
 
                     } else if (state == EDIT) {
-                        Form form = form().css(halComponent(resourceManager, edit))
-                                .horizontal();
+                        resourceForm = new ResourceForm();
                         for (ResourceAttribute ra : resourceAttributes) {
-                            form.addItem(formItem(uic, template, metadata, ra));
+                            resourceForm.addItem(formItem(template, metadata, ra));
                         }
-                        hasItems = form;
+                        items = resourceForm;
                     }
 
                     if (state == VIEW || state == EDIT) {
@@ -223,7 +201,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                         }
                         toolbar.adjust(state, metadata.securityContext());
                         setVisible(toolbar, true);
-                        rootContainer.append(hasItems.element());
+                        rootContainer.append(items.element());
                     }
                 } else {
                     empty();
@@ -276,13 +254,13 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
     // ------------------------------------------------------ filter
 
     private void onFilterChanged(Filter<ResourceAttribute> filter, String origin) {
-        if ((state == VIEW || (state == EDIT)) && hasItems != null && isAttached(element())) {
+        if ((state == VIEW || state == EDIT) && items != null && isAttached(element())) {
             logger.debug("Filter attributes: %s", filter);
             int matchingItems;
             if (filter.defined()) {
                 matchingItems = 0;
-                for (ComponentContext<? extends HTMLElement, ?> item : hasItems) {
-                    ResourceAttribute ra = item.get(Keys.RESOURCE_ATTRIBUTE);
+                for (ManagerItem<?> item : items) {
+                    ResourceAttribute ra = item.resourceAttribute();
                     if (ra != null) {
                         boolean match = filter.match(ra);
                         item.element().classList.toggle(halModifier(filtered), !match);
@@ -295,7 +273,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
             } else {
                 matchingItems = total.get();
                 noMatch.toggle(rootContainer, false);
-                hasItems.items().forEach(item -> item.element().classList.remove(halModifier(filtered)));
+                items.items().forEach(item -> item.element().classList.remove(halModifier(filtered)));
             }
             visible.set(matchingItems);
         }
@@ -304,30 +282,36 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
     // ------------------------------------------------------ actions
 
     void refresh() {
-        if (state == VIEW && isAttached(element())) {
-            manage(VIEW);
+        if (state == VIEW) {
+            load(VIEW);
         }
     }
 
     void resolve() {
-        if (state == VIEW && isAttached(element())) {
+        if (state == VIEW) {
 
         }
     }
 
     void reset() {
-        if (state == VIEW && isAttached(element())) {
+        if (state == VIEW) {
 
         }
     }
 
     void save() {
-        // TODO Save changes
-        manage(VIEW);
+        if (state == EDIT && resourceForm != null) {
+            if (resourceForm.valid()) {
+                // TODO Save changes
+                load(VIEW);
+            }
+        }
     }
 
     void cancel() {
-        manage(VIEW);
+        if (state == EDIT) {
+            load(VIEW);
+        }
     }
 
     // ------------------------------------------------------ internal
@@ -338,12 +322,12 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
         this.state = state;
         if (stateChange) {
             removeChildrenFrom(rootContainer);
-            setVisible(toolbar, viewOrEdit); // only hide the toolbar if there's a change from VIEW|EDIT to some other state
+            // only hide the toolbar if there's a change from VIEW|EDIT to some other state or vice versa
+            setVisible(toolbar, viewOrEdit);
         }
     }
 
     private boolean valid(ModelNode resource) {
         return resource != null && resource.isDefined() && !resource.asPropertyList().isEmpty();
     }
-
 }

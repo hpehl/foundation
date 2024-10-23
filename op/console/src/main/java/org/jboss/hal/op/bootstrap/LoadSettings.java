@@ -15,8 +15,6 @@
  */
 package org.jboss.hal.op.bootstrap;
 
-import jakarta.inject.Inject;
-
 import org.jboss.elemento.flow.FlowContext;
 import org.jboss.elemento.flow.Task;
 import org.jboss.elemento.logger.Logger;
@@ -35,13 +33,12 @@ import static org.jboss.hal.env.Settings.Key.TITLE;
  * Loads the settings. Please make sure this is one of the last bootstrap function. This function loads the run-as role which is
  * then used by the dispatcher. But all previous bootstrap functions must not have a run-as role in the dispatcher.
  */
-public final class LoadSettings implements Task<FlowContext> {
+class LoadSettings implements Task<FlowContext> {
 
     private static final Logger logger = Logger.getLogger(LoadSettings.class.getName());
     private final Settings settings;
 
-    @Inject
-    public LoadSettings(Settings settings) {
+    LoadSettings(Settings settings) {
         this.settings = settings;
     }
 

@@ -29,15 +29,16 @@ import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.meta.tree.ModelTree;
 
-/** Holds common classes needed by UI elements. Use this class to keep the method signatures clean and tidy. */
+/**
+ * Holds common classes often needed in UI elements. Use the static {@link #uic()} accessor method to get a reference of this
+ * class instead of passing multiple references around.
+ */
 @Startup
 @ApplicationScoped
 public class UIContext {
 
     // ------------------------------------------------------ singleton
 
-    // Hacky way to make the UIContext statically available.
-    // Use this only if there's no other (CDI-compliant) way!
     private static UIContext instance;
 
     public static UIContext uic() {

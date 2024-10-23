@@ -20,10 +20,18 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.dmr.ModelNodeHelper;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.dmr.Property;
 
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_CONSTRAINTS;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.METRIC;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.SENSITIVE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.hal.dmr.ModelType.LIST;
@@ -33,13 +41,13 @@ public class AttributeDescription extends NamedNode implements Description {
 
     private final AttributeDescription parent;
 
-    public AttributeDescription(Property property) {
-        super(property);
+    AttributeDescription() {
+        super();
         this.parent = null;
     }
 
-    AttributeDescription() {
-        super();
+    public AttributeDescription(Property property) {
+        super(property);
         this.parent = null;
     }
 
@@ -58,6 +66,27 @@ public class AttributeDescription extends NamedNode implements Description {
         return asModelNode();
     }
 
+    // ------------------------------------------------------ boolean
+
+    public boolean required() {
+        return failSafeBoolean(REQUIRED);
+    }
+
+    public boolean expressionAllowed() {
+        return failSafeBoolean(EXPRESSIONS_ALLOWED);
+    }
+
+    public boolean readOnly() {
+        return hasDefined(ACCESS_TYPE) &&
+                (READ_ONLY.equals(get(ACCESS_TYPE).asString()) || METRIC.equals(get(ACCESS_TYPE).asString()));
+    }
+
+    public boolean sensitive() {
+        return ModelNodeHelper.nested(this, String.join(".", ACCESS_CONSTRAINTS, SENSITIVE)).isDefined();
+    }
+
+    // ------------------------------------------------------ nested
+
     public String fullyQualifiedName() {
         if (parent != null) {
             List<String> names = new ArrayList<>();
@@ -71,6 +100,14 @@ public class AttributeDescription extends NamedNode implements Description {
             return String.join(".", names);
         }
         return name();
+    }
+
+    public boolean nested() {
+        return parent != null;
+    }
+
+    public AttributeDescription parent() {
+        return parent;
     }
 
     /**
@@ -89,13 +126,7 @@ public class AttributeDescription extends NamedNode implements Description {
         return get(name);
     }
 
-    public boolean nested() {
-        return parent != null;
-    }
-
-    public AttributeDescription parent() {
-        return parent;
-    }
+    // ------------------------------------------------------ type
 
     public String formatType() {
         StringBuilder builder = new StringBuilder();
@@ -184,5 +215,11 @@ public class AttributeDescription extends NamedNode implements Description {
             }
         } catch (IllegalArgumentException ignored) {}
         return new AttributeDescriptions(modelNode);
+    }
+
+    // ------------------------------------------------------ internal
+
+    private boolean failSafeBoolean(String name) {
+        return hasDefined(name) && get(name).asBoolean(false);
     }
 }

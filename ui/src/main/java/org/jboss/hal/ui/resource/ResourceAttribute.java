@@ -25,10 +25,13 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.hal.dmr.ModelType.EXPRESSION;
+
 /** Simple record for an attribute name/value/description triple. */
 class ResourceAttribute {
 
-    static List<ResourceAttribute> resourceAttributes(Metadata metadata, ModelNode resource, List<String> attributes) {
+    static List<ResourceAttribute> resourceAttributes(ModelNode resource, Metadata metadata, List<String> attributes) {
         List<ResourceAttribute> resourceAttributes = new ArrayList<>();
         if (attributes.isEmpty()) {
             // collect all properties (including nested, record-like properties)
@@ -65,16 +68,30 @@ class ResourceAttribute {
     final String name;
     final ModelNode value;
     final AttributeDescription description;
+    final boolean expression;
 
     ResourceAttribute(ModelNode value, AttributeDescription description) {
         this.fqn = description.fullyQualifiedName();
         this.name = description.name();
         this.value = value;
         this.description = description;
+        this.expression = value.isDefined() && value.getType() == EXPRESSION;
     }
 
     @Override
     public String toString() {
         return fqn + "=" + value.asString();
+    }
+
+    boolean booleanValue() {
+        boolean booleanValue = false;
+        if (value.isDefined()) {
+            booleanValue = value.asBoolean(false);
+        } else {
+            if (description.hasDefined(DEFAULT)) {
+                booleanValue = description.get(DEFAULT).asBoolean(false);
+            }
+        }
+        return booleanValue;
     }
 }

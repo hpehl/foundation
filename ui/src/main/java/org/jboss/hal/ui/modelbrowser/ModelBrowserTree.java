@@ -27,7 +27,6 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Segment;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.tooltip.Tooltip;
 import org.patternfly.component.tree.TreeView;
@@ -40,6 +39,7 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.tree;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.mbn2tvi;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
@@ -67,7 +67,6 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     // ------------------------------------------------------ instance
 
     private static final Logger logger = Logger.getLogger(ModelBrowserTree.class.getName());
-    private final UIContext uic;
     private final ModelBrowser modelBrowser;
     private final History<TreeViewItem> history;
     private final Button backButton;
@@ -77,8 +76,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
     private Tooltip backTooltip;
     private Tooltip forwardTooltip;
 
-    ModelBrowserTree(UIContext uic, ModelBrowser modelBrowser) {
-        this.uic = uic;
+    ModelBrowserTree(ModelBrowser modelBrowser) {
         this.modelBrowser = modelBrowser;
         this.history = new History<>();
 
@@ -88,8 +86,10 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         forwardButton = button().plain().icon(arrowRight()).disabled().onClick((event, component) -> forward());
         Button reloadButton = button().plain().icon(sync()).onClick((e, b) -> reload());
         Button homeButton = button().plain().icon(home()).onClick((e, b) -> modelBrowser.home());
-        Button findResource = button().plain().icon(search()).onClick((e, b) -> new FindResource(uic, this).open());
-        GotoResource gotoResource = new GotoResource(this);
+        Button findResource = button().plain()
+                .icon(search())
+                .onClick((e, b) -> new FindResource(b.element(), selectedAddress()).open());
+        GotoResource gotoResource = new GotoResource();
         Button collapseButton = button().plain().icon(minusSquare()).onClick((e, b) -> treeView.collapse());
 
         tooltip(reloadButton.element(), "Refresh").placement(bottom).appendToBody();
@@ -122,7 +122,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
 
     void load(List<ModelBrowserNode> nodes) {
         treeView.clear();
-        treeView.addItems(nodes, mbn2tvi(uic.dispatcher()));
+        treeView.addItems(nodes, mbn2tvi(uic().dispatcher()));
     }
 
     private void reload() {

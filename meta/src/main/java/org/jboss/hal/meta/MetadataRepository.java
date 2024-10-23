@@ -18,6 +18,7 @@ package org.jboss.hal.meta;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +37,10 @@ import org.jboss.hal.env.Settings;
 import elemental2.promise.Promise;
 import jsinterop.annotations.JsMethod;
 
+import static elemental2.core.Global.JSON;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.joining;
 
 /**
  * Repository for metadata. Contains a first and second-level cache for metadata.
@@ -182,34 +185,63 @@ public class MetadataRepository {
     }
 
     @JsMethod(name = "get")
-    private static Metadata jsGet(String address) {
+    private static Object jsGet(String address) {
         if (instance != null) {
-            return instance.get(AddressTemplate.of(address));
+            Metadata metadata = instance.get(AddressTemplate.of(address));
+            return JSON.parse(metadata.toJSONString());
         } else {
             logger.error("MetadataRepository not initialized");
-            return Metadata.undefined();
+            return JSON.parse("{\"error\": \"MetadataRepository not initialized\"}");
         }
     }
 
     @JsMethod(name = "lookup")
-    private static Promise<Metadata> jsLookup(String address) {
+    private static Promise<Object> jsLookup(String address) {
         if (instance != null) {
-            return instance.lookup(AddressTemplate.of(address));
+            return instance.lookup(AddressTemplate.of(address))
+                    .then(metadata -> Promise.resolve(JSON.parse(metadata.toJSONString())));
         } else {
             logger.error("MetadataRepository not initialized");
-            return Promise.resolve(Metadata.undefined());
+            return Promise.reject("MetadataRepository not initialized");
         }
     }
 
     @JsMethod(name = "dump")
-    private static void jsDump() {
+    private static Object jsDump() {
         if (instance != null) {
-            logger.debug("%d entries in 1st level cache", instance.cache.size());
-            for (Map.Entry<String, LRUCache.Node<String, Metadata>> entry : instance.cache.entries()) {
-                logger.debug("%s: %s", entry.getKey(), entry.getValue().value.address());
+            StringBuilder builder = new StringBuilder("{\"firstLevelCache\": ")
+                    .append(instance.cache.size())
+                    .append(", \"secondLevelCache\": 0, \"entries\": [");
+            for (Iterator<Map.Entry<String, LRUCache.Node<String, Metadata>>> iterator = instance.cache.entries().iterator();
+                    iterator.hasNext(); ) {
+                Map.Entry<String, LRUCache.Node<String, Metadata>> entry = iterator.next();
+                builder.append("\"")
+                        .append(entry.getKey())
+                        .append("\"");
+                if (iterator.hasNext()) {
+                    builder.append(",");
+                }
             }
+            builder.append("], \"processed\": [");
+            for (Iterator<Map.Entry<String, Set<String>>> iterator = instance.processedAddresses.entrySet().iterator();
+                    iterator.hasNext(); ) {
+                Map.Entry<String, Set<String>> entry = iterator.next();
+                builder.append("{\"requested\": \"")
+                        .append(entry.getKey())
+                        .append("\", \"resolved\":");
+                builder.append(entry.getValue().stream()
+                        .map(s -> "\"" + s + "\"")
+                        .collect(joining(",", "[", "]")));
+                builder.append("}");
+                if (iterator.hasNext()) {
+                    builder.append(",");
+                }
+            }
+            builder.append("]}");
+            return JSON.parse(builder.toString());
         } else {
             logger.error("MetadataRepository not initialized");
+            return JSON.parse("{\"error\": \"MetadataRepository not initialized\"}");
         }
     }
 

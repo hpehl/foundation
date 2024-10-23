@@ -29,14 +29,12 @@ import org.jboss.elemento.IsElement;
 import org.jboss.elemento.Key;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.button.Button;
 import org.patternfly.popper.Modifiers;
 import org.patternfly.popper.Popper;
 import org.patternfly.popper.PopperBuilder;
 import org.patternfly.popper.TriggerAction;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 import elemental2.dom.MutationRecord;
@@ -62,6 +60,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.hal.resources.HalClasses.capabilityReference;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.providedBy;
+import static org.jboss.hal.resources.HalClasses.value;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.list.List.list;
 import static org.patternfly.component.list.ListItem.listItem;
@@ -72,14 +72,16 @@ import static org.patternfly.layout.flex.Gap.sm;
 import static org.patternfly.layout.stack.Stack.stack;
 import static org.patternfly.layout.stack.StackItem.stackItem;
 import static org.patternfly.popper.Placement.bottom;
+import static org.patternfly.style.Classes.list;
+import static org.patternfly.style.Classes.menu;
 
 class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
     // ------------------------------------------------------ factory
 
-    static CapabilityReference capabilityReference(UIContext uic, AddressTemplate origin, String capability,
+    static CapabilityReference capabilityReference(AddressTemplate origin, String capability,
             ResourceAttribute ra) {
-        return new CapabilityReference(uic, origin, capability, ra);
+        return new CapabilityReference(origin, capability, ra);
     }
 
     // ------------------------------------------------------ instance
@@ -92,7 +94,6 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     private static final int Z_INDEX = 9999;
     private static final Logger logger = Logger.getLogger(CapabilityReference.class.getName());
 
-    private final UIContext uic;
     private final AddressTemplate origin;
     private final String capability;
     private final ResourceAttribute ra;
@@ -106,8 +107,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
     private AddressTemplate singleTemplate;
     private Popper popper;
 
-    CapabilityReference(UIContext uic, AddressTemplate origin, String capability, ResourceAttribute ra) {
-        this.uic = uic;
+    CapabilityReference(AddressTemplate origin, String capability, ResourceAttribute ra) {
         this.origin = origin;
         this.capability = capability;
         this.ra = ra;
@@ -117,7 +117,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
         this.root = flex().css(halComponent(capabilityReference))
                 .alignItems(center).columnGap(sm)
-                .add(span().css(halComponent(capabilityReference, Classes.value))
+                .add(span().css(halComponent(capabilityReference, value))
                         .textContent(ra.value.asString())
                         .element())
                 .add(small().css(halComponent(capabilityReference, providedBy))
@@ -125,7 +125,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                 .element();
 
         this.menuElement = div()
-                .add(stack().css(halComponent(capabilityReference, Classes.menu))
+                .add(stack().css(halComponent(capabilityReference, menu))
                         .gutter()
                         .addItem(stackItem()
                                 .add("Attribute ")
@@ -138,7 +138,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                                 .add(menuCountElement = strong().element())
                                 .add(" resources:"))
                         .addItem(stackItem().fill()
-                                .add(menuList = list().css(halComponent(capabilityReference, Classes.menu, Classes.list))
+                                .add(menuList = list().css(halComponent(capabilityReference, menu, list))
                                         .plain())))
                 .element();
 
@@ -219,7 +219,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
 
     // Only this method may change the state!
     private Promise<Void> findResources() {
-        return uic.capabilityRegistry().findResources(capability, ra.value.asString())
+        return uic().capabilityRegistry().findResources(capability, ra.value.asString())
                 .then(templates -> {
 
                     if (templates.isEmpty()) {
@@ -264,7 +264,7 @@ class CapabilityReference implements IsElement<HTMLElement>, Attachable {
                 .collect(groupingBy(template -> {
                     if (template.template.startsWith(origin.template)) {
                         return 1;
-                    } else if (uic.environment().domain()) {
+                    } else if (uic().environment().domain()) {
                         if (PROFILE.equals(origin.first().key) && PROFILE.equals(template.first().key)) {
                             return Objects.equals(origin.first().value, template.first().value) ? 2 : 3;
                         } else if (SERVER_GROUP.equals(origin.first().key) && SERVER_GROUP.equals(template.first().key)) {

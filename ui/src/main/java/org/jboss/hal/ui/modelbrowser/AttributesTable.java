@@ -21,7 +21,6 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.table.TableType;
 import org.patternfly.component.table.Tbody;
@@ -57,7 +56,7 @@ class AttributesTable implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private EmptyState noAttributes;
 
-    AttributesTable(UIContext uic, Metadata metadata) {
+    AttributesTable(Metadata metadata) {
         filter = new AttributesFilter().onChange(this::onFilterChanged);
         visible = ov(metadata.resourceDescription().attributes().size());
         total = ov(metadata.resourceDescription().attributes().size());
@@ -76,7 +75,7 @@ class AttributesTable implements IsElement<HTMLElement> {
                                         .addItem(th("access-type").width(width10).textContent("Access"))))
                         .addBody(tbody = tbody()
                                 .addRows(metadata.resourceDescription().attributes(), attribute ->
-                                        new AttributeRow(uic, metadata.resourceDescription(), anyComplexAttributes)
+                                        new AttributeRow(metadata.resourceDescription(), anyComplexAttributes)
                                                 .apply(attribute)
                                                 .store(Keys.ATTRIBUTE_DESCRIPTION, attribute))))
                 .element();

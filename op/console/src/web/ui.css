@@ -35,3 +35,7 @@
 .hal-m-rbac-hidden {
     display: none !important;
 }
+
+.hal-m-restricted {
+    cursor: not-allowed;
+}

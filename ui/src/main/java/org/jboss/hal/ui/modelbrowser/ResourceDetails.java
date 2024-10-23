@@ -17,7 +17,6 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.meta.Metadata;
-import org.jboss.hal.ui.UIContext;
 
 import elemental2.dom.HTMLElement;
 
@@ -30,21 +29,21 @@ class ResourceDetails implements IsElement<HTMLElement> {
 
     private final HTMLElement root;
 
-    ResourceDetails(UIContext uic, ModelBrowserNode mbn, Metadata metadata) {
+    ResourceDetails(ModelBrowserNode mbn, Metadata metadata) {
         this.root = tabs()
                 .initialSelection(ModelBrowserDetail.lastTab)
                 .addItem(tab("data", "Data")
-                        .addContent(tabContent().add(resourceManager(uic, mbn.template, metadata))))
+                        .addContent(tabContent().add(resourceManager(mbn.template, metadata))))
                 .run(tbs -> {
                     if (!metadata.resourceDescription().attributes().isEmpty()) {
                         tbs.addItem(tab("attributes", "Attributes")
-                                .addContent(tabContent().add(new AttributesTable(uic, metadata))));
+                                .addContent(tabContent().add(new AttributesTable(metadata))));
                     }
                 })
                 .addItem(tab("operations", "Operations")
-                        .addContent(tabContent().add(new OperationsTable(uic, metadata))))
+                        .addContent(tabContent().add(new OperationsTable(metadata))))
                 .addItem(tab("capabilities", "Capabilities")
-                        .addContent(tabContent().add(new CapabilitiesTable(uic, metadata))))
+                        .addContent(tabContent().add(new CapabilitiesTable(metadata))))
                 .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier())
                 .element();
     }

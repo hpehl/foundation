@@ -24,7 +24,6 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.Segment;
 import org.jboss.hal.resources.HalClasses;
-import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.breadcrumb.Breadcrumb;
 import org.patternfly.component.icon.Icon;
 import org.patternfly.component.page.PageMainBreadcrumb;
@@ -48,6 +47,7 @@ import static org.jboss.hal.resources.HalClasses.copy;
 import static org.jboss.hal.resources.HalClasses.detail;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.ROOT_ID;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.FOLDER;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
@@ -74,7 +74,6 @@ import static org.patternfly.style.Sticky.top;
 class ModelBrowserDetail implements IsElement<HTMLElement> {
 
     static String lastTab = null;
-    private final UIContext uic;
     private final ModelBrowser modelBrowser;
     private final HTMLElement root;
     private final PageMainBreadcrumb pageMainBreadcrumb;
@@ -83,8 +82,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
     private final HTMLContainerBuilder<HTMLParagraphElement> description;
     private final PageMainSection pageMainSection;
 
-    ModelBrowserDetail(UIContext uic, ModelBrowser modelBrowser) {
-        this.uic = uic;
+    ModelBrowserDetail(ModelBrowser modelBrowser) {
         this.modelBrowser = modelBrowser;
         this.root = div().css(halComponent(HalClasses.modelBrowser, detail))
                 .add(pageMainGroup()
@@ -107,17 +105,17 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
 
     void show(ModelBrowserNode mbn) {
         clear();
-        uic.metadataRepository().lookup(mbn.template, metadata -> {
+        uic().metadataRepository().lookup(mbn.template, metadata -> {
             fillBreadcrumb(mbn);
             adjustHeader(mbn, metadata);
             switch (mbn.type) {
                 case SINGLETON_FOLDER:
                 case FOLDER:
-                    pageMainSection.add(new ResourceList(uic, mbn, metadata));
+                    pageMainSection.add(new ResourceList(mbn, metadata));
                     break;
                 case SINGLETON_RESOURCE:
                 case RESOURCE:
-                    pageMainSection.add(new ResourceDetails(uic, mbn, metadata));
+                    pageMainSection.add(new ResourceDetails(mbn, metadata));
                     break;
             }
         });
@@ -129,7 +127,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
             breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/"));
         } else {
             breadcrumb.addItem(breadcrumbItem(ROOT_ID, "/")
-                    .onClick((event, component) -> {
+                    .onClick((event, breadcrumbItem) -> {
                         event.preventDefault();
                         event.stopPropagation();
                         modelBrowser.home();
@@ -172,7 +170,7 @@ class ModelBrowserDetail implements IsElement<HTMLElement> {
         }
         if (mbn.type == FOLDER || mbn.type == SINGLETON_RESOURCE || mbn.type == RESOURCE) {
             Stability stability = metadata.resourceDescription().stability();
-            if (uic.environment().highlightStability(stability)) {
+            if (uic().environment().highlightStability(stability)) {
                 stabilityContainer.add(stabilityLabel(stability));
             }
             description.textContent(metadata.resourceDescription().description());

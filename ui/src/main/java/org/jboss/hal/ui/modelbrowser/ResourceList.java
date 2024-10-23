@@ -26,7 +26,6 @@ import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.filter.NameAttribute;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
@@ -60,6 +59,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OP
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
 import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
@@ -107,7 +107,6 @@ class ResourceList implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(ResourceList.class.getName());
 
-    private final UIContext uic;
     private final ModelBrowserNode parent;
     private final Metadata metadata;
     private final ObservableValue<Integer> visible;
@@ -121,8 +120,7 @@ class ResourceList implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private DataList dataList;
 
-    ResourceList(UIContext uic, ModelBrowserNode parent, Metadata metadata) {
-        this.uic = uic;
+    ResourceList(ModelBrowserNode parent, Metadata metadata) {
         this.parent = parent;
         this.metadata = metadata;
         this.visible = ov(0);
@@ -164,7 +162,7 @@ class ResourceList implements IsElement<HTMLElement> {
     }
 
     private Promise<List<ModelBrowserNode>> load() {
-        return uic.dispatcher().execute(operation).then(result -> {
+        return uic().dispatcher().execute(operation).then(result -> {
             List<ModelBrowserNode> allChildren = parseChildren(parent, result, true);
             List<ModelBrowserNode> existingChildren = allChildren.stream().filter(child -> child.exists).collect(toList());
             List<ModelBrowserNode> missingChildren = allChildren.stream().filter(child -> !child.exists).collect(toList());
@@ -268,7 +266,7 @@ class ResourceList implements IsElement<HTMLElement> {
         dataList.addItems(children, child -> {
             String childId = Id.build(child.name);
             Metadata childMetadata = parent.type == SINGLETON_FOLDER
-                    ? uic.metadataRepository().get(child.template)
+                    ? uic().metadataRepository().get(child.template)
                     : metadata;
             return dataListItem(childId)
                     .store(Keys.MODEL_BROWSER_NODE, child)
@@ -302,7 +300,7 @@ class ResourceList implements IsElement<HTMLElement> {
         Flex flex = flex().direction(column);
         if (parent.type == SINGLETON_FOLDER) {
             Stability stability = metadata.resourceDescription().stability();
-            if (uic.environment().highlightStability(stability)) {
+            if (uic().environment().highlightStability(stability)) {
                 flex.add(flex().alignItems(center).columnGap(md)
                         .add(flexItem().id(childId).textContent(child.name))
                         .add(flexItem().add(stabilityLabel(stability))));

@@ -20,7 +20,6 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
-import org.jboss.hal.ui.UIContext;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 
@@ -31,6 +30,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.modelBrowser;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
 import static org.patternfly.layout.grid.Grid.grid;
@@ -40,8 +40,8 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     // ------------------------------------------------------ factory
 
-    public static ModelBrowser modelBrowser(UIContext uic, AddressTemplate template) {
-        return new ModelBrowser(uic, template);
+    public static ModelBrowser modelBrowser(AddressTemplate template) {
+        return new ModelBrowser(template);
     }
 
     // ------------------------------------------------------ instance
@@ -49,16 +49,14 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     private static final Logger logger = Logger.getLogger(ModelBrowser.class.getName());
     final ModelBrowserTree tree;
     final ModelBrowserDetail detail;
-    private final UIContext uic;
     private final AddressTemplate template;
     private final HTMLElement root;
     private ModelBrowserNode rootMbn;
 
-    public ModelBrowser(UIContext uic, AddressTemplate template) {
-        this.uic = uic;
+    public ModelBrowser(AddressTemplate template) {
         this.template = template;
-        this.tree = new ModelBrowserTree(uic, this);
-        this.detail = new ModelBrowserDetail(uic, this);
+        this.tree = new ModelBrowserTree(this);
+        this.detail = new ModelBrowserDetail(this);
         this.root = grid().span(12)
                 .css(halComponent(modelBrowser))
                 // TODO Implement a resize handle which modifies the CSS variables
@@ -99,12 +97,12 @@ public class ModelBrowser implements IsElement<HTMLElement> {
 
     void load() {
         if (template.fullyQualified()) {
-            uic.metadataRepository().lookup(template, metadata -> {
-                ResourceAddress address = template.resolve(uic.statementContext());
+            uic().metadataRepository().lookup(template, metadata -> {
+                ResourceAddress address = template.resolve(uic().statementContext());
                 Operation operation = new Operation.Builder(address, READ_CHILDREN_TYPES_OPERATION)
                         .param(INCLUDE_SINGLETONS, true)
                         .build();
-                uic.dispatcher().execute(operation, result -> {
+                uic().dispatcher().execute(operation, result -> {
                     String name = template.isEmpty() ? "Management Model" : template.last().value;
                     rootMbn = new ModelBrowserNode(template, name, RESOURCE);
                     tree.load(parseChildren(rootMbn, result, true));

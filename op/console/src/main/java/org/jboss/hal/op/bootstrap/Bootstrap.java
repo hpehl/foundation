@@ -50,7 +50,8 @@ public class Bootstrap {
                 new ReadHostNames(dispatcher, environment),
                 new FindDomainController(dispatcher, environment, statementContext),
                 new ReadStability(dispatcher, environment, statementContext),
-                new LoadSettings(settings)
+                new LoadSettings(settings),
+                new SetTitle(settings, environment)
         )).failFast(true);
     }
 }

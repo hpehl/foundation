@@ -24,6 +24,19 @@
     padding-bottom: var(--pf-v5-global--spacer--md);
 }
 
+.hal-c-resource-manager__nested-label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--pf-v5-global--spacer--xs);
+}
+
+.hal-c-resource-manager__stability-level {
+    align-content: center;
+    align-items: baseline;
+    display: flex;
+}
+
 .hal-c-resource-manager__body {
     margin-top: var(--pf-v5-global--spacer--md);
 }
@@ -49,6 +62,11 @@
 .hal-c-resource-manager__edit {
     --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-md);
 }
+
+.hal-c-resource-manager__edit-expression-switch {
+    min-height: calc(var(--pf-v5-global--FontSize--md) * var(--pf-v5-global--LineHeight--md) + 2 * var(--pf-v5-global--spacer--form-element));
+}
+
 
 @media (min-width: 992px) {
     .hal-c-resource-manager__edit {

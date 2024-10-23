@@ -20,7 +20,6 @@ import org.jboss.elemento.IsElement;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.CapabilityDescription;
 import org.jboss.hal.meta.description.ResourceDescription;
-import org.jboss.hal.ui.UIContext;
 import org.patternfly.component.list.List;
 import org.patternfly.component.table.Table;
 import org.patternfly.layout.flex.Flex;
@@ -28,6 +27,7 @@ import org.patternfly.layout.flex.Flex;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
+import static org.jboss.hal.ui.UIContext.uic;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
 import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHeader;
@@ -51,11 +51,9 @@ import static org.patternfly.style.Width.width60;
 
 class CapabilitiesTable implements IsElement<HTMLElement> {
 
-    private final UIContext uic;
     private final Table table;
 
-    CapabilitiesTable(UIContext uic, Metadata metadata) {
-        this.uic = uic;
+    CapabilitiesTable(Metadata metadata) {
         this.table = table()
                 .addHead(thead().css(util("mt-sm"))
                         .addRow(tr("capabilities-head")
@@ -91,7 +89,7 @@ class CapabilitiesTable implements IsElement<HTMLElement> {
     }
 
     private Flex capabilityName(ResourceDescription resource, CapabilityDescription capability) {
-        if (uic.environment().highlightStability(resource.stability(), capability.stability())) {
+        if (uic().environment().highlightStability(resource.stability(), capability.stability())) {
             return flex().spaceItems(sm)
                     .addItem(flexItem().textContent(capability.name()))
                     .add(flexItem().add(stabilityLabel(capability.stability())));

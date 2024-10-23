@@ -90,8 +90,8 @@ class LRUCache<K, V> {
     // ------------------------------------------------------ internal
 
     // for testing purposes
+    @SuppressWarnings("unchecked")
     K[] keys() {
-        //noinspection unchecked
         return (K[]) cacheList.stream().map(n -> n.key).toArray();
     }
 
