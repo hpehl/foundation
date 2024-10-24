@@ -20,23 +20,24 @@ import org.patternfly.component.form.FormGroupLabel;
 import static org.patternfly.component.form.FormGroup.formGroup;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
 import static org.patternfly.component.form.TextInput.textInput;
+import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
+import static org.patternfly.component.inputgroup.InputGroupItem.inputGroupItem;
+import static org.patternfly.component.inputgroup.InputGroupText.inputGroupText;
+import static org.patternfly.icon.IconSets.fas.lock;
 
-class FallbackFormItem extends FormItem {
+class RestrictedFormItem extends FormItem {
 
-    FallbackFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
+    RestrictedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
         super(identifier);
         formGroup = formGroup(identifier)
                 .required(ra.description.required())
                 .addLabel(label)
                 .addControl(formGroupControl()
-                        .addControl(textInput(identifier)
-                                .readonly() // the fallback form item is always read-only!
-                                .run(ti -> {
-                                    if (ra.value.isDefined()) {
-                                        ti.value(ra.value.asString());
-                                    } else {
-                                        ti.placeholder("undefined");
-                                    }
-                                })));
+                        .add(inputGroup()
+                                .addItem(inputGroupItem().fill()
+                                        .addControl(textInput(identifier)
+                                                .value("restricted")
+                                                .disabled()))
+                                .addText(inputGroupText().icon(lock()).plain())));
     }
 }

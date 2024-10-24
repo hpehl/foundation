@@ -41,7 +41,6 @@ import static org.jboss.elemento.Elements.wrapHtmlContainer;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CAPABILITY_REFERENCE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.hal.dmr.ModelType.BOOLEAN;
 import static org.jboss.hal.dmr.ModelType.LIST;
@@ -152,7 +151,7 @@ class ViewItemFactory {
         HTMLElement element;
 
         // TODO Implement sensitive constraints
-        if (!metadata.securityContext().readable(ra.name)) {
+        if (!ra.readable) {
             element = span().css(halModifier(restricted))
                     .textContent("restricted")
                     .add(icon(lock().css(util("ml-sm"))))
@@ -182,8 +181,7 @@ class ViewItemFactory {
                                     .readonly()
                                     .element();
                         } else if (type.simple()) {
-                            String unit = ra.description.hasDefined(UNIT) ? ra.description.get(UNIT)
-                                    .asString() : null;
+                            String unit = ra.description.unit();
                             if (unit != null) {
                                 element = span()
                                         .add(span().textContent(ra.value.asString()))

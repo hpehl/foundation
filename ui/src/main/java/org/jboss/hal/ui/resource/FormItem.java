@@ -84,4 +84,11 @@ abstract class FormItem implements
         }
         return null;
     }
+
+    // ------------------------------------------------------ event handlers
+
+    void resolveExpression(String expression) {
+        logger.info("Resolve expression: %s", expression);
+        // TODO Resolve expression
+    }
 }

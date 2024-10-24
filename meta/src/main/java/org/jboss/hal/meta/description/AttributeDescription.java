@@ -29,10 +29,12 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_CONSTRAINTS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.METRIC;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.SENSITIVE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNIT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE_TYPE;
 import static org.jboss.hal.dmr.ModelType.LIST;
 import static org.jboss.hal.dmr.ModelType.OBJECT;
@@ -66,14 +68,14 @@ public class AttributeDescription extends NamedNode implements Description {
         return asModelNode();
     }
 
-    // ------------------------------------------------------ boolean
-
-    public boolean required() {
-        return failSafeBoolean(REQUIRED);
-    }
+    // ------------------------------------------------------ properties
 
     public boolean expressionAllowed() {
         return failSafeBoolean(EXPRESSIONS_ALLOWED);
+    }
+
+    public boolean nillable() {
+        return failSafeBoolean(NILLABLE);
     }
 
     public boolean readOnly() {
@@ -81,8 +83,16 @@ public class AttributeDescription extends NamedNode implements Description {
                 (READ_ONLY.equals(get(ACCESS_TYPE).asString()) || METRIC.equals(get(ACCESS_TYPE).asString()));
     }
 
+    public boolean required() {
+        return failSafeBoolean(REQUIRED);
+    }
+
     public boolean sensitive() {
         return ModelNodeHelper.nested(this, String.join(".", ACCESS_CONSTRAINTS, SENSITIVE)).isDefined();
+    }
+
+    public String unit() {
+        return hasDefined(UNIT) ? get(UNIT).asString() : null;
     }
 
     // ------------------------------------------------------ nested
@@ -108,6 +118,14 @@ public class AttributeDescription extends NamedNode implements Description {
 
     public AttributeDescription parent() {
         return parent;
+    }
+
+    public AttributeDescription root() {
+        AttributeDescription current = this;
+        while (current.parent != null) {
+            current = current.parent;
+        }
+        return current;
     }
 
     /**

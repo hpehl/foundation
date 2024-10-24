@@ -43,10 +43,10 @@ class ResourceAttribute {
                     AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
                     for (AttributeDescription nestedDescription : nestedDescriptions) {
                         ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.fullyQualifiedName());
-                        resourceAttributes.add(new ResourceAttribute(nestedValue, nestedDescription));
+                        resourceAttributes.add(new ResourceAttribute(nestedValue, metadata, nestedDescription));
                     }
                 } else {
-                    resourceAttributes.add(new ResourceAttribute(value, description));
+                    resourceAttributes.add(new ResourceAttribute(value, metadata, description));
                 }
             }
         } else {
@@ -57,7 +57,7 @@ class ResourceAttribute {
                 } else {
                     ModelNode value = resource.get(attribute);
                     AttributeDescription description = metadata.resourceDescription().attributes().get(attribute);
-                    resourceAttributes.add(new ResourceAttribute(value, description));
+                    resourceAttributes.add(new ResourceAttribute(value, metadata, description));
                 }
             }
         }
@@ -68,14 +68,23 @@ class ResourceAttribute {
     final String name;
     final ModelNode value;
     final AttributeDescription description;
+    final boolean readable;
+    final boolean writable;
     final boolean expression;
 
-    ResourceAttribute(ModelNode value, AttributeDescription description) {
+    ResourceAttribute(ModelNode value, Metadata metadata, AttributeDescription description) {
         this.fqn = description.fullyQualifiedName();
         this.name = description.name();
         this.value = value;
         this.description = description;
         this.expression = value.isDefined() && value.getType() == EXPRESSION;
+        if (description.nested()) {
+            readable = metadata.securityContext().readable(description.root().name());
+            writable = metadata.securityContext().writable(description.root().name());
+        } else {
+            readable = metadata.securityContext().readable(name);
+            writable = metadata.securityContext().writable(name);
+        }
     }
 
     @Override

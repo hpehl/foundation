@@ -94,7 +94,7 @@ class EndpointForm implements IsElement<HTMLElement> {
                                 .add(inputGroup()
                                         .addText(inputGroupText().icon(link()))
                                         .addItem(inputGroupItem().fill()
-                                                .addFormControl(urlInput = textInput("mi-url")
+                                                .addControl(urlInput = textInput("mi-url")
                                                         .readonly()))
                                         .addItem(inputGroupItem()
                                                 .addButton(button("Ping").control()

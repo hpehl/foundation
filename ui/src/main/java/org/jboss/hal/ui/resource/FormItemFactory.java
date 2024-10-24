@@ -62,53 +62,56 @@ class FormItemFactory {
         String identifier = ItemIdentifier.identifier(ra, EDIT);
         FormGroupLabel formGroupLabel = label(metadata, ra, identifier);
 
-        if (ra.description.hasDefined(TYPE)) {
-            ModelType type = ra.description.get(TYPE).asType();
-            switch (type) {
-                case BOOLEAN:
-                    formItem = new BooleanFormItem(identifier, metadata, ra, formGroupLabel);
-                    break;
-
-                case BIG_INTEGER:
-                case INT:
-                case LONG:
-                    formItem = new NumberFormItem(identifier, type, ra, formGroupLabel);
-                    break;
-
-                case DOUBLE:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-                    break;
-
-                case STRING:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-
-                case LIST:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-                    break;
-
-                case OBJECT:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-                    break;
-
-                // unsupported types
-                case BIG_DECIMAL:
-                case BYTES:
-                case EXPRESSION:
-                case PROPERTY:
-                case TYPE:
-                case UNDEFINED:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-                    logger.warn(
-                            "Unsupported type %s for attribute %s in resource %s. Unable to create a form item. Attribute will be skipped.",
-                            type.name(), ra.name, template);
-                    break;
-
-                default:
-                    formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
-                    break;
-            }
+        if (!ra.readable) {
+            formItem = new RestrictedFormItem(identifier, ra, formGroupLabel);
         } else {
-            formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+            if (ra.description.hasDefined(TYPE)) {
+                ModelType type = ra.description.get(TYPE).asType();
+                switch (type) {
+                    case BOOLEAN:
+                        formItem = new BooleanFormItem(identifier, ra, formGroupLabel);
+                        break;
+
+                    case BIG_INTEGER:
+                    case INT:
+                    case LONG:
+                        formItem = new NumberFormItem(identifier, ra, formGroupLabel);
+                        break;
+
+                    case DOUBLE:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+                        break;
+
+                    case STRING:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+
+                    case LIST:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+                        break;
+
+                    case OBJECT:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+                        break;
+
+                    // unsupported types
+                    case BIG_DECIMAL:
+                    case BYTES:
+                    case EXPRESSION:
+                    case PROPERTY:
+                    case TYPE:
+                    case UNDEFINED:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+                        logger.warn("Unsupported type %s for attribute %s in resource %s. " +
+                                "Unable to create a form item. Attribute will be skipped.", type.name(), ra.name, template);
+                        break;
+
+                    default:
+                        formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+                        break;
+                }
+            } else {
+                formItem = new FallbackFormItem(identifier, ra, formGroupLabel);
+            }
         }
         return formItem.store(Keys.RESOURCE_ATTRIBUTE, ra);
     }
