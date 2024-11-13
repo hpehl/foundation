@@ -26,7 +26,7 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.LabelBuilder;
+import org.jboss.hal.core.LabelBuilder;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionListTerm;
@@ -54,6 +54,8 @@ import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.resources.HalClasses.view;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescriptionPopover;
+import static org.jboss.hal.ui.BuildingBlocks.renderExpression;
+import static org.jboss.hal.ui.BuildingBlocks.resolveExpression;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.resource.CapabilityReference.capabilityReference;
@@ -68,7 +70,6 @@ import static org.patternfly.component.list.ListItem.listItem;
 import static org.patternfly.component.switch_.Switch.switch_;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.Attributes.role;
-import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.icon.IconSets.fas.lock;
 import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.descriptionList;
@@ -159,11 +160,14 @@ class ViewItemFactory {
 
         } else {
             if (ra.expression) {
-                HTMLElement resolveButton = button().plain().inline().icon(link())
-                        .onClick((e, b) -> resolveExpression())
+                HTMLElement resolveButton = button().plain().inline().icon(resolveExpression().get())
+                        .onClick((e, b) -> {
+                            logger.info("Resolve expression: %s", ra.value.asString());
+                            // TODO Resolve expression
+                        })
                         .element();
                 element = span()
-                        .textContent(ra.value.asString())
+                        .add(renderExpression(ra.value.asString()))
                         .add(resolveButton)
                         .add(tooltip(resolveButton, "Resolve expression"))
                         .element();
@@ -255,9 +259,5 @@ class ViewItemFactory {
         return span()
                 .textContent(ra.value.asString())
                 .element();
-    }
-
-    private static void resolveExpression() {
-
     }
 }

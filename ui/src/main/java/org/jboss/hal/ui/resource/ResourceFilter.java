@@ -15,12 +15,12 @@
  */
 package org.jboss.hal.ui.resource;
 
-import org.jboss.hal.ui.filter.AccessTypeAttribute;
-import org.jboss.hal.ui.filter.DefinedAttribute;
-import org.jboss.hal.ui.filter.DeprecatedAttribute;
-import org.jboss.hal.ui.filter.NameAttribute;
-import org.jboss.hal.ui.filter.RequiredAttribute;
-import org.jboss.hal.ui.filter.StorageAttribute;
+import org.jboss.hal.model.filter.AccessTypeAttribute;
+import org.jboss.hal.model.filter.DefinedAttribute;
+import org.jboss.hal.model.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.NameAttribute;
+import org.jboss.hal.model.filter.RequiredAttribute;
+import org.jboss.hal.model.filter.StorageAttribute;
 import org.patternfly.filter.Filter;
 import org.patternfly.filter.FilterOperator;
 

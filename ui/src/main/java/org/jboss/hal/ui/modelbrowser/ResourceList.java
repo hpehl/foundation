@@ -24,9 +24,9 @@ import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
+import org.jboss.hal.model.filter.NameAttribute;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.filter.NameAttribute;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.emptystate.EmptyStateActions;
@@ -351,6 +351,7 @@ class ResourceList implements IsElement<HTMLElement> {
     // ------------------------------------------------------ action handlers
 
     void refresh() {
+        removeChildrenFrom(listContainer);
         load().then(children -> {
             if (!children.isEmpty() && filter.defined()) {
                 onFilterChanged(filter, null);

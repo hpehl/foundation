@@ -21,15 +21,20 @@ public interface HalClasses {
 
     String body = "body";
     String capabilityReference = "capability-reference";
+    String colon = "colon";
     String content = "content";
     String copy = "copy";
+    String curlyBraces = "curly-braces";
     String deprecated = "deprecated";
     String detail = "detail";
+    String defaultValue = "default-value";
     String edit = "edit";
+    String dollar = "dollar";
     String expression = "expression";
     String filtered = "filtered";
     String goto_ = "goto";
     String modelBrowser = "model-browser";
+    String name = "name";
     String nestedLabel = "nested-label";
     String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";

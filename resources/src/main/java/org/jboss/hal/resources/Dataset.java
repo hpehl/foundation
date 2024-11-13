@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 Red Hat
+ *  Copyright 2023 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,18 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.resources;
 
-import java.util.function.Function;
+public interface Dataset {
 
-import org.jboss.hal.meta.description.Description;
-import org.patternfly.filter.FilterAttribute;
-
-public class DeprecatedAttribute<T> extends FilterAttribute<T, Boolean> {
-
-    public static final String NAME = "deprecated";
-
-    public DeprecatedAttribute(Function<T, Description> descriptionFn) {
-        super(NAME, (object, deprecated) -> deprecated == descriptionFn.apply(object).deprecation().isDefined());
-    }
+    String crudMessageType = "halCmt";
+    String crudMessageName = "halCmn";
 }

@@ -15,12 +15,146 @@
  */
 package org.jboss.hal.ui.resource;
 
+import java.util.List;
+
+import org.jboss.hal.dmr.ModelNode;
+import org.patternfly.component.form.FormGroupControl;
 import org.patternfly.component.form.FormGroupLabel;
+import org.patternfly.component.form.FormSelect;
+import org.patternfly.component.form.FormSelectOption;
+import org.patternfly.component.form.TextInput;
+
+import elemental2.dom.HTMLElement;
+
+import static java.util.stream.Collectors.toList;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.HelperTexts.required;
+import static org.patternfly.component.ValidationStatus.error;
+import static org.patternfly.component.form.FormGroupControl.formGroupControl;
+import static org.patternfly.component.form.FormSelect.formSelect;
+import static org.patternfly.component.form.FormSelectOption.formSelectOption;
+import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
+import static org.patternfly.component.inputgroup.InputGroupItem.inputGroupItem;
 
 class SelectFormItem extends FormItem {
+
+    // The select control is created by selectControl() called during defaultSetup().
+    // It's, so to speak, final and never null!
+    private /*final*/ FormSelect selectControl;
 
     SelectFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
         super(identifier, ra, label);
         defaultSetup();
+    }
+
+    @Override
+    FormGroupControl readOnlyGroup() {
+        TextInput textControl = textControl().readonly();
+        if (ra.expression) {
+            return formGroupControl()
+                    .addInputGroup(inputGroup()
+                            .addItem(inputGroupItem().fill().addControl(textControl))
+                            .addItem(inputGroupItem().addButton(resolveExpressionButton())));
+        } else {
+            return formGroupControl()
+                    .addControl(textControl);
+        }
+    }
+
+    @Override
+    FormGroupControl nativeGroup() {
+        return formGroupControl().addControl(selectControl());
+    }
+
+    @Override
+    HTMLElement nativeContainer() {
+        return inputGroup()
+                .addItem(inputGroupItem().addButton(switchToExpressionModeButton()))
+                .addItem(inputGroupItem().fill().addControl(selectControl()))
+                .element();
+    }
+
+    private FormSelect selectControl() {
+        List<String> allowedValues = ra.description.get(ALLOWED)
+                .asList()
+                .stream()
+                .map(ModelNode::asString)
+                .collect(toList());
+        selectControl = formSelect(identifier)
+                .run(fs -> {
+                    if (ra.description.nillable() && !ra.description.hasDefault()) {
+                        fs.addOption(formSelectOption(UNDEFINED));
+                    }
+                })
+                .addOptions(allowedValues, lbl -> FormSelectOption.formSelectOption(lbl, lbl))
+                .run(fs -> {
+                    if (ra.value.isDefined()) {
+                        fs.value(ra.value.asString());
+                    } else if (ra.description.nillable()) {
+                        fs.value(UNDEFINED);
+                    }
+                });
+        return selectControl;
+    }
+
+    // ------------------------------------------------------ validation
+
+    @Override
+    void resetValidation() {
+        super.resetValidation();
+        selectControl.resetValidation();
+    }
+
+    @Override
+    boolean validate() {
+        if (inputMode == NATIVE) {
+            if (requiredOnItsOwn() && UNDEFINED.equals(selectControl.value())) {
+                selectControl.validated(error);
+                formGroupControl.addHelperText(required(ra));
+                return false;
+            }
+        } else if (inputMode == EXPRESSION) {
+            return validateExpressionMode();
+        }
+        return true;
+    }
+
+    // ------------------------------------------------------ data
+
+    @Override
+    boolean isModified() {
+        String originalValue = ra.value.asString();
+        boolean wasDefined = ra.value.isDefined();
+
+        if (inputMode == NATIVE) {
+            String selectedValue = selectControl.value();
+            if (wasDefined) {
+                // modified if the original value was an expression or is different from the current user input
+                return ra.expression || !originalValue.equals(selectedValue);
+            } else {
+                return !UNDEFINED.equals(selectedValue);
+            }
+        } else if (inputMode == EXPRESSION) {
+            return isExpressionModified();
+        }
+        return false;
+    }
+
+    @Override
+    ModelNode modelNode() {
+        if (inputMode == NATIVE) {
+            String selectedValue = selectControl.value();
+            if (UNDEFINED.equals(selectedValue)) {
+                return new ModelNode();
+            } else {
+                return new ModelNode().set(selectedValue);
+            }
+        } else if (inputMode == EXPRESSION) {
+            return expressionModelNode();
+        }
+        return new ModelNode();
     }
 }

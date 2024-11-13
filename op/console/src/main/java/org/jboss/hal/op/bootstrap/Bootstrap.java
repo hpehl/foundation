@@ -32,6 +32,7 @@ import static java.util.Arrays.asList;
 import static org.jboss.elemento.flow.Flow.sequential;
 
 @ApplicationScoped
+@SuppressWarnings("CdiUnproxyableBeanTypesInspection")
 public class Bootstrap {
 
     @Inject Endpoints endpoints;
@@ -55,3 +56,4 @@ public class Bootstrap {
         )).failFast(true);
     }
 }
+

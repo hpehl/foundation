@@ -36,6 +36,10 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>hal-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>hal-dmr</artifactId>
         </dependency>
         <dependency>
@@ -49,6 +53,10 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>hal-meta</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hal-model</artifactId>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

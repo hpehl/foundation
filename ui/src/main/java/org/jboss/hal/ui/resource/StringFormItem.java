@@ -15,26 +15,33 @@
  */
 package org.jboss.hal.ui.resource;
 
+import org.jboss.elemento.By;
+import org.jboss.hal.dmr.ModelNode;
 import org.patternfly.component.form.FormGroupControl;
 import org.patternfly.component.form.FormGroupLabel;
 import org.patternfly.component.form.TextInput;
 
+import static org.jboss.hal.dmr.Expression.containsExpression;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.MIXED;
+import static org.jboss.hal.ui.resource.HelperTexts.required;
+import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.form.FormGroup.formGroup;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
 import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
 import static org.patternfly.component.inputgroup.InputGroupItem.inputGroupItem;
+import static org.patternfly.component.tooltip.Tooltip.tooltip;
 
 class StringFormItem extends FormItem {
 
     StringFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
         super(identifier, ra, label);
+        inputMode = MIXED;
 
         if (ra.description.readOnly()) {
             formGroupControl = readOnlyGroup();
         } else {
             if (ra.description.expressionAllowed()) {
                 formGroupControl = expressionGroup();
-                toggleResolveExpression(ra.value.asString());
             } else {
                 formGroupControl = normalGroup();
             }
@@ -50,10 +57,8 @@ class StringFormItem extends FormItem {
         if (ra.expression) {
             return formGroupControl()
                     .addInputGroup(inputGroup()
-                            .addItem(inputGroupItem().fill()
-                                    .addControl(textControl))
-                            .addItem(inputGroupItem()
-                                    .addButton(resolveExpressionButton())));
+                            .addItem(inputGroupItem().fill().addControl(textControl))
+                            .addItem(inputGroupItem().addButton(resolveExpressionButton())));
         } else {
             return formGroupControl()
                     .addControl(textControl);
@@ -63,15 +68,46 @@ class StringFormItem extends FormItem {
     private FormGroupControl expressionGroup() {
         return formGroupControl()
                 .addInputGroup(inputGroup()
-                        .addItem(inputGroupItem().fill()
-                                .addControl(textControl()
-                                        .onChange((event, component, value) -> toggleResolveExpression(value))))
-                        .addItem(resolveExpressionItem = inputGroupItem()
-                                .addButton(resolveExpressionButton())));
+                        .addItem(inputGroupItem().fill().addControl(textControl()))
+                        .addItem(inputGroupItem().addButton(resolveExpressionButton()))
+                        .add(tooltip(By.id(resolveExpressionId), "Resolve expression")));
     }
 
     private FormGroupControl normalGroup() {
-        return formGroupControl()
-                .addControl(textControl());
+        return formGroupControl().addControl(textControl());
+    }
+
+    // ------------------------------------------------------ validation
+
+    @Override
+    boolean validate() {
+        if (requiredOnItsOwn() && emptyTextControl()) {
+            textControl.validated(error);
+            formGroupControl.addHelperText(required(ra));
+            return false;
+        }
+        return true;
+    }
+
+    // ------------------------------------------------------ data
+
+    @Override
+    boolean isModified() {
+        // StringFormItem runs in mixed mode, so it's safe to delegate to isExpressionModified()
+        return isExpressionModified();
+    }
+
+    @Override
+    ModelNode modelNode() {
+        String value = textControlValue();
+        if (value.isEmpty()) {
+            return new ModelNode();
+        } else {
+            if (containsExpression(value)) {
+                return expressionModelNode();
+            } else {
+                return new ModelNode().set(value);
+            }
+        }
     }
 }

@@ -115,19 +115,6 @@ public final class ModelNodeHelper {
         return Version.EMPTY_VERSION;
     }
 
-    // ------------------------------------------------------ expressions
-
-    public static boolean isExpression(String value) {
-        if (value != null && value.length() > 2) {
-            int index = value.indexOf("${");
-            if (index > 0) {
-                int end = value.indexOf("}", index + 2);
-                return end > 0;
-            }
-        }
-        return false;
-    }
-
     // ------------------------------------------------------  instance
 
     private ModelNodeHelper() {}

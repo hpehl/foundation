@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.function.Supplier;
 
 import org.jboss.elemento.HTMLContainerBuilder;
+import org.jboss.hal.dmr.Expression;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.description.AttributeDescription;
@@ -30,6 +31,7 @@ import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.ListItem;
 import org.patternfly.component.popover.Popover;
 import org.patternfly.filter.Filter;
+import org.patternfly.icon.IconSets;
 import org.patternfly.icon.PredefinedIcon;
 import org.patternfly.layout.flex.Flex;
 import org.patternfly.style.Color;
@@ -44,6 +46,7 @@ import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.i;
 import static org.jboss.elemento.Elements.small;
+import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CAPABILITY_REFERENCE;
@@ -56,8 +59,15 @@ import static org.jboss.hal.dmr.ModelNodeHelper.asEnumValue;
 import static org.jboss.hal.env.Stability.EXPERIMENTAL;
 import static org.jboss.hal.env.Stability.PREVIEW;
 import static org.jboss.hal.meta.description.RestartMode.UNKNOWN;
+import static org.jboss.hal.resources.HalClasses.colon;
+import static org.jboss.hal.resources.HalClasses.curlyBraces;
+import static org.jboss.hal.resources.HalClasses.defaultValue;
 import static org.jboss.hal.resources.HalClasses.deprecated;
+import static org.jboss.hal.resources.HalClasses.dollar;
+import static org.jboss.hal.resources.HalClasses.expression;
+import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
+import static org.jboss.hal.resources.HalClasses.name;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -78,7 +88,9 @@ import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.SpaceItems.sm;
 import static org.patternfly.style.Classes.component;
+import static org.patternfly.style.Classes.end;
 import static org.patternfly.style.Classes.list;
+import static org.patternfly.style.Classes.start;
 import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Color.blue;
 import static org.patternfly.style.Color.gold;
@@ -210,12 +222,6 @@ public class BuildingBlocks {
         }
     }
 
-    // ------------------------------------------------------ operations
-
-    public static HTMLContainerBuilder<HTMLDivElement> operationDescription(OperationDescription operation) {
-        return description(operation);
-    }
-
     // ------------------------------------------------------ empty
 
     public static <T> EmptyState emptyRow(Filter<T> filter) {
@@ -230,6 +236,64 @@ public class BuildingBlocks {
                         .addActions(emptyStateActions()
                                 .add(button("Clear all filters").link()
                                         .onClick((event, component) -> filter.resetAll()))));
+    }
+
+    // ------------------------------------------------------ expression
+
+    public static HTMLElement renderExpression(String value) {
+        if (Expression.containsExpression(value)) {
+            HTMLContainerBuilder<HTMLElement> span = span().css(halComponent(expression));
+            internalRenderExpression(span, value);
+            return span.element();
+        } else {
+            return span().textContent(value).element();
+        }
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    private static void internalRenderExpression(HTMLContainerBuilder<HTMLElement> builder, String value) {
+        String[] startExprEnd = Expression.extractExpression(value);
+        if (!startExprEnd[0].isEmpty()) {
+            builder.add(span().css(halComponent(expression, start)).textContent(startExprEnd[0]));
+        }
+        String[] nameDefault = Expression.splitExpression(startExprEnd[1]);
+        builder.add(span().css(halComponent(expression, dollar)))
+                .add(span().css(halComponent(expression, curlyBraces, start)))
+                .add(span().css(halComponent(expression, name)).textContent(nameDefault[0]));
+        if (!nameDefault[1].isEmpty()) {
+            builder.add(span().css(halComponent(expression, colon)));
+            if (Expression.containsExpression(nameDefault[1])) {
+                HTMLContainerBuilder<HTMLElement> nested = span().css(halComponent(expression));
+                internalRenderExpression(nested, nameDefault[1]);
+                builder.add(nested);
+            } else {
+                builder.add(span().css(halComponent(expression, defaultValue)).textContent(nameDefault[1]));
+            }
+        }
+        builder.add(span().css(halComponent(expression, curlyBraces, end)));
+        if (!startExprEnd[2].isEmpty()) {
+            builder.add(span().css(halComponent(expression, end)).textContent(startExprEnd[2]));
+        }
+    }
+
+    // ------------------------------------------------------ icons
+
+    public static Supplier<PredefinedIcon> expressionMode() {
+        return IconSets.fas::dollarSign;
+    }
+
+    public static Supplier<PredefinedIcon> normalMode() {
+        return IconSets.fas::terminal;
+    }
+
+    public static Supplier<PredefinedIcon> resolveExpression() {
+        return IconSets.fas::link;
+    }
+
+    // ------------------------------------------------------ operations
+
+    public static HTMLContainerBuilder<HTMLDivElement> operationDescription(OperationDescription operation) {
+        return description(operation);
     }
 
     // ------------------------------------------------------ stability

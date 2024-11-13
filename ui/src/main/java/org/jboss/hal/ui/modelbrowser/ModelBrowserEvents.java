@@ -67,9 +67,9 @@ public interface ModelBrowserEvents {
             source.dispatchEvent(event);
         }
 
+        @SuppressWarnings("unchecked")
         static void listen(HTMLElement element, Consumer<Details> listener) {
             element.addEventListener(TYPE, event -> {
-                //noinspection unchecked
                 CustomEvent<Details> customEvent = (CustomEvent<Details>) event;
                 listener.accept(customEvent.detail);
             });
@@ -119,9 +119,9 @@ public interface ModelBrowserEvents {
             source.dispatchEvent(event);
         }
 
+        @SuppressWarnings("unchecked")
         static void listen(HTMLElement element, Consumer<Details> listener) {
             element.addEventListener(TYPE, event -> {
-                //noinspection unchecked
                 CustomEvent<Details> customEvent = (CustomEvent<Details>) event;
                 listener.accept(customEvent.detail);
             });

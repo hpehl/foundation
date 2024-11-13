@@ -15,12 +15,13 @@
  */
 package org.jboss.hal.ui.resource;
 
+import org.jboss.hal.dmr.ModelNode;
+import org.jboss.hal.ui.BuildingBlocks;
 import org.patternfly.component.button.Button;
 import org.patternfly.component.form.FormGroupControl;
 import org.patternfly.component.form.FormGroupLabel;
 import org.patternfly.component.form.TextInput;
 import org.patternfly.component.switch_.Switch;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLElement;
 
@@ -28,19 +29,26 @@ import static org.jboss.hal.resources.HalClasses.edit;
 import static org.jboss.hal.resources.HalClasses.expression;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
 import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
 import static org.patternfly.component.inputgroup.InputGroupItem.inputGroupItem;
 import static org.patternfly.component.switch_.Switch.switch_;
-import static org.patternfly.icon.IconSets.fas.dollarSign;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.SpaceItems.none;
+import static org.patternfly.style.Classes.switch_;
 
-// TODO Can a boolean value be sensitive?
+// TODO Implement sensitive
+//  Example: /subsystem=jmx, attribute "non-core-mbean-sensitivity"
 public class BooleanFormItem extends FormItem {
+
+    // The select control is created by selectControl() called during defaultSetup().
+    // It's, so to speak, final and never null!
+    private /*final*/ Switch switchControl;
 
     BooleanFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
         super(identifier, ra, label);
@@ -52,44 +60,78 @@ public class BooleanFormItem extends FormItem {
         if (ra.expression) {
             return formGroupControl()
                     .addInputGroup(inputGroup()
-                            .addItem(inputGroupItem().fill()
-                                    .addControl(textControl))
-                            .addItem(inputGroupItem()
-                                    .addButton(resolveExpressionButton())));
+                            .addItem(inputGroupItem().fill().addControl(textControl))
+                            .addItem(inputGroupItem().addButton(resolveExpressionButton())));
         } else if (!ra.value.isDefined()) {
-            return formGroupControl()
-                    .addControl(textControl);
+            return formGroupControl().addControl(textControl);
         } else {
-            return formGroupControl()
-                    .add(switchControl());
+            return formGroupControl().add(switchControl());
         }
     }
 
     FormGroupControl nativeGroup() {
-        return formGroupControl()
-                .add(switchControl());
+        return formGroupControl().add(switchControl());
     }
 
-    HTMLElement normalMode() {
+    HTMLElement nativeContainer() {
         return flex().alignItems(center).spaceItems(none)
-                .css(halComponent(resourceManager, edit, expression, Classes.switch_))
-                .addItem(flexItem()
-                        .add(switchToExpressionModeButton()))
-                .addItem(flexItem()
-                        .add(switchControl()))
+                .css(halComponent(resourceManager, edit, expression, switch_))
+                .addItem(flexItem().add(switchToExpressionModeButton()))
+                .addItem(flexItem().add(switchControl()))
                 .element();
     }
 
     @Override
     Button switchToExpressionModeButton() {
-        return button().id(switchToExpressionModeId).plain().icon(dollarSign())
+        return button().id(switchToExpressionModeId).plain().icon(BuildingBlocks.expressionMode().get())
                 .onClick((e, b) -> switchToExpressionMode());
     }
 
     private Switch switchControl() {
-        return switch_(identifier, identifier, ra.booleanValue())
+        switchControl = switch_(identifier, identifier, ra.booleanValue())
                 .checkIcon()
                 .ariaLabel(ra.name)
                 .readonly(ra.description.readOnly());
+        return switchControl;
+    }
+
+    // ------------------------------------------------------ validation
+
+    @Override
+    boolean validate() {
+        if (inputMode == InputMode.EXPRESSION) {
+            return validateExpressionMode();
+        }
+        return true;
+    }
+
+    // ------------------------------------------------------ data
+
+    @Override
+    boolean isModified() {
+        boolean originalValue = ra.value.asBoolean();
+        boolean wasDefined = ra.value.isDefined();
+
+        if (inputMode == NATIVE) {
+            if (wasDefined) {
+                // modified if the original value was an expression or is different from the current user input
+                return ra.expression || originalValue != switchControl.value();
+            } else {
+                return true;
+            }
+        } else if (inputMode == EXPRESSION) {
+            return isExpressionModified();
+        }
+        return false;
+    }
+
+    @Override
+    ModelNode modelNode() {
+        if (inputMode == NATIVE) {
+            return new ModelNode().set(switchControl.value());
+        } else if (inputMode == EXPRESSION) {
+            return expressionModelNode();
+        }
+        return new ModelNode();
     }
 }

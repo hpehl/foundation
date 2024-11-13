@@ -6,7 +6,6 @@
 @file:DependsOn("io.github.z4kn4fein:semver-jvm:2.0.0")
 @file:Suppress("MemberVisibilityCanBePrivate")
 
-import Release_main.ReleaseError.*
 import arrow.core.Either.Companion.catch
 import arrow.core.Either.Left
 import arrow.core.Either.Right
@@ -29,6 +28,7 @@ import com.github.ajalt.mordant.terminal.YesNoPrompt
 import com.lordcodes.turtle.shellRun
 import io.github.z4kn4fein.semver.Version
 import io.github.z4kn4fein.semver.toVersionOrNull
+import Release_main.ReleaseError.*
 import java.lang.Thread.sleep
 import kotlin.random.Random
 import kotlin.system.exitProcess
@@ -85,7 +85,7 @@ class ReleaseCommand : CliktCommand(name = "release") {
     fun validate(release: Release): EitherNel<ReleaseError, Release> = either {
         zipOrAccumulate(
                 {
-                    // If there are no uncommitted changes 'git diff-index' will return 0 and 'isRight()' is true.
+                    // If there are no uncommitted changes, 'git diff-index' will return 0 and 'isRight()' is true.
                     // Otherwise, the command will return 1 and shellRun() will throw an exception
                     ensure(catch {
                         shellRun("git", listOf("diff-index", "--quiet", "HEAD"))

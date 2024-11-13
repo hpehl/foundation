@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
 import java.util.List;
 import java.util.Objects;

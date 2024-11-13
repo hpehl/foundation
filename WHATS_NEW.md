@@ -30,6 +30,7 @@ The model browser has been greatly improved:
 - Support for simple nested attributes
 - Support for complex attributes in read-only view
 - Info of allowed values
+- Syntax highlighting for expressions
 
 ### Attributes
 

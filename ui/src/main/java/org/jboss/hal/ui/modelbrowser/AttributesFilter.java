@@ -17,12 +17,12 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.hal.dmr.NamedNode;
 import org.jboss.hal.meta.description.AttributeDescription;
-import org.jboss.hal.ui.filter.AccessTypeAttribute;
-import org.jboss.hal.ui.filter.DeprecatedAttribute;
-import org.jboss.hal.ui.filter.NameAttribute;
-import org.jboss.hal.ui.filter.RequiredAttribute;
-import org.jboss.hal.ui.filter.StorageAttribute;
-import org.jboss.hal.ui.filter.TypesAttribute;
+import org.jboss.hal.model.filter.AccessTypeAttribute;
+import org.jboss.hal.model.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.NameAttribute;
+import org.jboss.hal.model.filter.RequiredAttribute;
+import org.jboss.hal.model.filter.StorageAttribute;
+import org.jboss.hal.model.filter.TypesAttribute;
 import org.patternfly.filter.Filter;
 import org.patternfly.filter.FilterOperator;
 

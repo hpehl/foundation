@@ -21,6 +21,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.CrudOperations;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.env.Settings;
@@ -58,6 +59,7 @@ public class UIContext {
     private final ModelTree modelTree;
     private final CapabilityRegistry capabilityRegistry;
     private final MetadataRepository metadataRepository;
+    private final CrudOperations crud;
 
     @Inject
     public UIContext(Environment environment,
@@ -66,7 +68,8 @@ public class UIContext {
             StatementContext statementContext,
             ModelTree modelTree,
             CapabilityRegistry capabilityRegistry,
-            MetadataRepository metadataRepository) {
+            MetadataRepository metadataRepository,
+            CrudOperations crud) {
         this.environment = environment;
         this.settings = settings;
         this.dispatcher = dispatcher;
@@ -74,6 +77,7 @@ public class UIContext {
         this.modelTree = modelTree;
         this.capabilityRegistry = capabilityRegistry;
         this.metadataRepository = metadataRepository;
+        this.crud = crud;
     }
 
     @PostConstruct
@@ -107,5 +111,9 @@ public class UIContext {
 
     public MetadataRepository metadataRepository() {
         return metadataRepository;
+    }
+
+    public CrudOperations crud() {
+        return crud;
     }
 }

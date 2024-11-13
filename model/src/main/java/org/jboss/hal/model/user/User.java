@@ -20,7 +20,7 @@ import java.util.Set;
 import static org.jboss.hal.model.user.Role.ADMINISTRATOR;
 import static org.jboss.hal.model.user.Role.SUPER_USER;
 
-/** Holds information about an user. */
+/** Holds information about a user. */
 public class User {
 
     private final Set<Role> roles;
@@ -38,7 +38,7 @@ public class User {
         return "User(" + name + ", roles=" + roles + ')';
     }
 
-    /** @return the user name. */
+    /** @return the username. */
     public String getName() {
         return name;
     }

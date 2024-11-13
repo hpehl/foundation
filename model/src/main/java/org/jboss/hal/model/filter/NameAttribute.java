@@ -13,16 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
-import org.jboss.hal.meta.description.OperationDescription;
+import java.util.function.Function;
+
 import org.patternfly.filter.FilterAttribute;
 
-public class ReturnValueAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
+public class NameAttribute<T> extends FilterAttribute<T, String> {
 
-    public static final String NAME = "return-value";
+    public static final String NAME = "name";
 
-    public ReturnValueAttribute() {
-        super(NAME, (operation, hasReturnValue) -> hasReturnValue == operation.returnValue().isDefined());
+    public NameAttribute(Function<T, String> nameFn) {
+        super(NAME, (object, name) -> nameFn.apply(object).toLowerCase().contains(name.toLowerCase()));
     }
 }

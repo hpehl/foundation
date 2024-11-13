@@ -38,6 +38,7 @@ import static org.patternfly.style.Breakpoints.breakpoints;
 import static org.patternfly.style.Orientation.horizontal;
 import static org.patternfly.style.Orientation.vertical;
 
+/** Element to view an existing resource */
 class ResourceView implements
         HasElement<HTMLElement, ResourceView>,
         HasItems<HTMLElement, ResourceView, ViewItem> {

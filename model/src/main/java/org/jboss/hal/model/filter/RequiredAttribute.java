@@ -13,16 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
-import org.jboss.hal.meta.description.OperationDescription;
+import java.util.function.Function;
+
+import org.jboss.hal.meta.description.AttributeDescription;
 import org.patternfly.filter.FilterAttribute;
 
-public class GlobalOperationsAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
 
-    public static final String NAME = "global-operations";
+public class RequiredAttribute<T> extends FilterAttribute<T, Boolean> {
 
-    public GlobalOperationsAttribute() {
-        super(NAME, (operation, value) -> value || !operation.global());
+    public static final String NAME = "required";
+
+    public RequiredAttribute(Function<T, AttributeDescription> adf) {
+        super(NAME, (object, required) -> required == adf.apply(object).find(REQUIRED).asBoolean());
     }
 }

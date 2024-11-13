@@ -13,20 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.dmr.ModelNode;
 import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+public class DefinedAttribute<T> extends FilterAttribute<T, Boolean> {
 
-public class AccessTypeAttribute<T> extends FilterAttribute<T, AccessTypeValue> {
+    public static final String NAME = "defined";
 
-    public static final String NAME = "access-type";
-
-    public AccessTypeAttribute(Function<T, AttributeDescription> adf) {
-        super(NAME, (object, accessType) -> accessType.value.equals(adf.apply(object).find(ACCESS_TYPE).asString()));
+    public DefinedAttribute(Function<T, ModelNode> modelNodeFn) {
+        super(NAME, (object, defined) -> defined == null || defined == modelNodeFn.apply(object).isDefined());
     }
 }

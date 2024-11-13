@@ -28,5 +28,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Qualifier
 @Retention(RUNTIME)
-@Target({TYPE, METHOD, FIELD, PARAMETER})public @interface Current {
+@Target({TYPE, METHOD, FIELD, PARAMETER})
+public @interface Current {
 }

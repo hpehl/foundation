@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui;
+package org.jboss.hal.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;

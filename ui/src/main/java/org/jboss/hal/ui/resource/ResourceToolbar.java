@@ -20,12 +20,12 @@ import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.meta.security.ElementGuard;
 import org.jboss.hal.meta.security.SecurityContext;
-import org.jboss.hal.ui.filter.AccessTypeAttribute;
-import org.jboss.hal.ui.filter.DefinedAttribute;
-import org.jboss.hal.ui.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.AccessTypeAttribute;
+import org.jboss.hal.model.filter.DefinedAttribute;
+import org.jboss.hal.model.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.RequiredAttribute;
+import org.jboss.hal.model.filter.StorageAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
-import org.jboss.hal.ui.filter.RequiredAttribute;
-import org.jboss.hal.ui.filter.StorageAttribute;
 import org.jboss.hal.ui.resource.ResourceManager.State;
 import org.patternfly.component.toolbar.Toolbar;
 import org.patternfly.component.toolbar.ToolbarContent;
@@ -56,7 +56,6 @@ import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.icon.IconSets.fas.edit;
-import static org.patternfly.icon.IconSets.fas.link;
 import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.icon.IconSets.fas.undo;
 import static org.patternfly.popper.Placement.auto;
@@ -82,14 +81,10 @@ class ResourceToolbar implements IsElement<HTMLElement> {
 
     private ResourceToolbar(ResourceManager resourceManager, Filter<ResourceAttribute> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        String resolveId = Id.unique("resolve-expressions");
         String resetId = Id.unique("reset");
         String refreshId = Id.unique("refresh");
         String editId = Id.unique("edit");
 
-        ToolbarItem resolveItem = toolbarItem()
-                .add(button().id(resolveId).plain().icon(link()).onClick((e, b) -> resourceManager.resolve()))
-                .add(tooltip(By.id(resolveId), "Resolve all expressions").placement(auto));
         resetItem = toolbarItem()
                 .add(button().id(resetId).plain().icon(undo()).onClick((e, b) -> resourceManager.reset()))
                 .add(tooltip(By.id(resetId),
@@ -103,7 +98,6 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .add(tooltip(By.id(editId), "Edit resource").placement(auto));
         viewActionGroup = toolbarGroup(iconButtonGroup).css(modifier("align-right"))
                 .addItem(refreshItem)
-                .addItem(resolveItem)
                 .addItem(resetItem)
                 .addItem(editItem);
 

@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
-import org.patternfly.component.form.FormControl;
 import org.patternfly.component.form.FormGroupControl;
 import org.patternfly.component.form.FormGroupLabel;
+import org.patternfly.component.form.FormSelect;
 import org.patternfly.component.form.TextInput;
 import org.patternfly.component.inputgroup.InputGroup;
 
@@ -34,6 +34,12 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.MAX;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.MIN;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.HelperTexts.notNumeric;
+import static org.jboss.hal.ui.resource.HelperTexts.required;
+import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
 import static org.patternfly.component.form.FormSelect.formSelect;
 import static org.patternfly.component.form.FormSelectOption.formSelectOption;
@@ -42,7 +48,8 @@ import static org.patternfly.component.form.TextInputType.number;
 import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
 import static org.patternfly.component.inputgroup.InputGroupItem.inputGroupItem;
 
-// TODO Can a numeric value be sensitive?
+// TODO Implement sensitive
+//  Example: /subsystem=transactions, attribute "process-id-socket-max-ports"
 class NumberFormItem extends FormItem {
 
     /**
@@ -57,6 +64,9 @@ class NumberFormItem extends FormItem {
      */
     private static final long MAX_SAFE_LONG = 9007199254740991L;
 
+    private FormSelect allowedValuesControl;
+    private TextInput minMaxControl;
+
     NumberFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
         super(identifier, ra, label);
         defaultSetup();
@@ -67,10 +77,8 @@ class NumberFormItem extends FormItem {
         if (ra.expression) {
             return formGroupControl()
                     .addInputGroup(inputGroup()
-                            .addItem(inputGroupItem().fill()
-                                    .addControl(textControl))
-                            .addItem(inputGroupItem()
-                                    .addButton(resolveExpressionButton()))
+                            .addItem(inputGroupItem().fill().addControl(textControl))
+                            .addItem(inputGroupItem().addButton(resolveExpressionButton()))
                             .run(ig -> {
                                 if (ra.description.unit() != null) {
                                     ig.addText(unitInputGroupText());
@@ -80,36 +88,28 @@ class NumberFormItem extends FormItem {
             if (ra.description.unit() != null) {
                 return formGroupControl()
                         .addInputGroup(inputGroup()
-                                .addItem(inputGroupItem().fill()
-                                        .addControl(textControl))
+                                .addItem(inputGroupItem().fill().addControl(textControl))
                                 .addText(unitInputGroupText()));
             } else {
-                return formGroupControl()
-                        .addControl(textControl);
+                return formGroupControl().addControl(textControl);
             }
         }
     }
 
     FormGroupControl nativeGroup() {
         if (ra.description.hasDefined(ALLOWED)) {
-            return formGroupControl()
-                    .addControl(allowedValuesControl(identifier, ra));
+            return formGroupControl().addControl(allowedValuesControl());
         } else {
-            return formGroupControl()
-                    .addControl(minMaxControl(identifier, ra));
+            return formGroupControl().addControl(minMaxControl());
         }
     }
 
-    HTMLElement normalMode() {
-        InputGroup inputGroup = inputGroup()
-                .addItem(inputGroupItem()
-                        .addButton(switchToExpressionModeButton()));
+    HTMLElement nativeContainer() {
+        InputGroup inputGroup = inputGroup().addItem(inputGroupItem().addButton(switchToExpressionModeButton()));
         if (ra.description.hasDefined(ALLOWED)) {
-            inputGroup.addItem(inputGroupItem().fill()
-                    .addControl(allowedValuesControl(identifier, ra)));
+            inputGroup.addItem(inputGroupItem().fill().addControl(allowedValuesControl()));
         } else {
-            inputGroup.addItem(inputGroupItem().fill()
-                    .addControl(minMaxControl(identifier, ra)));
+            inputGroup.addItem(inputGroupItem().fill().addControl(minMaxControl()));
         }
         if (ra.description.unit() != null) {
             inputGroup.addText(unitInputGroupText());
@@ -117,12 +117,12 @@ class NumberFormItem extends FormItem {
         return inputGroup.element();
     }
 
-    private FormControl<?, ?> allowedValuesControl(String identifier, ResourceAttribute ra) {
+    private FormSelect allowedValuesControl() {
         List<Long> allowedValues = ra.description.get(ALLOWED).asList().stream().map(ModelNode::asLong).collect(toList());
-        return formSelect(identifier)
+        allowedValuesControl = formSelect(identifier)
                 .run(fs -> {
                     if (ra.description.nillable()) {
-                        fs.addOption(formSelectOption("undefined"));
+                        fs.addOption(formSelectOption(UNDEFINED));
                     }
                 })
                 .addOptions(allowedValues, n -> formSelectOption(String.valueOf(n)))
@@ -130,13 +130,14 @@ class NumberFormItem extends FormItem {
                     if (ra.value.isDefined()) {
                         fs.value(ra.value.asString());
                     } else if (ra.description.nillable()) {
-                        fs.value("undefined");
+                        fs.value(UNDEFINED);
                     }
                 });
+        return allowedValuesControl;
     }
 
-    private FormControl<?, ?> minMaxControl(String identifier, ResourceAttribute ra) {
-        TextInput textInput = textInput(number, identifier)
+    private TextInput minMaxControl() {
+        minMaxControl = textInput(number, identifier)
                 .run(ti -> {
                     if (ra.value.isDefined()) {
                         ti.value(ra.value.asString());
@@ -148,14 +149,146 @@ class NumberFormItem extends FormItem {
         if (type == ModelType.INT) {
             int min = max(ra.description.get(MIN).asInt(Integer.MIN_VALUE), Integer.MIN_VALUE);
             int max = min(ra.description.get(MAX).asInt(Integer.MAX_VALUE), Integer.MAX_VALUE);
-            textInput.inputElement().min(min).max(max).apply(e -> e.step = "1");
+            minMaxControl.inputElement().min(min).max(max).apply(e -> e.step = "1");
         } else if (type == ModelType.LONG) {
             String min = String.valueOf(max(ra.description.get(MIN).asLong(MIN_SAFE_LONG), MIN_SAFE_LONG));
             String max = String.valueOf(min(ra.description.get(MAX).asLong(MAX_SAFE_LONG), MAX_SAFE_LONG));
-            textInput.inputElement().min(min).max(max).apply(e -> e.step = "1");
+            minMaxControl.inputElement().min(min).max(max).apply(e -> e.step = "1");
         } else if (type == ModelType.DOUBLE) {
-            textInput.inputElement().apply(e -> e.step = "any");
+            minMaxControl.inputElement().apply(e -> e.step = "any");
         }
-        return textInput;
+        return minMaxControl;
+    }
+
+    // ------------------------------------------------------ validation
+
+    @Override
+    void resetValidation() {
+        super.resetValidation();
+        if (allowedValuesControl != null) {
+            allowedValuesControl.resetValidation();
+        }
+        if (minMaxControl != null) {
+            minMaxControl.resetValidation();
+        }
+    }
+
+    @Override
+    boolean validate() {
+        if (inputMode == NATIVE) {
+            if (allowedValuesControl != null) {
+                if (requiredOnItsOwn() && UNDEFINED.equals(allowedValuesControl.value())) {
+                    allowedValuesControl.validated(error);
+                    formGroupControl.addHelperText(required(ra));
+                    return false;
+                }
+            } else if (minMaxControl != null) {
+                if (requiredOnItsOwn() && minMaxControl.value().isEmpty()) {
+                    minMaxControl.validated(error);
+                    formGroupControl.addHelperText(required(ra));
+                    return false;
+                } else if (!isNumeric(minMaxControl.value())) {
+                    minMaxControl.validated(error);
+                    formGroupControl.addHelperText(notNumeric(ra));
+                }
+            }
+        } else if (inputMode == EXPRESSION) {
+            return validateExpressionMode();
+        }
+        return true;
+    }
+
+    private boolean isNumeric(String value) {
+        ModelType type = ra.description.get(TYPE).asType();
+        if (type == ModelType.INT) {
+            try {
+                Integer.parseInt(value);
+                return true;
+            } catch (NumberFormatException ignored) {
+                return false;
+            }
+        } else if (type == ModelType.LONG) {
+            try {
+                Long.parseLong(value);
+                return true;
+            } catch (NumberFormatException ignored) {
+                return false;
+            }
+        } else if (type == ModelType.DOUBLE) {
+            try {
+                Double.parseDouble(value);
+                return true;
+            } catch (NumberFormatException ignored) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    // ------------------------------------------------------ data
+
+    @Override
+    boolean isModified() {
+        String originalValue = ra.value.asString();
+        boolean wasDefined = ra.value.isDefined();
+
+        if (inputMode == NATIVE) {
+            if (allowedValuesControl != null) {
+                String selectedValue = allowedValuesControl.value();
+                if (wasDefined) {
+                    // modified if the original value was an expression or is different from the current user input
+                    return ra.expression || !originalValue.equals(selectedValue);
+                } else {
+                    return !UNDEFINED.equals(selectedValue);
+                }
+            } else if (minMaxControl != null) {
+                if (wasDefined) {
+                    // modified if the original value was an expression or is different from the current user input
+                    return ra.expression || !originalValue.equals(minMaxControl.value());
+                } else {
+                    return !minMaxControl.value().isEmpty();
+                }
+            }
+        } else if (inputMode == EXPRESSION) {
+            if (wasDefined) {
+                return !originalValue.equals(textControlValue());
+            } else {
+                return !textControlValue().isEmpty();
+            }
+        }
+        return false;
+    }
+
+    @Override
+    ModelNode modelNode() {
+        if (inputMode == NATIVE) {
+            if (allowedValuesControl != null) {
+                String selectedValue = allowedValuesControl.value();
+                if (UNDEFINED.equals(selectedValue)) {
+                    return new ModelNode();
+                } else {
+                    return new ModelNode().set(numericModelNode(selectedValue));
+                }
+            } else if (minMaxControl != null) {
+                return numericModelNode(minMaxControl.value());
+            }
+        } else if (inputMode == EXPRESSION) {
+            return expressionModelNode();
+        }
+        return new ModelNode();
+    }
+
+    private ModelNode numericModelNode(String value) {
+        ModelType type = ra.description.get(TYPE).asType();
+        if (type == ModelType.INT) {
+            return new ModelNode().set(Integer.parseInt(value));
+        } else if (type == ModelType.LONG) {
+            return new ModelNode().set(Long.parseLong(value));
+        } else if (type == ModelType.DOUBLE) {
+            return new ModelNode().set(Double.parseDouble(value));
+        } else {
+            return new ModelNode();
+        }
     }
 }

@@ -138,6 +138,7 @@
         <module>bom</module>
         <module>build-config</module>
         <module>code-parent</module>
+        <module>core</module>
         <module>db</module>
         <module>dmr</module>
         <module>environment</module>

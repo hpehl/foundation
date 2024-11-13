@@ -23,6 +23,7 @@ import "./variables.css"
 
 // Remaining third (a-z)
 import "./capability.css"
+import "./expression.css"
 import "./model-browser.css"
 import "./resource.css"
 import "./stability.css"

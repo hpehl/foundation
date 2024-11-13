@@ -27,6 +27,7 @@ import org.jboss.hal.dmr.Property;
 
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_CONSTRAINTS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.METRIC;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.NILLABLE;
@@ -76,6 +77,10 @@ public class AttributeDescription extends NamedNode implements Description {
 
     public boolean nillable() {
         return failSafeBoolean(NILLABLE);
+    }
+
+    public boolean hasDefault() {
+        return hasDefined(DEFAULT) && get(DEFAULT).isDefined();
     }
 
     public boolean readOnly() {

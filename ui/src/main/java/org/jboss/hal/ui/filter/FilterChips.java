@@ -18,6 +18,17 @@ package org.jboss.hal.ui.filter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.hal.model.filter.AccessTypeAttribute;
+import org.jboss.hal.model.filter.AccessTypeValue;
+import org.jboss.hal.model.filter.DefinedAttribute;
+import org.jboss.hal.model.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.ParametersAttribute;
+import org.jboss.hal.model.filter.RequiredAttribute;
+import org.jboss.hal.model.filter.ReturnValueAttribute;
+import org.jboss.hal.model.filter.StorageAttribute;
+import org.jboss.hal.model.filter.StorageValue;
+import org.jboss.hal.model.filter.TypeValues;
+import org.jboss.hal.model.filter.TypesAttribute;
 import org.patternfly.component.chip.Chip;
 import org.patternfly.filter.Filter;
 

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.model.filter.TypeValues;
+import org.jboss.hal.model.filter.TypesAttribute;
 import org.jboss.hal.resources.Keys;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
@@ -27,7 +29,7 @@ import org.patternfly.filter.Filter;
 import elemental2.dom.HTMLElement;
 
 import static java.util.stream.Collectors.toList;
-import static org.jboss.hal.ui.filter.TypeValues.typeValues;
+import static org.jboss.hal.model.filter.TypeValues.typeValues;
 import static org.patternfly.component.badge.Badge.badge;
 import static org.patternfly.component.menu.MenuContent.menuContent;
 import static org.patternfly.component.menu.MenuItem.checkboxMenuItem;

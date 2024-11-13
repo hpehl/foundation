@@ -24,7 +24,7 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.ui.LabelBuilder;
+import org.jboss.hal.core.LabelBuilder;
 import org.patternfly.component.form.FormGroupLabel;
 import org.patternfly.core.Aria;
 import org.patternfly.icon.IconSets;
@@ -84,6 +84,7 @@ class FormItemFactory {
                         if (ra.description.hasDefined(ALLOWED)) {
                             formItem = new SelectFormItem(identifier, ra, formGroupLabel);
                         } else if (ra.description.hasDefined(CAPABILITY_REFERENCE)) {
+                            // TODO Replace with type-ahead form item
                             formItem = new StringFormItem(identifier, ra, formGroupLabel);
                         } else {
                             formItem = new StringFormItem(identifier, ra, formGroupLabel);

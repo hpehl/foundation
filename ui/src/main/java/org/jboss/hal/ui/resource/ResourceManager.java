@@ -185,7 +185,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                         items = resourceView;
 
                     } else if (state == EDIT) {
-                        resourceForm = new ResourceForm();
+                        resourceForm = new ResourceForm(template);
                         for (ResourceAttribute ra : resourceAttributes) {
                             resourceForm.addItem(formItem(template, metadata, ra));
                         }
@@ -283,13 +283,8 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     void refresh() {
         if (state == VIEW) {
+            removeChildrenFrom(rootContainer);
             load(VIEW);
-        }
-    }
-
-    void resolve() {
-        if (state == VIEW) {
-
         }
     }
 
@@ -301,9 +296,9 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     void save() {
         if (state == EDIT && resourceForm != null) {
-            if (resourceForm.valid()) {
-                // TODO Save changes
-                load(VIEW);
+            resourceForm.resetValidation();
+            if (resourceForm.validate()) {
+                uic().crud().update(template, resourceForm.attributeOperations(), () -> load(VIEW));
             }
         }
     }

@@ -13,20 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
 import java.util.function.Function;
 
-import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.description.Description;
 import org.patternfly.filter.FilterAttribute;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
+public class DeprecatedAttribute<T> extends FilterAttribute<T, Boolean> {
 
-public class RequiredAttribute<T> extends FilterAttribute<T, Boolean> {
+    public static final String NAME = "deprecated";
 
-    public static final String NAME = "required";
-
-    public RequiredAttribute(Function<T, AttributeDescription> adf) {
-        super(NAME, (object, required) -> required == adf.apply(object).find(REQUIRED).asBoolean());
+    public DeprecatedAttribute(Function<T, Description> descriptionFn) {
+        super(NAME, (object, deprecated) -> deprecated == descriptionFn.apply(object).deprecation().isDefined());
     }
 }

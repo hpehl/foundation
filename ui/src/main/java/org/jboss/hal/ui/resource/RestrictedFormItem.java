@@ -15,6 +15,7 @@
  */
 package org.jboss.hal.ui.resource;
 
+import org.jboss.hal.dmr.ModelNode;
 import org.patternfly.component.form.FormGroupLabel;
 
 import static org.patternfly.component.form.FormGroup.formGroup;
@@ -28,7 +29,8 @@ import static org.patternfly.icon.IconSets.fas.lock;
 class RestrictedFormItem extends FormItem {
 
     RestrictedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier);
+        super(identifier, ra, label);
+
         formGroup = formGroup(identifier)
                 .required(ra.description.required())
                 .addLabel(label)
@@ -39,5 +41,15 @@ class RestrictedFormItem extends FormItem {
                                                 .value("restricted")
                                                 .disabled()))
                                 .addText(inputGroupText().icon(lock()).plain())));
+    }
+
+    @Override
+    boolean isModified() {
+        return false;
+    }
+
+    @Override
+    ModelNode modelNode() {
+        return new ModelNode();
     }
 }

@@ -13,17 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
-import java.util.function.Function;
-
+import org.jboss.hal.meta.description.OperationDescription;
 import org.patternfly.filter.FilterAttribute;
 
-public class NameAttribute<T> extends FilterAttribute<T, String> {
+public class GlobalOperationsAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
 
-    public static final String NAME = "name";
+    public static final String NAME = "global-operations";
 
-    public NameAttribute(Function<T, String> nameFn) {
-        super(NAME, (object, name) -> nameFn.apply(object).toLowerCase().contains(name.toLowerCase()));
+    public GlobalOperationsAttribute() {
+        super(NAME, (operation, value) -> value || !operation.global());
     }
 }

@@ -13,16 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.filter;
+package org.jboss.hal.model.filter;
 
-import org.jboss.hal.meta.description.OperationDescription;
-import org.patternfly.filter.FilterAttribute;
+import java.util.List;
 
-public class ParametersAttribute<T> extends FilterAttribute<OperationDescription, Boolean> {
+public class StorageValue {
 
-    public static final String NAME = "parameters";
+    public static List<StorageValue> storageValues() {
+        return List.of(new StorageValue(StorageAttribute.NAME, "Configuration", "configuration"),
+                new StorageValue(StorageAttribute.NAME, "Runtime", "runtime"));
+    }
 
-    public ParametersAttribute() {
-        super(NAME, (operation, parameter) -> parameter == !operation.parameters().isEmpty());
+    public final String identifier;
+    public final String text;
+    public final String value;
+
+    public StorageValue(String filterAttribute, String text, String value) {
+        this.identifier = filterAttribute + "-" + value;
+        this.text = text;
+        this.value = value;
     }
 }

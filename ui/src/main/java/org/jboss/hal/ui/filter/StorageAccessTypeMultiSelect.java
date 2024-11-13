@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.model.filter.AccessTypeAttribute;
+import org.jboss.hal.model.filter.AccessTypeValue;
+import org.jboss.hal.model.filter.StorageAttribute;
+import org.jboss.hal.model.filter.StorageValue;
 import org.jboss.hal.resources.Keys;
 import org.patternfly.component.menu.MenuItem;
 import org.patternfly.component.menu.MultiSelect;
@@ -27,8 +31,8 @@ import org.patternfly.filter.Filter;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.ui.filter.AccessTypeValue.accessTypeValues;
-import static org.jboss.hal.ui.filter.StorageValue.storageValues;
+import static org.jboss.hal.model.filter.AccessTypeValue.accessTypeValues;
+import static org.jboss.hal.model.filter.StorageValue.storageValues;
 import static org.patternfly.component.menu.MenuContent.menuContent;
 import static org.patternfly.component.menu.MenuGroup.menuGroup;
 import static org.patternfly.component.menu.MenuItem.menuItem;

@@ -16,6 +16,7 @@
 package org.jboss.hal.ui.filter;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.model.filter.NameAttribute;
 import org.patternfly.component.textinputgroup.TextInputGroup;
 import org.patternfly.filter.Filter;
 

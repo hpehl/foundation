@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.model.filter.ParametersAttribute;
+import org.jboss.hal.model.filter.ReturnValueAttribute;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
 

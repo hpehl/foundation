@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.elemento.IsElement;
+import org.jboss.hal.model.filter.DefinedAttribute;
+import org.jboss.hal.model.filter.DeprecatedAttribute;
+import org.jboss.hal.model.filter.RequiredAttribute;
 import org.patternfly.component.menu.MultiSelect;
 import org.patternfly.filter.Filter;
 
