@@ -57,6 +57,14 @@ import static org.patternfly.style.Classes.util;
 
 class FormItemFactory {
 
+    // TODO Add support to create and return specific form items based on the address template and attribute.
+    // For instance /subsystem=logging/pattern-formatter=*@color-map
+    // Accepts a comma delimited list of colors to be used for different levels with a pattern formatter.
+    // The format for the color mapping pattern is level-name:color-name.
+    // Valid Levels: severe, fatal, error, warn, warning, info, debug, trace, config, fine, finer, finest
+    // Valid Colors: black, green, red, yellow, blue, magenta, cyan, white, brightblack, brightred, brightgreen, brightblue,
+    // brightyellow, brightmagenta, brightcyan, brightwhit
+
     private static final Logger logger = Logger.getLogger(FormItemFactory.class.getName());
 
     static FormItem formItem(AddressTemplate template, Metadata metadata, ResourceAttribute ra) {

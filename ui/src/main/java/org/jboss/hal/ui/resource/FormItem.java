@@ -159,7 +159,9 @@ abstract class FormItem implements
         if (textControl != null) {
             textControl.resetValidation();
         }
-        formGroupControl.removeHelperText();
+        if (formGroupControl != null) {
+            formGroupControl.removeHelperText();
+        }
     }
 
     /**
@@ -217,10 +219,12 @@ abstract class FormItem implements
         if (requiredOnItsOwn() && emptyTextControl()) {
             textControl.validated(error);
             formGroupControl.addHelperText(required(ra));
-        } else if (noExpressionInExpressionMode()) {
-            textControl.validated(error);
-            formGroupControl.addHelperText(noExpression());
-            return false;
+        } else {
+            if (noExpressionInExpressionMode()) {
+                textControl.validated(error);
+                formGroupControl.addHelperText(noExpression());
+                return false;
+            }
         }
         return true;
     }
@@ -228,7 +232,7 @@ abstract class FormItem implements
     // ------------------------------------------------------ data
 
     /**
-     * Checks if the form item has been modified. Returns false by default.
+     * Checks if the form item has been modified.
      */
     abstract boolean isModified();
 
@@ -243,16 +247,16 @@ abstract class FormItem implements
     }
 
     /**
-     * Returns the value of this form item as a model node. Returns an undefined model node by default.
+     * Returns the value of this form item as a model node.
      */
     abstract ModelNode modelNode();
 
-    String textControlValue() {
-        return textControl != null ? textControl.value() : "";
-    }
-
     ModelNode expressionModelNode() {
         return new ModelNode().setExpression(textControlValue());
+    }
+
+    String textControlValue() {
+        return textControl != null ? textControl.value() : "";
     }
 
     // ------------------------------------------------------ building blocks
@@ -378,21 +382,43 @@ abstract class FormItem implements
 
     // ------------------------------------------------------ events
 
-    void switchToExpressionMode() {
+    final void switchToExpressionMode() {
+        resetValidation();
         failSafeRemoveFromParent(nativeContainer);
         formGroupControl.add(expressionContainer);
         tooltip(By.id(switchToNativeModeId), "Switch to native mode").appendTo(expressionContainer);
         tooltip(By.id(resolveExpressionId), "Resolve expression").appendTo(expressionContainer);
+        inputMode = InputMode.EXPRESSION;
+        afterSwitchedToExpressionMode();
+    }
+
+    /**
+     * Method called after the input mode has been switched to expression mode.
+     * <p>
+     * This method sets focus to the text control's input element if the text control is not null.
+     */
+    void afterSwitchedToExpressionMode() {
         if (textControl != null) {
             textControl.inputElement().element().focus();
         }
-        inputMode = InputMode.EXPRESSION;
     }
 
-    void switchToNativeMode() {
+    final void switchToNativeMode() {
+        resetValidation();
         failSafeRemoveFromParent(expressionContainer);
         formGroupControl.add(nativeContainer);
         tooltip(By.id(switchToExpressionModeId), "Switch to expression mode").appendTo(nativeContainer);
         inputMode = InputMode.NATIVE;
+        afterSwitchedToNativeMode();
+    }
+
+    /**
+     * Method called after the input mode has been switched to native mode.
+     * <p>
+     * This method should be overridden in subclasses to implement specific behaviors when the mode is changed to native. The
+     * default implementation is empty.
+     */
+    void afterSwitchedToNativeMode() {
+        // empty
     }
 }

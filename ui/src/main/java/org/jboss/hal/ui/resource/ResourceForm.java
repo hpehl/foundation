@@ -26,6 +26,7 @@ import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.component.HasItems;
+import org.patternfly.component.alert.Alert;
 import org.patternfly.component.form.Form;
 
 import elemental2.dom.HTMLElement;
@@ -39,6 +40,7 @@ import static org.jboss.hal.resources.HalClasses.edit;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.resourceManager;
 import static org.patternfly.component.form.Form.form;
+import static org.patternfly.component.form.FormAlert.formAlert;
 
 /** Form to modify an existing resource */
 class ResourceForm implements
@@ -102,6 +104,7 @@ class ResourceForm implements
     // ------------------------------------------------------ validation
 
     void resetValidation() {
+        form.clearAlerts();
         items.values().forEach(FormItem::resetValidation);
     }
 
@@ -113,6 +116,10 @@ class ResourceForm implements
             }
         }
         return valid;
+    }
+
+    void addAlert(Alert alert) {
+        form.addAlert(formAlert().addAlert(alert.inline()));
     }
 
     // ------------------------------------------------------ data

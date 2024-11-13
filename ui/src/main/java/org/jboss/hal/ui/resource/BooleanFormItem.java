@@ -109,13 +109,11 @@ public class BooleanFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        boolean originalValue = ra.value.asBoolean();
         boolean wasDefined = ra.value.isDefined();
-
         if (inputMode == NATIVE) {
             if (wasDefined) {
                 // modified if the original value was an expression or is different from the current user input
-                return ra.expression || originalValue != switchControl.value();
+                return ra.expression || ra.value.asBoolean() != switchControl.value();
             } else {
                 return true;
             }

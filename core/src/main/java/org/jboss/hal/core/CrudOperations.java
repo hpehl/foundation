@@ -16,6 +16,7 @@
 package org.jboss.hal.core;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -62,6 +63,10 @@ public class CrudOperations {
     // ------------------------------------------------------ update
 
     public void update(AddressTemplate template, List<Operation> operations, Callback onSuccess) {
+        update(template, operations, onSuccess, null);
+    }
+
+    public void update(AddressTemplate template, List<Operation> operations, Callback onSuccess, Consumer<String> onError) {
         AddressTemplate resolvedTemplate = new StatementContextResolver(statementContext).resolve(template);
         String type = resolvedTemplate.last().key;
         String name = resolvedTemplate.last().value;
@@ -74,7 +79,11 @@ public class CrudOperations {
                             return null;
                         })
                         .catch_(error -> {
-                            updateError(type, name, error);
+                            if (onError != null) {
+                                onError.accept(String.valueOf(error));
+                            } else {
+                                updateError(type, name, error);
+                            }
                             return null;
                         });
             } else {

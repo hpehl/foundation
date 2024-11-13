@@ -28,6 +28,7 @@ import elemental2.dom.HTMLElement;
 
 import static java.util.stream.Collectors.toList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
@@ -117,6 +118,7 @@ class SelectFormItem extends FormItem {
                 return false;
             }
         } else if (inputMode == EXPRESSION) {
+
             return validateExpressionMode();
         }
         return true;
@@ -126,13 +128,12 @@ class SelectFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        String originalValue = ra.value.asString();
         boolean wasDefined = ra.value.isDefined();
-
         if (inputMode == NATIVE) {
             String selectedValue = selectControl.value();
             if (wasDefined) {
                 // modified if the original value was an expression or is different from the current user input
+                String originalValue = ra.value.asString();
                 return ra.expression || !originalValue.equals(selectedValue);
             } else {
                 return !UNDEFINED.equals(selectedValue);
@@ -156,5 +157,33 @@ class SelectFormItem extends FormItem {
             return expressionModelNode();
         }
         return new ModelNode();
+    }
+
+    // ------------------------------------------------------ events
+
+    @Override
+    void afterSwitchedToNativeMode() {
+        boolean wasDefined = ra.value.isDefined();
+        //noinspection DuplicatedCode
+        if (wasDefined && !ra.expression) {
+            String originalValue = ra.value.asString();
+            failSafeSelectValue(originalValue);
+        } else {
+            if (ra.description.hasDefault()) {
+                failSafeSelectValue(ra.description.get(DEFAULT).asString());
+            } else if (ra.description.nillable()) {
+                failSafeSelectValue(UNDEFINED);
+            } else {
+                selectControl.selectFirstValue(false);
+            }
+        }
+    }
+
+    private void failSafeSelectValue(String value) {
+        if (selectControl.containsValue(value)) {
+            selectControl.value(value, false);
+        } else {
+            selectControl.selectFirstValue(false);
+        }
     }
 }

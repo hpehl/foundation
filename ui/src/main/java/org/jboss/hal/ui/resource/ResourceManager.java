@@ -55,6 +55,8 @@ import static org.jboss.hal.ui.resource.ResourceManager.State.ERROR;
 import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
 import static org.jboss.hal.ui.resource.ViewItemFactory.viewItem;
+import static org.patternfly.component.Severity.danger;
+import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
@@ -298,7 +300,14 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
         if (state == EDIT && resourceForm != null) {
             resourceForm.resetValidation();
             if (resourceForm.validate()) {
-                uic().crud().update(template, resourceForm.attributeOperations(), () -> load(VIEW));
+                uic().crud()
+                        .update(template, resourceForm.attributeOperations(),
+                                () -> load(VIEW),
+                                error -> resourceForm.addAlert(alert(danger, "Update failed")
+                                        .addDescription(error)));
+            } else {
+                resourceForm.addAlert(alert(danger, "Update failed")
+                        .addDescription("There are validation errors. Please fix them and try again."));
             }
         }
     }

@@ -50,6 +50,7 @@ import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CAPABILITY_REFERENCE;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.EXPRESSIONS_ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
@@ -150,6 +151,12 @@ public class BuildingBlocks {
                     .add("Uses ")
                     .add(i().textContent(attribute.get(UNIT).asString()))
                     .add(" as unit."));
+        }
+        if (attribute.hasDefined(DEFAULT)) {
+            infos.addItem(listItem()
+                    .add("Defaults to ")
+                    .add(i().textContent(attribute.get(DEFAULT).asString()))
+                    .add(" when undefined."));
         }
         if (attribute.hasDefined(REQUIRES)) {
             infos.addItem(listItem()

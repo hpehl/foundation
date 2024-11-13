@@ -5,7 +5,6 @@ import org.jboss.hal.dmr.ModelType;
 import org.patternfly.component.help.HelperText;
 
 import static org.jboss.elemento.Elements.span;
-import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.resources.HalClasses.curlyBraces;
 import static org.jboss.hal.resources.HalClasses.defaultValue;
 import static org.jboss.hal.resources.HalClasses.dollar;
@@ -34,9 +33,12 @@ class HelperTexts {
         return helperText(label + " is a required attribute.", error);
     }
 
-    static HelperText notNumeric(ResourceAttribute ra) {
-        ModelType type = ra.description.get(TYPE).asType();
+    static HelperText notNumeric(ModelType type) {
         return helperText("The value is not a number. Only values of type " + type.name() + " are allowed.", error);
+    }
+
+    static HelperText notInRange(String min, String max) {
+        return helperText("The value is out of range. The value must be >= " + min + " and <= " + max + ".", error);
     }
 
     static HelperText noExpression() {
