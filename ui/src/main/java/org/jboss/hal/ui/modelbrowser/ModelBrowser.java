@@ -25,7 +25,6 @@ import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 
 import elemental2.dom.HTMLElement;
 
-import static elemental2.dom.DomGlobal.console;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.INCLUDE_SINGLETONS;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_TYPES_OPERATION;
 import static org.jboss.hal.resources.HalClasses.halComponent;
@@ -33,6 +32,7 @@ import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
+import static org.jboss.hal.ui.resource.AddResourceDialog.addResourceDialog;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
 
@@ -60,8 +60,8 @@ public class ModelBrowser implements IsElement<HTMLElement> {
         this.root = grid().span(12)
                 .css(halComponent(modelBrowser))
                 // TODO Implement a resize handle which modifies the CSS variables
-                //  --hal-cmodel-browser-tree-columns: span 3;
-                //  --hal-cmodel-browser-detail-columns: span 9;
+                //  --hal-c-model-browser-tree-columns: span 3;
+                //  --hal-c-model-browser-detail-columns: span 9;
                 /*
                                 .addItem(gridItem()
                                         .add(flex().spaceItems(none)
@@ -116,7 +116,11 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     }
 
     private void add(AddResource.Details details) {
-        console.warn("### Adding resources noy yet implemented: %o", details);
+        addResourceDialog(details.parent, details.child, details.singleton).add().then(__ -> {
+            tree.select(details.parent.identifier());
+            tree.reload();
+            return null;
+        });
     }
 
     private void select(SelectInTree.Details details) {

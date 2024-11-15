@@ -15,18 +15,18 @@
  */
 
 .hal-c-model-browser {
-    --hal-cmodel-browser-tree-columns: span 3;
-    --hal-cmodel-browser-detail-columns: span 9;
+    --hal-c-model-browser-tree-columns: span 3;
+    --hal-c-model-browser-detail-columns: span 9;
     --hal-c-model-browser-toolbar--Height: 68px; /* TODO Replace hard-coded value */
     --hal-c-model-browser-offset: var(--hal-masthead--Height);
 }
 
 .hal-c-model-browser > *:first-child {
-    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-cmodel-browser-tree-columns);
+    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-c-model-browser-tree-columns);
 }
 
 .hal-c-model-browser > *:last-child {
-    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-cmodel-browser-detail-columns);
+    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-c-model-browser-detail-columns);
 }
 
 .hal-stability-marker {
@@ -59,7 +59,7 @@
 }
 
 .hal-c-model-browser__detail-item {
-    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-cmodel-browser-detail-columns);
+    --pf-v5-l-grid__item--GridColumnEnd: var(--hal-c-model-browser-detail-columns);
 }
 
 .hal-c-model-browser__detail-content {

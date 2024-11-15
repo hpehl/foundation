@@ -103,6 +103,13 @@ public final class AddressTemplate implements Iterable<Segment> {
     }
 
     /**
+     * Creates a new address template from an existing template.
+     */
+    public static AddressTemplate of(AddressTemplate template) {
+        return template != null ? new AddressTemplate(template.segments) : new AddressTemplate(emptyList());
+    }
+
+    /**
      * Creates a new address template from a list of segments. Special characters in segment values must not be encoded.
      */
     public static AddressTemplate of(List<Segment> segments) {

@@ -21,6 +21,7 @@ import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.Notifications;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
@@ -153,6 +154,7 @@ class ResourceList implements IsElement<HTMLElement> {
                         .addGroup(toolbarGroup(iconButtonGroup).css(modifier("align-right"))
                                 .addItem(addItem)
                                 .addItem(refreshItem)));
+        setVisible(toolbar, false); // to avoid visual noise
 
         root = div()
                 .add(toolbar)
@@ -361,6 +363,14 @@ class ResourceList implements IsElement<HTMLElement> {
     }
 
     private void remove(ModelBrowserNode child) {
-        // TODO Implement me
+        uic().crud().delete(child.template)
+                .then(__ -> {
+                    refresh();
+                    return null;
+                })
+                .catch_(error -> {
+                    Notifications.error("Failed to delete resource", String.valueOf(error));
+                    return null;
+                });
     }
 }

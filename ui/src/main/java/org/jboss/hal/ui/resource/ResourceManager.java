@@ -21,11 +21,13 @@ import java.util.List;
 import org.jboss.elemento.Attachable;
 import org.jboss.elemento.HasElement;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.Notifications;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.ui.modelbrowser.NoMatch;
+import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
 import org.patternfly.component.HasItems;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
@@ -45,9 +47,10 @@ import static org.jboss.hal.resources.HalClasses.body;
 import static org.jboss.hal.resources.HalClasses.filtered;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
-import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.resource;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.resource.FormItemFactory.formItem;
+import static org.jboss.hal.ui.resource.ResourceAttribute.includes;
 import static org.jboss.hal.ui.resource.ResourceAttribute.resourceAttributes;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EMPTY;
@@ -118,9 +121,9 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                 .param(ATTRIBUTES_ONLY, true)
                 .param(INCLUDE_RUNTIME, true)
                 .build();
-        this.root = div().css(halComponent(resourceManager))
+        this.root = div().css(halComponent(resource))
                 .add(toolbar = resourceToolbar(this, filter, visible, total))
-                .add(rootContainer = div().css(halComponent(resourceManager, body))
+                .add(rootContainer = div().css(halComponent(resource, body))
                         .element())
                 .element();
 
@@ -177,7 +180,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
         if (metadata.isDefined()) {
             uic().dispatcher().execute(operation, resource -> {
                 if (valid(resource)) {
-                    List<ResourceAttribute> resourceAttributes = resourceAttributes(resource, metadata, attributes);
+                    List<ResourceAttribute> resourceAttributes = resourceAttributes(resource, metadata, includes(attributes));
 
                     if (state == VIEW) {
                         ResourceView resourceView = new ResourceView();
@@ -189,7 +192,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                     } else if (state == EDIT) {
                         resourceForm = new ResourceForm(template);
                         for (ResourceAttribute ra : resourceAttributes) {
-                            resourceForm.addItem(formItem(template, metadata, ra));
+                            resourceForm.addItem(formItem(template, metadata, ra, new FormItemFlags(Placeholder.UNDEFINED)));
                         }
                         items = resourceForm;
                     }
@@ -292,7 +295,8 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
 
     void reset() {
         if (state == VIEW) {
-
+            // TODO Implement me!
+            Notifications.nyi();
         }
     }
 
@@ -300,13 +304,18 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
         if (state == EDIT && resourceForm != null) {
             resourceForm.resetValidation();
             if (resourceForm.validate()) {
-                uic().crud()
-                        .update(template, resourceForm.attributeOperations(),
-                                () -> load(VIEW),
-                                error -> resourceForm.addAlert(alert(danger, "Update failed")
-                                        .addDescription(error)));
+                uic().crud().update(template, resourceForm.attributeOperations())
+                        .then(__ -> {
+                            load(VIEW);
+                            return null;
+                        })
+                        .catch_(error -> {
+                            resourceForm.addAlert(alert(danger, "Update failed").inline()
+                                    .addDescription(String.valueOf(error)));
+                            return null;
+                        });
             } else {
-                resourceForm.addAlert(alert(danger, "Update failed")
+                resourceForm.addAlert(alert(danger, "Update failed").inline()
                         .addDescription("There are validation errors. Please fix them and try again."));
             }
         }

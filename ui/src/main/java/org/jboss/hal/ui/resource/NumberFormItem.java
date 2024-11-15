@@ -127,8 +127,8 @@ class NumberFormItem extends FormItem {
     private FormSelect allowedValuesControl;
     private TextInput minMaxControl;
 
-    NumberFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    NumberFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
         defaultSetup();
     }
 
@@ -201,9 +201,8 @@ class NumberFormItem extends FormItem {
                 .run(ti -> {
                     if (ra.value.isDefined()) {
                         ti.value(ra.value.asString());
-                    } else {
-                        ti.placeholder("undefined");
                     }
+                    applyPlaceholder(ti);
                 });
         ModelType type = ra.description.get(TYPE).asType();
         if (type == ModelType.INT) {

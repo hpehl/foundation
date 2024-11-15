@@ -26,7 +26,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.SECURITY_CONTEXT;
 
 public class Metadata extends ModelNode {
 
-    static Metadata undefined() {
+    public static Metadata undefined() {
         return new Metadata();
     }
 

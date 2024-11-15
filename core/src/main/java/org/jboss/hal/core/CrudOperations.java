@@ -16,13 +16,13 @@
 package org.jboss.hal.core;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import org.jboss.elemento.Callback;
 import org.jboss.hal.dmr.Composite;
+import org.jboss.hal.dmr.CompositeResult;
+import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
@@ -30,19 +30,34 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.MetadataRepository;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.meta.StatementContextResolver;
+import org.patternfly.component.alert.AlertDescription;
+import org.patternfly.core.Tuple;
 
 import elemental2.dom.HTMLElement;
+import elemental2.promise.Promise;
 
 import static org.jboss.elemento.Elements.span;
+import static org.jboss.hal.core.Notifications.success;
+import static org.jboss.hal.core.Notifications.warning;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ADD;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.Dataset.crudMessageName;
 import static org.jboss.hal.resources.Dataset.crudMessageType;
-import static org.patternfly.component.Severity.danger;
-import static org.patternfly.component.Severity.success;
-import static org.patternfly.component.Severity.warning;
-import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.alert.AlertDescription.alertDescription;
-import static org.patternfly.component.alert.AlertGroup.toastAlertGroup;
+import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.modal.Modal.modal;
+import static org.patternfly.component.modal.ModalBody.modalBody;
+import static org.patternfly.component.modal.ModalFooter.modalFooter;
+import static org.patternfly.core.Tuple.tuple;
+import static org.patternfly.style.Classes.util;
+import static org.patternfly.style.Size.sm;
 
+/**
+ * The CrudOperations class provides methods for performing create, update, and delete operations on resources represented by
+ * AddressTemplate objects. It uses the {@link Dispatcher} to execute operations.
+ * <p>
+ * Each operation has built-in success messages. The caller must handle failures.
+ */
 @ApplicationScoped
 public class CrudOperations {
 
@@ -60,92 +75,88 @@ public class CrudOperations {
         this.metadataRepository = metadataRepository;
     }
 
-    // ------------------------------------------------------ update
+    // ------------------------------------------------------ create
 
-    public void update(AddressTemplate template, List<Operation> operations, Callback onSuccess) {
-        update(template, operations, onSuccess, null);
+    public Promise<ModelNode> create(AddressTemplate template, ModelNode resource) {
+        Tuple<String, String> typeName = typeName(template);
+        Operation operation = new Operation.Builder(template.resolve(statementContext), ADD)
+                .payload(resource)
+                .build();
+        return dispatcher.execute(operation)
+                .then(result -> {
+                    success("Resource added", description(typeName).add(" has been successfully added."));
+                    return Promise.resolve(result);
+                });
     }
 
-    public void update(AddressTemplate template, List<Operation> operations, Callback onSuccess, Consumer<String> onError) {
-        AddressTemplate resolvedTemplate = new StatementContextResolver(statementContext).resolve(template);
-        String type = resolvedTemplate.last().key;
-        String name = resolvedTemplate.last().value;
+    // ------------------------------------------------------ update
+
+    public Promise<CompositeResult> update(AddressTemplate template, List<Operation> operations) {
+        Tuple<String, String> typeName = typeName(template);
         if (!operations.isEmpty()) {
-            if (operations.size() == 1) {
-                dispatcher.execute(operations.get(0))
-                        .then(result -> {
-                            updateSuccess(type, name);
-                            onSuccess.call();
-                            return null;
-                        })
-                        .catch_(error -> {
-                            if (onError != null) {
-                                onError.accept(String.valueOf(error));
-                            } else {
-                                updateError(type, name, error);
-                            }
-                            return null;
-                        });
-            } else {
-                Composite composite = new Composite(operations);
-                dispatcher.execute(composite)
-                        .then(result -> {
-                            updateSuccess(type, name);
-                            onSuccess.call();
-                            return null;
-                        })
-                        .catch_(error -> {
-                            updateError(type, name, error);
-                            return null;
-                        });
-            }
+            Composite composite = new Composite(operations);
+            return dispatcher.execute(composite)
+                    .then(result -> {
+                        success("Update successful", description(typeName).add(" has been successfully updated."));
+                        return Promise.resolve(result);
+                    });
         } else {
-            updateNoModifications(type, name);
-            onSuccess.call();
+            warning("Not modified", description(typeName).add(" has not been modified."));
+            return Promise.resolve(new CompositeResult(new ModelNode()));
         }
     }
 
-    private void updateSuccess(String type, String name) {
-        toastAlertGroup()
-                .add(alert(success, "Update successful")
-                        .addDescription(alertDescription()
-                                .add(typeElement(type))
-                                .run(ad -> {
-                                    if (name != null) {
-                                        ad.add(" ").add(nameElement(name));
-                                    }
-                                })
-                                .add(" has been successfully updated.")));
-    }
+    // ------------------------------------------------------ delete
 
-    private void updateNoModifications(String type, String name) {
-        toastAlertGroup()
-                .add(alert(warning, "Not modified")
-                        .addDescription(alertDescription()
-                                .add(typeElement(type))
-                                .run(ad -> {
-                                    if (name != null) {
-                                        ad.add(" ").add(nameElement(name));
-                                    }
-                                })
-                                .add(" has not been modified.")));
-    }
-
-    private void updateError(String type, String name, Object error) {
-        // TODO Give details
-        toastAlertGroup()
-                .add(alert(danger, "Update failed")
-                        .addDescription(alertDescription()
-                                .add(typeElement(type))
-                                .run(ad -> {
-                                    if (name != null) {
-                                        ad.add(" ").add(nameElement(name));
-                                    }
-                                })
-                                .add(" could not  be updated.")));
+    public Promise<ModelNode> delete(AddressTemplate template) {
+        return new Promise<>((resolve, reject) -> {
+            Tuple<String, String> typeName = typeName(template);
+            modal().size(sm)
+                    .addHeader("Delete resource")
+                    .addBody(modalBody()
+                            .add("Do you really want to delete ")
+                            .add(span().css(util("font-weight-bold")).textContent(typeName.value))
+                            .add("?"))
+                    .addFooter(modalFooter()
+                            .addButton(button("Delete").primary(), (__, modal) -> {
+                                modal.close();
+                                Operation operation = new Operation.Builder(template.resolve(statementContext), REMOVE).build();
+                                dispatcher.execute(operation)
+                                        .then(result -> {
+                                            success("Resource deleted",
+                                                    description(typeName).add(" has been successfully deleted."));
+                                            resolve.onInvoke(result);
+                                            return null;
+                                        })
+                                        .catch_(error -> {
+                                            reject.onInvoke(error);
+                                            return null;
+                                        });
+                            })
+                            .addButton(button("Cancel").link(), (__, modal) -> {
+                                modal.close();
+                                resolve.onInvoke(new ModelNode());
+                            }))
+                    .appendToBody()
+                    .open();
+        });
     }
 
     // ------------------------------------------------------ internal
+
+    private Tuple<String, String> typeName(AddressTemplate template) {
+        AddressTemplate resolvedTemplate = new StatementContextResolver(statementContext).resolve(template);
+        String type = resolvedTemplate.last().key;
+        String name = resolvedTemplate.last().value;
+        return tuple(type, name);
+    }
+
+    private AlertDescription description(Tuple<String, String> typeName) {
+        return alertDescription()
+                .add(typeElement(typeName.key))
+                .add(" ")
+                .add(nameElement(typeName.value));
+    }
 
     private HTMLElement typeElement(String type) {
         String failSafeType = type == null ? "Management model" : new LabelBuilder().label(type);

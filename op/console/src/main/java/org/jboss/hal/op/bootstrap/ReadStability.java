@@ -76,9 +76,12 @@ class ReadStability implements Task<FlowContext> {
     }
 
     private Stability[] readPermissibleStabilityLevels(ModelNode modelNode) {
-        return modelNode.get(PERMISSIBLE_STABILITY_LEVELS).asList().stream()
-                .map(node -> asEnumValue(node, Stability::valueOf, null))
-                .filter(Objects::nonNull)
-                .toArray(Stability[]::new);
+        if (!modelNode.hasDefined(PERMISSIBLE_STABILITY_LEVELS)) {
+            return modelNode.get(PERMISSIBLE_STABILITY_LEVELS).asList().stream()
+                    .map(node -> asEnumValue(node, Stability::valueOf, null))
+                    .filter(Objects::nonNull)
+                    .toArray(Stability[]::new);
+        }
+        return new Stability[0];
     }
 }

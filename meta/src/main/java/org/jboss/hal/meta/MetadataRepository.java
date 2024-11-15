@@ -131,11 +131,11 @@ public class MetadataRepository {
      * Performs a lookup for metadata based on the given address template.
      *
      * @param template the address template to perform the lookup for
-     * @param callback the consumer to accept the retrieved metadata
+     * @param onSuccess the consumer to accept the retrieved metadata
      */
-    public void lookup(AddressTemplate template, Consumer<Metadata> callback) {
+    public void lookup(AddressTemplate template, Consumer<Metadata> onSuccess) {
         lookup(template).then(metadata -> {
-            callback.accept(metadata);
+            onSuccess.accept(metadata);
             return null;
         });
     }

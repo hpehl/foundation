@@ -26,7 +26,7 @@ import org.patternfly.component.list.DescriptionList;
 import elemental2.dom.HTMLElement;
 
 import static org.jboss.hal.resources.HalClasses.halComponent;
-import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.resource;
 import static org.jboss.hal.resources.HalClasses.view;
 import static org.patternfly.component.list.DescriptionList.descriptionList;
 import static org.patternfly.style.Breakpoint._2xl;
@@ -48,7 +48,7 @@ class ResourceView implements
 
     ResourceView() {
         this.items = new LinkedHashMap<>();
-        this.dl = descriptionList().css(halComponent(resourceManager, view))
+        this.dl = descriptionList().css(halComponent(resource, view))
                 .orientation(breakpoints(
                         sm, vertical,
                         md, horizontal,
@@ -92,6 +92,11 @@ class ResourceView implements
     @Override
     public boolean contains(String identifier) {
         return items.containsKey(identifier);
+    }
+
+    @Override
+    public ViewItem item(String identifier) {
+        return items.get(identifier);
     }
 
     @Override

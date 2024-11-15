@@ -28,8 +28,8 @@ import static org.patternfly.icon.IconSets.fas.lock;
 
 class RestrictedFormItem extends FormItem {
 
-    RestrictedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    RestrictedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
 
         formGroup = formGroup(identifier)
                 .required(ra.description.required())

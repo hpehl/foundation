@@ -18,6 +18,7 @@ package org.jboss.hal.ui.modelbrowser;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.Notifications;
 import org.jboss.hal.env.Settings;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
@@ -140,6 +141,7 @@ class OperationsTable implements IsElement<HTMLElement> {
 
     private void execute(OperationDescription operation) {
         // TODO Implement me!
+        Notifications.nyi();
     }
 
     @Override

@@ -46,8 +46,8 @@ class SelectFormItem extends FormItem {
     // It's, so to speak, final and never null!
     private /*final*/ FormSelect selectControl;
 
-    SelectFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    SelectFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
         defaultSetup();
     }
 

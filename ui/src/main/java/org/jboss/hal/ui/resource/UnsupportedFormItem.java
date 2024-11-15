@@ -29,8 +29,8 @@ import static org.patternfly.component.form.TextArea.textArea;
 
 class UnsupportedFormItem extends FormItem {
 
-    UnsupportedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    UnsupportedFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
 
         FormControl<?, ?> control;
         ModelType type = ra.description.get(TYPE).asType();

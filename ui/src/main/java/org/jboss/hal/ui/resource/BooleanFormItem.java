@@ -25,10 +25,11 @@ import org.patternfly.component.switch_.Switch;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.hal.resources.HalClasses.edit;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.resources.HalClasses.expression;
+import static org.jboss.hal.resources.HalClasses.form;
 import static org.jboss.hal.resources.HalClasses.halComponent;
-import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.resource;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
 import static org.patternfly.component.button.Button.button;
@@ -50,8 +51,8 @@ public class BooleanFormItem extends FormItem {
     // It's, so to speak, final and never null!
     private /*final*/ Switch switchControl;
 
-    BooleanFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    BooleanFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
         defaultSetup();
     }
 
@@ -75,7 +76,7 @@ public class BooleanFormItem extends FormItem {
 
     HTMLElement nativeContainer() {
         return flex().alignItems(center).spaceItems(none)
-                .css(halComponent(resourceManager, edit, expression, switch_))
+                .css(halComponent(resource, form, expression, switch_))
                 .addItem(flexItem().add(switchToExpressionModeButton()))
                 .addItem(flexItem().add(switchControl()))
                 .element();
@@ -88,7 +89,15 @@ public class BooleanFormItem extends FormItem {
     }
 
     private Switch switchControl() {
-        switchControl = switch_(identifier, identifier, ra.booleanValue())
+        boolean booleanValue = false;
+        if (ra.value.isDefined()) {
+            booleanValue = ra.value.asBoolean(false);
+        } else {
+            if (ra.description.hasDefined(DEFAULT)) {
+                booleanValue = ra.description.get(DEFAULT).asBoolean(false);
+            }
+        }
+        switchControl = switch_(identifier, identifier, booleanValue)
                 .checkIcon()
                 .ariaLabel(ra.name)
                 .readonly(ra.description.readOnly());

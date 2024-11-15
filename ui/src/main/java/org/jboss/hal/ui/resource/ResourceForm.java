@@ -25,6 +25,7 @@ import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
+import org.jboss.hal.resources.HalClasses;
 import org.patternfly.component.HasItems;
 import org.patternfly.component.alert.Alert;
 import org.patternfly.component.form.Form;
@@ -36,9 +37,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.NAME;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.hal.resources.HalClasses.edit;
 import static org.jboss.hal.resources.HalClasses.halComponent;
-import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.resource;
 import static org.patternfly.component.form.Form.form;
 import static org.patternfly.component.form.FormAlert.formAlert;
 
@@ -54,7 +54,7 @@ class ResourceForm implements
     ResourceForm(AddressTemplate template) {
         this.template = template;
         this.items = new LinkedHashMap<>();
-        this.form = form().css(halComponent(resourceManager, edit))
+        this.form = form().css(halComponent(resource, HalClasses.form))
                 .horizontal();
     }
 
@@ -96,6 +96,11 @@ class ResourceForm implements
     }
 
     @Override
+    public FormItem item(String identifier) {
+        return items.get(identifier);
+    }
+
+    @Override
     public void clear() {
         form.clear();
         items.clear();
@@ -112,17 +117,28 @@ class ResourceForm implements
         boolean valid = true;
         for (FormItem formItem : items.values()) {
             if (!formItem.ra.description.readOnly()) {
-                valid = valid && formItem.validate();
+                // don't refactor to: `valid = valid && formItem.validate();` !!
+                // the short circuit optimization prevents the validation of all form items
+                valid = formItem.validate() && valid;
             }
         }
         return valid;
     }
 
     void addAlert(Alert alert) {
-        form.addAlert(formAlert().addAlert(alert.inline()));
+        form.addAlert(formAlert().addAlert(alert));
     }
 
     // ------------------------------------------------------ data
+
+    ModelNode modelNode() {
+        ModelNode modelNode = new ModelNode();
+        items.values().stream()
+                .filter(FormItem::isModified)
+                .filter(formItem -> formItem.modelNode().isDefined())
+                .forEach(formItem -> modelNode.get(formItem.ra.name).set(formItem.modelNode()));
+        return modelNode;
+    }
 
     List<Operation> attributeOperations() {
         return items.values().stream()

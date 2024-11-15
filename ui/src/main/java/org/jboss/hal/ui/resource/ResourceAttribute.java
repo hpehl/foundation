@@ -17,6 +17,7 @@ package org.jboss.hal.ui.resource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelNodeHelper;
@@ -25,44 +26,87 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
 
-import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelType.EXPRESSION;
 
 /** Simple record for an attribute name/value/description triple. */
 class ResourceAttribute {
 
-    static List<ResourceAttribute> resourceAttributes(ModelNode resource, Metadata metadata, List<String> attributes) {
+    // ------------------------------------------------------ factories
+
+    static Predicate<AttributeDescription> includes(List<String> attributes) {
+        return ad -> {
+            if (attributes.isEmpty()) {
+                return true;
+            }
+            return attributes.contains(ad.fullyQualifiedName());
+        };
+    }
+
+    static Predicate<AttributeDescription> notDeprecated() {
+        return ad -> !ad.deprecation().isDefined();
+    }
+
+    /**
+     * Collects and returns a list of resource attributes based on the provided attribute descriptions.
+     *
+     * @param metadata     The metadata containing resource descriptions and attribute descriptions.
+     * @param descriptions The attribute descriptions.
+     * @param predicate    A predicate to filter which attributes should be collected.
+     * @return A list of ResourceAttribute objects representing the collected attributes.
+     */
+    static List<ResourceAttribute> resourceAttributes(Metadata metadata, AttributeDescriptions descriptions,
+            Predicate<AttributeDescription> predicate) {
         List<ResourceAttribute> resourceAttributes = new ArrayList<>();
-        if (attributes.isEmpty()) {
-            // collect all properties (including nested, record-like properties)
-            for (Property property : resource.asPropertyList()) {
-                String name = property.getName();
-                ModelNode value = property.getValue();
-                AttributeDescription description = metadata.resourceDescription().attributes().get(name);
-                if (description.simpleValueType()) {
-                    AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
-                    for (AttributeDescription nestedDescription : nestedDescriptions) {
+        for (AttributeDescription description : descriptions) {
+            if (description.simpleValueType()) {
+                AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
+                for (AttributeDescription nestedDescription : nestedDescriptions) {
+                    if (predicate.test(nestedDescription)) {
+                        resourceAttributes.add(new ResourceAttribute(new ModelNode(), metadata, nestedDescription));
+                    }
+                }
+            } else {
+                if (predicate.test(description)) {
+                    resourceAttributes.add(new ResourceAttribute(new ModelNode(), metadata, description));
+                }
+            }
+        }
+        return resourceAttributes;
+    }
+
+    /**
+     * Collects and returns a list of resource attributes based on an existing resource.
+     *
+     * @param resource  The model node representing the resource.
+     * @param metadata  The metadata containing resource descriptions and attribute descriptions.
+     * @param predicate A predicate to filter which attributes should be collected.
+     * @return A list of ResourceAttribute objects representing the collected attributes.
+     */
+    static List<ResourceAttribute> resourceAttributes(ModelNode resource, Metadata metadata,
+            Predicate<AttributeDescription> predicate) {
+        List<ResourceAttribute> resourceAttributes = new ArrayList<>();
+        for (Property property : resource.asPropertyList()) {
+            String name = property.getName();
+            AttributeDescription description = metadata.resourceDescription().attributes().get(name);
+            if (description.simpleValueType()) {
+                AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
+                for (AttributeDescription nestedDescription : nestedDescriptions) {
+                    if (predicate.test(nestedDescription)) {
                         ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.fullyQualifiedName());
                         resourceAttributes.add(new ResourceAttribute(nestedValue, metadata, nestedDescription));
                     }
-                } else {
-                    resourceAttributes.add(new ResourceAttribute(value, metadata, description));
                 }
-            }
-        } else {
-            // collect only the specified attributes (which can be nested)
-            for (String attribute : attributes) {
-                if (attribute.contains(".")) {
-                    // TODO Support nested attributes
-                } else {
-                    ModelNode value = resource.get(attribute);
-                    AttributeDescription description = metadata.resourceDescription().attributes().get(attribute);
+            } else {
+                if (predicate.test(description)) {
+                    ModelNode value = property.getValue();
                     resourceAttributes.add(new ResourceAttribute(value, metadata, description));
                 }
             }
         }
         return resourceAttributes;
     }
+
+    // ------------------------------------------------------ instance
 
     final String fqn;
     final String name;
@@ -90,17 +134,5 @@ class ResourceAttribute {
     @Override
     public String toString() {
         return fqn + "=" + value.asString();
-    }
-
-    boolean booleanValue() {
-        boolean booleanValue = false;
-        if (value.isDefined()) {
-            booleanValue = value.asBoolean(false);
-        } else {
-            if (description.hasDefined(DEFAULT)) {
-                booleanValue = description.get(DEFAULT).asBoolean(false);
-            }
-        }
-        return booleanValue;
     }
 }

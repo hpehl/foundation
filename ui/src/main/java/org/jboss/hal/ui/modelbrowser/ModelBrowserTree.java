@@ -125,7 +125,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         treeView.addItems(nodes, mbn2tvi(uic().dispatcher()));
     }
 
-    private void reload() {
+    void reload() {
         if (!treeView.selectedItems().isEmpty()) {
             treeView.selectedItems().get(0).reload();
         } else {

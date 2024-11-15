@@ -24,6 +24,7 @@ import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.ui.BuildingBlocks;
+import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
 import org.patternfly.component.ValidationStatus;
 import org.patternfly.component.WithIdentifier;
 import org.patternfly.component.button.Button;
@@ -43,7 +44,9 @@ import static org.jboss.elemento.Elements.small;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.hal.dmr.Expression.containsExpression;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALTERNATIVES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 import static org.jboss.hal.ui.BuildingBlocks.resolveExpression;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
@@ -82,6 +85,7 @@ abstract class FormItem implements
 
     final String identifier;
     final ResourceAttribute ra;
+    final FormItemFlags flags;
     final String switchToExpressionModeId;
     final String resolveExpressionId;
     private final String switchToNativeModeId;
@@ -95,10 +99,11 @@ abstract class FormItem implements
     HTMLElement expressionContainer;
     HTMLElement nativeContainer;
 
-    FormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
+    FormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
         this.identifier = identifier;
         this.ra = ra;
         this.label = label;
+        this.flags = flags;
         this.switchToExpressionModeId = Id.build(identifier, "switch-to-expression-mode");
         this.switchToNativeModeId = Id.build(identifier, "switch-to-native-mode");
         this.resolveExpressionId = Id.build(identifier, "resolve-expression");
@@ -339,7 +344,7 @@ abstract class FormItem implements
     }
 
     /**
-     * Creates and returns the text control used for the expression mode. Should not be overridden in subclasses unless
+     * Creates and returns a text control mostly used for the expression mode. Should not be overridden in subclasses unless
      * necessary.
      */
     TextInput textControl() {
@@ -348,9 +353,8 @@ abstract class FormItem implements
                     .run(ti -> {
                         if (ra.value.isDefined()) {
                             ti.value(ra.value.asString());
-                        } else {
-                            ti.placeholder("undefined");
                         }
+                        applyPlaceholder(ti);
                     });
         }
         return textControl;
@@ -378,6 +382,16 @@ abstract class FormItem implements
     Button switchToNormalModeButton() {
         return button().id(switchToNativeModeId).control().icon(BuildingBlocks.normalMode().get())
                 .onClick((e, b) -> switchToNativeMode());
+    }
+
+    void applyPlaceholder(TextInput textInput) {
+        if (flags.placeholder == Placeholder.UNDEFINED) {
+            textInput.placeholder(UNDEFINED);
+        } else if (flags.placeholder == Placeholder.DEFAULT_VALUE) {
+            if (ra.description.hasDefault()) {
+                textInput.placeholder(ra.description.get(DEFAULT).asString());
+            }
+        }
     }
 
     // ------------------------------------------------------ events

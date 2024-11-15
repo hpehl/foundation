@@ -33,8 +33,8 @@ import static org.patternfly.component.tooltip.Tooltip.tooltip;
 
 class StringFormItem extends FormItem {
 
-    StringFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label) {
-        super(identifier, ra, label);
+    StringFormItem(String identifier, ResourceAttribute ra, FormGroupLabel label, FormItemFlags flags) {
+        super(identifier, ra, label, flags);
         inputMode = MIXED;
 
         if (ra.description.readOnly()) {

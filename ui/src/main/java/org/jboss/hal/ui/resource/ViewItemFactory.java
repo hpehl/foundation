@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.LabelBuilder;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.dmr.ModelType;
 import org.jboss.hal.meta.AddressTemplate;
@@ -26,7 +27,6 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.jboss.hal.core.LabelBuilder;
 import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionListTerm;
@@ -48,7 +48,7 @@ import static org.jboss.hal.dmr.ModelType.OBJECT;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
-import static org.jboss.hal.resources.HalClasses.resourceManager;
+import static org.jboss.hal.resources.HalClasses.resource;
 import static org.jboss.hal.resources.HalClasses.restricted;
 import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.resources.HalClasses.undefined;
@@ -85,7 +85,7 @@ class ViewItemFactory {
 
     static ViewItem viewItem(AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
         DescriptionListTerm descriptionListTerm = label(metadata, ra);
-        HTMLElement valueElement = value(template, metadata, ra);
+        HTMLElement valueElement = value(template, ra);
         return new ViewItem(identifier(ra, VIEW), descriptionListTerm, valueElement)
                 .store(Keys.RESOURCE_ATTRIBUTE, ra);
     }
@@ -104,7 +104,7 @@ class ViewItemFactory {
             String parentLabel = labelBuilder.label(parentDescription.name());
             String nestedLabel = labelBuilder.label(ra.name);
             term = descriptionListTerm(parentLabel)
-                    .css(halComponent(resourceManager, HalClasses.nestedLabel))
+                    .css(halComponent(resource, HalClasses.nestedLabel))
                     .help(attributeDescriptionPopover(parentLabel, parentDescription));
             HTMLElement nestedTextElement = span()
                     .css(component(descriptionList, text), modifier(helpText))
@@ -134,7 +134,7 @@ class ViewItemFactory {
                 // That's why we must use term.element.appendChild() instead of term.add() to add the
                 // stability label after the text element instead of into the text element. Then we must
                 // reset the font weight to normal (DescriptionListTerm uses bold)
-                term.element().classList.add(halComponent(resourceManager, stabilityLevel));
+                term.element().classList.add(halComponent(resource, stabilityLevel));
                 term.element().appendChild(stabilityLabel(ra.description.stability()).compact()
                         .style("align-self", "baseline")
                         .css(util("ml-sm"), util("font-weight-normal"))
@@ -148,7 +148,7 @@ class ViewItemFactory {
         return term;
     }
 
-    private static HTMLElement value(AddressTemplate template, Metadata metadata, ResourceAttribute ra) {
+    private static HTMLElement value(AddressTemplate template, ResourceAttribute ra) {
         HTMLElement element;
 
         // TODO Implement sensitive constraints
@@ -189,7 +189,7 @@ class ViewItemFactory {
                             if (unit != null) {
                                 element = span()
                                         .add(span().textContent(ra.value.asString()))
-                                        .add(span().css(halComponent(resourceManager, view, HalClasses.unit))
+                                        .add(span().css(halComponent(resource, view, HalClasses.unit))
                                                 .textContent(unit))
                                         .element();
                             } else if (ra.description.hasDefined(ALLOWED)) {
@@ -240,7 +240,7 @@ class ViewItemFactory {
                     }
                 } else {
                     element = plainText(ra);
-                    element.classList.add(halComponent(resourceManager, view, undefined));
+                    element.classList.add(halComponent(resource, view, undefined));
                 }
             }
         }

@@ -28,7 +28,7 @@ public interface HalClasses {
     String deprecated = "deprecated";
     String detail = "detail";
     String defaultValue = "default-value";
-    String edit = "edit";
+    String form = "form";
     String dollar = "dollar";
     String expression = "expression";
     String filtered = "filtered";
@@ -38,7 +38,7 @@ public interface HalClasses {
     String nestedLabel = "nested-label";
     String providedBy = "provided-by";
     String rbacHidden = "rbac-hidden";
-    String resourceManager = "resource-manager";
+    String resource = "resource";
     String restricted = "restricted";
     String results = "results";
     String stabilityLevel = "stability-level";

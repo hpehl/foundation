@@ -14,74 +14,74 @@
  *  limitations under the License.
  */
 
-.hal-c-resource-manager {
-    --hal-resource-manager-label-width-on-md: 20ch;
-    --hal-resource-manager-label-width-on-lg: 23ch;
-    --hal-resource-manager-label-width-on-xl: 25ch;
-    --hal-resource-manager-label-width-on-2xl: 28ch;
+.hal-c-resource {
+    --hal-resource-label-width-on-md: 20ch;
+    --hal-resource-label-width-on-lg: 23ch;
+    --hal-resource-label-width-on-xl: 25ch;
+    --hal-resource-label-width-on-2xl: 28ch;
     padding-left: var(--pf-v5-global--spacer--md);
     padding-right: var(--pf-v5-global--spacer--md);
     padding-bottom: var(--pf-v5-global--spacer--md);
 }
 
-.hal-c-resource-manager__nested-label {
+.hal-c-resource__nested-label {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    align-self: baseline;
     gap: var(--pf-v5-global--spacer--xs);
 }
 
-.hal-c-resource-manager__stability-level {
+.hal-c-resource__stability-level {
     align-content: center;
     align-items: baseline;
     display: flex;
 }
 
-.hal-c-resource-manager__body {
+.hal-c-resource__body {
     margin-top: var(--pf-v5-global--spacer--md);
 }
 
-.hal-c-resource-manager__view {
+.hal-c-resource__view {
     --pf-v5-c-description-list__group--ColumnGap: var(--pf-v5-global--spacer--md);
-    --pf-v5-c-description-list--m-horizontal__term--width-on-md: var(--hal-resource-manager-label-width-on-md);
-    --pf-v5-c-description-list--m-horizontal__term--width-on-lg: var(--hal-resource-manager-label-width-on-lg);
-    --pf-v5-c-description-list--m-horizontal__term--width-on-xl: var(--hal-resource-manager-label-width-on-xl);
-    --pf-v5-c-description-list--m-horizontal__term--width-on-2xl: var(--hal-resource-manager-label-width-on-2xl);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-md: var(--hal-resource-label-width-on-md);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-lg: var(--hal-resource-label-width-on-lg);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-xl: var(--hal-resource-label-width-on-xl);
+    --pf-v5-c-description-list--m-horizontal__term--width-on-2xl: var(--hal-resource-label-width-on-2xl);
 }
 
-.hal-c-resource-manager__view-unit {
+.hal-c-resource__view-unit {
     color: var(--pf-v5-global--Color--200);
     font-size: var(--pf-v5-global--FontSize--sm);
     margin-left: var(--pf-v5-global--spacer--sm);
 }
 
-.hal-c-resource-manager__view-undefined {
+.hal-c-resource__view-undefined {
     color: var(--pf-v5-global--disabled-color--100);
 }
 
-.hal-c-resource-manager__edit {
-    --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-md);
+.hal-c-resource__form {
+    --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-md);
 }
 
-.hal-c-resource-manager__edit-expression-switch {
+.hal-c-resource__form-expression-switch {
     min-height: calc(var(--pf-v5-global--FontSize--md) * var(--pf-v5-global--LineHeight--md) + 2 * var(--pf-v5-global--spacer--form-element));
 }
 
-
 @media (min-width: 992px) {
-    .hal-c-resource-manager__edit {
-        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-lg);
+    .hal-c-resource__form {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-lg);
     }
 }
 
 @media (min-width: 1200px) {
-    .hal-c-resource-manager__edit {
-        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-xl);
+    .hal-c-resource__form {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-xl);
     }
 }
 
 @media (min-width: 1450px) {
-    .hal-c-resource-manager__edit {
-        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-manager-label-width-on-2xl);
+    .hal-c-resource__form {
+        --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-2xl);
     }
 }
