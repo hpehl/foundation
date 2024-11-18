@@ -193,7 +193,7 @@ public class ResourceDialogs {
 
     private static ResourceForm operationForm(AddressTemplate template, Metadata metadata,
             OperationDescription operationDescription) {
-        List<ResourceAttribute> resourceAttributes = resourceAttributes(operationDescription, __ -> true);
+        List<ResourceAttribute> resourceAttributes = resourceAttributes(operationDescription, notDeprecated());
         ResourceForm resourceForm = new ResourceForm(template);
         for (ResourceAttribute ra : resourceAttributes) {
             resourceForm.addItem(formItem(template, metadata, ra,

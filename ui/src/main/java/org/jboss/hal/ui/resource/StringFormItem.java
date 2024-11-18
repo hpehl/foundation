@@ -93,8 +93,11 @@ class StringFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        // StringFormItem runs in mixed mode, so it's safe to delegate to isExpressionModified()
-        return isExpressionModified();
+        if (ra.readable && !ra.description.readOnly()) {
+            // StringFormItem runs in mixed mode, so it's safe to delegate to isExpressionModified()
+            return isExpressionModified();
+        }
+        return false;
     }
 
     @Override
