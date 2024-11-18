@@ -44,13 +44,7 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.Dataset.crudMessageName;
 import static org.jboss.hal.resources.Dataset.crudMessageType;
 import static org.patternfly.component.alert.AlertDescription.alertDescription;
-import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.modal.Modal.modal;
-import static org.patternfly.component.modal.ModalBody.modalBody;
-import static org.patternfly.component.modal.ModalFooter.modalFooter;
 import static org.patternfly.core.Tuple.tuple;
-import static org.patternfly.style.Classes.util;
-import static org.patternfly.style.Size.sm;
 
 /**
  * The CrudOperations class provides methods for performing create, update, and delete operations on resources represented by
@@ -109,37 +103,14 @@ public class CrudOperations {
     // ------------------------------------------------------ delete
 
     public Promise<ModelNode> delete(AddressTemplate template) {
-        return new Promise<>((resolve, reject) -> {
-            Tuple<String, String> typeName = typeName(template);
-            modal().size(sm)
-                    .addHeader("Delete resource")
-                    .addBody(modalBody()
-                            .add("Do you really want to delete ")
-                            .add(span().css(util("font-weight-bold")).textContent(typeName.value))
-                            .add("?"))
-                    .addFooter(modalFooter()
-                            .addButton(button("Delete").primary(), (__, modal) -> {
-                                modal.close();
-                                Operation operation = new Operation.Builder(template.resolve(statementContext), REMOVE).build();
-                                dispatcher.execute(operation)
-                                        .then(result -> {
-                                            success("Resource deleted",
-                                                    description(typeName).add(" has been successfully deleted."));
-                                            resolve.onInvoke(result);
-                                            return null;
-                                        })
-                                        .catch_(error -> {
-                                            reject.onInvoke(error);
-                                            return null;
-                                        });
-                            })
-                            .addButton(button("Cancel").link(), (__, modal) -> {
-                                modal.close();
-                                resolve.onInvoke(new ModelNode());
-                            }))
-                    .appendToBody()
-                    .open();
-        });
+        Tuple<String, String> typeName = typeName(template);
+        Operation operation = new Operation.Builder(template.resolve(statementContext), REMOVE).build();
+        return dispatcher.execute(operation)
+                .then(result -> {
+                    success("Resource deleted",
+                            description(typeName).add(" has been successfully deleted."));
+                    return Promise.resolve(result);
+                });
     }
 
     // ------------------------------------------------------ internal

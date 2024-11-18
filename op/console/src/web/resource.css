@@ -29,7 +29,6 @@
     flex-wrap: wrap;
     align-items: center;
     align-self: baseline;
-    gap: var(--pf-v5-global--spacer--xs);
 }
 
 .hal-c-resource__stability-level {

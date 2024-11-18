@@ -27,6 +27,7 @@ import org.jboss.hal.meta.description.Deprecation;
 import org.jboss.hal.meta.description.Description;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.meta.description.RestartMode;
+import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.emptystate.EmptyState;
 import org.patternfly.component.list.ListItem;
 import org.patternfly.component.popover.Popover;
@@ -71,6 +72,7 @@ import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.name;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.patternfly.component.button.Button.button;
+import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
@@ -206,6 +208,10 @@ public class BuildingBlocks {
                         .add(attributeDescription(attribute)));
     }
 
+    public static HTMLElement nestedElementSeparator() {
+        return span().css(util("mx-sm")).textContent("/").element();
+    }
+
     private static HTMLContainerBuilder<HTMLDivElement> description(Description description) {
         HTMLContainerBuilder<HTMLDivElement> div = div();
         div.add(div().textContent(description.description()));
@@ -227,6 +233,29 @@ public class BuildingBlocks {
                 listItem.add(", ");
             }
         }
+    }
+
+    // ------------------------------------------------------ code
+
+    public static CodeBlock errorCode(String error) {
+        return errorCode(error, 5);
+    }
+
+    public static CodeBlock errorCode(String error, int lines) {
+        return codeBlock()
+                .truncate(lines)
+                .code(error.replace("\\/", "/"));
+    }
+
+    public static CodeBlock modelNodeCode(ModelNode modelNode) {
+        return modelNodeCode(modelNode, 5);
+    }
+
+    public static CodeBlock modelNodeCode(ModelNode modelNode, int lines) {
+        String code = modelNode.isDefined() ? modelNode.toJSONString().replace("\\/", "/") : "";
+        return codeBlock()
+                .truncate(lines)
+                .code(code);
     }
 
     // ------------------------------------------------------ empty

@@ -56,7 +56,8 @@ import static org.patternfly.component.toolbar.ToolbarItem.toolbarItem;
 import static org.patternfly.component.toolbar.ToolbarItemType.searchFilter;
 import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.icon.IconSets.fas.edit;
-import static org.patternfly.icon.IconSets.fas.sync;
+import static org.patternfly.icon.IconSets.fas.powerOff;
+import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.icon.IconSets.fas.undo;
 import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Classes.modifier;
@@ -86,12 +87,12 @@ class ResourceToolbar implements IsElement<HTMLElement> {
         String editId = Id.unique("edit");
 
         resetItem = toolbarItem()
-                .add(button().id(resetId).plain().icon(undo()).onClick((e, b) -> resourceManager.reset()))
+                .add(button().id(resetId).plain().icon(powerOff()).onClick((e, b) -> resourceManager.reset()))
                 .add(tooltip(By.id(resetId),
                         "Reset attributes to their initial or default value. Applied only to nillable attributes without relationships to other attributes.")
                         .placement(auto));
         ToolbarItem refreshItem = toolbarItem()
-                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> resourceManager.refresh()))
+                .add(button().id(refreshId).plain().icon(redo()).onClick((e, b) -> resourceManager.refresh()))
                 .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
         editItem = toolbarItem()
                 .add(button().id(editId).plain().icon(edit()).onClick((e, b) -> resourceManager.load(EDIT)))

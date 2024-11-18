@@ -25,13 +25,15 @@ import org.jboss.hal.dmr.Property;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.AttributeDescriptions;
+import org.jboss.hal.meta.description.OperationDescription;
+import org.jboss.hal.meta.security.SecurityContext;
 
 import static org.jboss.hal.dmr.ModelType.EXPRESSION;
 
 /** Simple record for an attribute name/value/description triple. */
 class ResourceAttribute {
 
-    // ------------------------------------------------------ factories
+    // ------------------------------------------------------ predicates
 
     static Predicate<AttributeDescription> includes(List<String> attributes) {
         return ad -> {
@@ -46,28 +48,29 @@ class ResourceAttribute {
         return ad -> !ad.deprecation().isDefined();
     }
 
+    // ------------------------------------------------------ factories
+
     /**
-     * Collects and returns a list of resource attributes based on the provided attribute descriptions.
+     * Collects and returns a list of resource attributes based on the provided operation description.
      *
-     * @param metadata     The metadata containing resource descriptions and attribute descriptions.
-     * @param descriptions The attribute descriptions.
-     * @param predicate    A predicate to filter which attributes should be collected.
+     * @param operationDescription The operation description.
+     * @param predicate            A predicate to filter which attributes should be collected.
      * @return A list of ResourceAttribute objects representing the collected attributes.
      */
-    static List<ResourceAttribute> resourceAttributes(Metadata metadata, AttributeDescriptions descriptions,
+    static List<ResourceAttribute> resourceAttributes(OperationDescription operationDescription,
             Predicate<AttributeDescription> predicate) {
         List<ResourceAttribute> resourceAttributes = new ArrayList<>();
-        for (AttributeDescription description : descriptions) {
+        for (AttributeDescription description : operationDescription.parameters()) {
             if (description.simpleValueType()) {
                 AttributeDescriptions nestedDescriptions = description.valueTypeAttributeDescriptions();
                 for (AttributeDescription nestedDescription : nestedDescriptions) {
                     if (predicate.test(nestedDescription)) {
-                        resourceAttributes.add(new ResourceAttribute(new ModelNode(), metadata, nestedDescription));
+                        resourceAttributes.add(new ResourceAttribute(new ModelNode(), nestedDescription, SecurityContext.RWX));
                     }
                 }
             } else {
                 if (predicate.test(description)) {
-                    resourceAttributes.add(new ResourceAttribute(new ModelNode(), metadata, description));
+                    resourceAttributes.add(new ResourceAttribute(new ModelNode(), description, SecurityContext.RWX));
                 }
             }
         }
@@ -93,13 +96,14 @@ class ResourceAttribute {
                 for (AttributeDescription nestedDescription : nestedDescriptions) {
                     if (predicate.test(nestedDescription)) {
                         ModelNode nestedValue = ModelNodeHelper.nested(resource, nestedDescription.fullyQualifiedName());
-                        resourceAttributes.add(new ResourceAttribute(nestedValue, metadata, nestedDescription));
+                        resourceAttributes.add(
+                                new ResourceAttribute(nestedValue, nestedDescription, metadata.securityContext()));
                     }
                 }
             } else {
                 if (predicate.test(description)) {
                     ModelNode value = property.getValue();
-                    resourceAttributes.add(new ResourceAttribute(value, metadata, description));
+                    resourceAttributes.add(new ResourceAttribute(value, description, metadata.securityContext()));
                 }
             }
         }
@@ -116,18 +120,18 @@ class ResourceAttribute {
     final boolean writable;
     final boolean expression;
 
-    ResourceAttribute(ModelNode value, Metadata metadata, AttributeDescription description) {
+    ResourceAttribute(ModelNode value, AttributeDescription description, SecurityContext securityContext) {
         this.fqn = description.fullyQualifiedName();
         this.name = description.name();
         this.value = value;
         this.description = description;
         this.expression = value.isDefined() && value.getType() == EXPRESSION;
         if (description.nested()) {
-            readable = metadata.securityContext().readable(description.root().name());
-            writable = metadata.securityContext().writable(description.root().name());
+            readable = securityContext.readable(description.root().name());
+            writable = securityContext.writable(description.root().name());
         } else {
-            readable = metadata.securityContext().readable(name);
-            writable = metadata.securityContext().writable(name);
+            readable = securityContext.readable(name);
+            writable = securityContext.writable(name);
         }
     }
 

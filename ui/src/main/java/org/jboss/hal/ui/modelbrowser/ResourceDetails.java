@@ -41,7 +41,7 @@ class ResourceDetails implements IsElement<HTMLElement> {
                     }
                 })
                 .addItem(tab("operations", "Operations")
-                        .addContent(tabContent().add(new OperationsTable(metadata))))
+                        .addContent(tabContent().add(new OperationsTable(mbn.template, metadata))))
                 .addItem(tab("capabilities", "Capabilities")
                         .addContent(tabContent().add(new CapabilitiesTable(metadata))))
                 .onSelect((e, tab, selected) -> ModelBrowserDetail.lastTab = tab.identifier())

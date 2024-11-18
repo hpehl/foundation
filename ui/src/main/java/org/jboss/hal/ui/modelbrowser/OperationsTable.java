@@ -18,8 +18,8 @@ package org.jboss.hal.ui.modelbrowser;
 import org.jboss.elemento.HTMLContainerBuilder;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.core.Notifications;
 import org.jboss.hal.env.Settings;
+import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.meta.description.OperationDescription;
@@ -41,7 +41,9 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.span;
 import static org.jboss.elemento.Elements.strong;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ADD;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DESCRIPTION;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
 import static org.jboss.hal.resources.HalClasses.deprecated;
 import static org.jboss.hal.resources.HalClasses.filtered;
 import static org.jboss.hal.resources.HalClasses.halModifier;
@@ -52,6 +54,7 @@ import static org.jboss.hal.ui.BuildingBlocks.operationDescription;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.OperationsToolbar.operationsToolbar;
+import static org.jboss.hal.ui.resource.ResourceDialogs.executeOperation;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.label.Label.label;
 import static org.patternfly.component.list.List.list;
@@ -83,6 +86,7 @@ import static org.patternfly.style.Width.width45;
 class OperationsTable implements IsElement<HTMLElement> {
 
     private static final Logger logger = Logger.getLogger(OperationsTable.class.getName());
+    private final AddressTemplate template;
     private final Filter<OperationDescription> filter;
     private final ObservableValue<Integer> visible;
     private final ObservableValue<Integer> total;
@@ -90,8 +94,9 @@ class OperationsTable implements IsElement<HTMLElement> {
     private final HTMLElement root;
     private EmptyState noAttributes;
 
-    OperationsTable(Metadata metadata) {
+    OperationsTable(AddressTemplate template, Metadata metadata) {
         boolean showGlobalOperations = uic().settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
+        this.template = template;
         this.filter = new OperationsFilter(showGlobalOperations).onChange(this::onFilterChanged);
         this.visible = ov(metadata.resourceDescription().operations().size());
         this.total = ov(metadata.resourceDescription().operations().size());
@@ -128,7 +133,9 @@ class OperationsTable implements IsElement<HTMLElement> {
                                             })
                                             .addItem(td("Execute operation").css(modifier(fitContent))
                                                     .run(td -> {
-                                                        if (executable) {
+                                                        // :add() and :remove() are special and can be executed otherwise
+                                                        if (executable && !ADD.equals(operation.name()) && !REMOVE.equals(
+                                                                operation.name())) {
                                                             td.add(span().css(component(table, text))
                                                                     .add(button("Execute").tertiary()
                                                                             .onClick((e, c) -> execute(operation))));
@@ -140,8 +147,7 @@ class OperationsTable implements IsElement<HTMLElement> {
     }
 
     private void execute(OperationDescription operation) {
-        // TODO Implement me!
-        Notifications.nyi();
+        executeOperation(template, operation.name());
     }
 
     @Override

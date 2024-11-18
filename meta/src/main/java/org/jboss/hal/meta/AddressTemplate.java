@@ -232,6 +232,16 @@ public final class AddressTemplate implements Iterable<Segment> {
         }
     }
 
+    public AddressTemplate anonymous() {
+        if (isEmpty()) {
+            return AddressTemplate.of("");
+        } else if (!"*".equals(last().value)) {
+            return parent().append(last().key, "*");
+        } else {
+            return AddressTemplate.of(this);
+        }
+    }
+
     // ------------------------------------------------------ properties
 
     /** @return the first segment or {@link Segment#EMPTY} if this address template is empty. */

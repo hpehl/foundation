@@ -54,8 +54,8 @@ import static org.patternfly.icon.IconSets.far.minusSquare;
 import static org.patternfly.icon.IconSets.fas.arrowLeft;
 import static org.patternfly.icon.IconSets.fas.arrowRight;
 import static org.patternfly.icon.IconSets.fas.home;
+import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.icon.IconSets.fas.search;
-import static org.patternfly.icon.IconSets.fas.sync;
 import static org.patternfly.popper.Placement.bottom;
 import static org.patternfly.popper.Placement.bottomStart;
 import static org.patternfly.style.Classes.insetNone;
@@ -84,7 +84,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                 .onSelect((event, treeViewItem, selected) -> navigate(treeViewItem, true));
         backButton = button().plain().icon(arrowLeft()).disabled().onClick((event, component) -> back());
         forwardButton = button().plain().icon(arrowRight()).disabled().onClick((event, component) -> forward());
-        Button reloadButton = button().plain().icon(sync()).onClick((e, b) -> reload());
+        Button refreshButton = button().plain().icon(redo()).onClick((e, b) -> reload());
         Button homeButton = button().plain().icon(home()).onClick((e, b) -> modelBrowser.home());
         Button findResource = button().plain()
                 .icon(search())
@@ -92,7 +92,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
         GotoResource gotoResource = new GotoResource();
         Button collapseButton = button().plain().icon(minusSquare()).onClick((e, b) -> treeView.collapse());
 
-        tooltip(reloadButton.element(), "Refresh").placement(bottom).appendToBody();
+        tooltip(refreshButton.element(), "Refresh").placement(bottom).appendToBody();
         tooltip(homeButton.element(), "Home").placement(bottom).appendToBody();
         tooltip(findResource.element(), "Find a resource").placement(bottom).appendToBody();
         tooltip(gotoResource.element(), "Go to resource").placement(bottom).appendToBody();
@@ -104,7 +104,7 @@ class ModelBrowserTree implements IsElement<HTMLElement> {
                                 .addContent(toolbarContent()
                                         .addItem(toolbarItem().css(modifier("spacer-none")).add(backButton))
                                         .addItem(toolbarItem().css(modifier("spacer-none")).add(forwardButton))
-                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(reloadButton))
+                                        .addItem(toolbarItem().css(modifier("spacer-none")).add(refreshButton))
                                         .addItem(toolbarItem().css(modifier("spacer-none")).add(homeButton))
                                         .addItem(toolbarItem().css(modifier("spacer-none")).add(findResource))
                                         .addItem(toolbarItem().css(modifier("spacer-none")).add(gotoResource))

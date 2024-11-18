@@ -436,7 +436,7 @@
         <profile>
             <id>prod</id>
             <properties>
-                <j2cl.compilationLevel>ADVANCED_OPTIMIZATIONS</j2cl.compilationLevel>
+                <j2cl.compilationLevel>ADVANCED</j2cl.compilationLevel>
                 <j2cl.incremental>false</j2cl.incremental>
                 <j2cl.sourcemaps>false</j2cl.sourcemaps>
                 <npm.script>prod</npm.script>

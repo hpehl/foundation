@@ -187,13 +187,13 @@ class ModelBrowserEngine {
     }
 
     private static Popover nonExistingSingletonPopover(ModelBrowserNode mbn) {
-        AddressTemplate parent = mbn.template.parent().append(mbn.template.last().key, "*"); // /a=b/c=d -> /a=b/c=*
+        AddressTemplate anonymous = mbn.template.anonymous(); // /a=b/c=d -> /a=b/c=*
         return popover(By.data(identifier, mbn.identifier))
                 .addHeader(mbn.name)
                 .addBody(popoverBody()
                         .add(div().add("This resource does not yet exist."))
                         .add(div().add(button("Add resource").link().inline()
                                 .onClick((e, b) -> ModelBrowserEvents.AddResource.dispatch(b.element(),
-                                        parent, mbn.name, true)))));
+                                        anonymous, mbn.name, true)))));
     }
 }

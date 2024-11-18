@@ -30,8 +30,8 @@ import static java.util.stream.Collectors.toList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.required;
 import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
@@ -94,6 +94,8 @@ class SelectFormItem extends FormItem {
                 .run(fs -> {
                     if (ra.value.isDefined()) {
                         fs.value(ra.value.asString());
+                    } else if (ra.description.hasDefault()) {
+                        fs.value(ra.description.get(DEFAULT).asString());
                     } else if (ra.description.nillable()) {
                         fs.value(UNDEFINED);
                     }

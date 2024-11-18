@@ -31,8 +31,10 @@ import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.meta.tree.ModelTree;
 
 /**
- * Holds common classes often needed in UI elements. Use the static {@link #uic()} accessor method to get a reference of this
- * class instead of passing multiple references around.
+ * Holds common classes often needed in UI elements.
+ * <p>
+ * In most cases UI classes take not part in CDI. In case they need one of the classes, use {@link #uic()} to get a reference
+ * instead.
  */
 @Startup
 @ApplicationScoped

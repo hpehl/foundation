@@ -30,8 +30,8 @@ import static org.jboss.hal.resources.HalClasses.expression;
 import static org.jboss.hal.resources.HalClasses.form;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.resource;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.form.FormGroupControl.formGroupControl;
 import static org.patternfly.component.inputgroup.InputGroup.inputGroup;
@@ -108,7 +108,7 @@ public class BooleanFormItem extends FormItem {
 
     @Override
     boolean validate() {
-        if (inputMode == InputMode.EXPRESSION) {
+        if (inputMode == FormItemInputMode.EXPRESSION) {
             return validateExpressionMode();
         }
         return true;

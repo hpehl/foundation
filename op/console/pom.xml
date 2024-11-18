@@ -143,9 +143,10 @@
                     <compilationLevel>${j2cl.compilationLevel}</compilationLevel>
                     <enableSourcemaps>${j2cl.sourcemaps}</enableSourcemaps>
                     <initialScriptFilename>console.js</initialScriptFilename>
-                    <!-- Keep in sync with
+                    <!-- Keep defines for <environment.*/> in sync with
                     environment/src/main/java/org/jboss/hal/env/environment.js -->
                     <defines>
+                        <goog.LOCALE>en</goog.LOCALE>
                         <environment.id>${project.artifactId}</environment.id>
                         <environment.name>${project.name}</environment.name>
                         <environment.version>${project.version}</environment.version>
@@ -153,6 +154,9 @@
                         <environment.build>${environment.build}</environment.build>
                         <environment.stability>${environment.stability}</environment.stability>
                     </defines>
+                    <translationsFile>
+                        <auto>true</auto>
+                    </translationsFile>
                     <webappDirectory>${project.build.directory}/console</webappDirectory>
                 </configuration>
                 <executions>

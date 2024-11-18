@@ -315,8 +315,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                             return null;
                         });
             } else {
-                resourceForm.addAlert(alert(danger, "Update failed").inline()
-                        .addDescription("There are validation errors. Please fix them and try again."));
+                resourceForm.validationAlert("Update failed");
             }
         }
     }

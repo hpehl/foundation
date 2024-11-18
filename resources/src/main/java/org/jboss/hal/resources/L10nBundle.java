@@ -13,22 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.jboss.hal.ui.resource;
+package org.jboss.hal.resources;
 
-class FormItemFlags {
+import org.kie.j2cl.tools.processors.annotations.TranslationBundle;
+import org.kie.j2cl.tools.processors.annotations.TranslationKey;
 
-    enum Placeholder {
+@TranslationBundle
+public interface L10nBundle {
 
-        NONE,
-
-        UNDEFINED,
-
-        DEFAULT_VALUE
-    }
-
-    final Placeholder placeholder;
-
-    FormItemFlags(Placeholder placeholder) {
-        this.placeholder = placeholder;
-    }
+    @TranslationKey(defaultValue = "Resource added")
+    String crudCreateSuccess();
 }

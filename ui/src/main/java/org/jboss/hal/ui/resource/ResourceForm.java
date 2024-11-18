@@ -39,6 +39,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.VALUE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.resource;
+import static org.patternfly.component.Severity.danger;
+import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.form.Form.form;
 import static org.patternfly.component.form.FormAlert.formAlert;
 
@@ -123,6 +125,11 @@ class ResourceForm implements
             }
         }
         return valid;
+    }
+
+    void validationAlert(String title) {
+        addAlert(alert(danger, title).inline()
+                .addDescription("There are validation errors. Please fix them and try again."));
     }
 
     void addAlert(Alert alert) {

@@ -21,7 +21,6 @@ import org.jboss.elemento.By;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
-import org.jboss.hal.core.Notifications;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.env.Stability;
 import org.jboss.hal.meta.Metadata;
@@ -29,6 +28,7 @@ import org.jboss.hal.model.filter.NameAttribute;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.DeleteResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 import org.patternfly.component.emptystate.EmptyStateActions;
 import org.patternfly.component.list.DataList;
@@ -93,7 +93,7 @@ import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.core.ObservableValue.ov;
 import static org.patternfly.icon.IconSets.fas.ban;
 import static org.patternfly.icon.IconSets.fas.plus;
-import static org.patternfly.icon.IconSets.fas.sync;
+import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.layout.flex.AlignItems.center;
 import static org.patternfly.layout.flex.Direction.column;
 import static org.patternfly.layout.flex.Flex.flex;
@@ -138,7 +138,7 @@ class ResourceList implements IsElement<HTMLElement> {
         Tooltip.tooltip(addItem.element(), "Add").appendToBody();
         String refreshId = Id.unique("refresh");
         ToolbarItem refreshItem = toolbarItem()
-                .add(button().id(refreshId).plain().icon(sync()).onClick((e, b) -> refresh()))
+                .add(button().id(refreshId).plain().icon(redo()).onClick((e, b) -> refresh()))
                 .add(tooltip(By.id(refreshId), "Refresh").placement(auto));
 
         Variable spacer = componentVar(component(Classes.toolbar), "spacer");
@@ -289,7 +289,7 @@ class ResourceList implements IsElement<HTMLElement> {
                                 if (childMetadata.resourceDescription().operations().supports(REMOVE)) {
                                     dataListAction.add(button("Remove")
                                             .tertiary()
-                                            .onClick((e, c) -> remove(child)));
+                                            .onClick((e, b) -> DeleteResource.dispatch(b.element(), child.template)));
                                 }
                             }));
         });
@@ -360,17 +360,5 @@ class ResourceList implements IsElement<HTMLElement> {
             }
             return null;
         });
-    }
-
-    private void remove(ModelBrowserNode child) {
-        uic().crud().delete(child.template)
-                .then(__ -> {
-                    refresh();
-                    return null;
-                })
-                .catch_(error -> {
-                    Notifications.error("Failed to delete resource", String.valueOf(error));
-                    return null;
-                });
     }
 }

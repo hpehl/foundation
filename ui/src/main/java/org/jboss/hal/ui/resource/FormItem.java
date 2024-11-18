@@ -48,8 +48,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 import static org.jboss.hal.ui.BuildingBlocks.resolveExpression;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.noExpression;
 import static org.jboss.hal.ui.resource.HelperTexts.required;
 import static org.patternfly.component.ValidationStatus.error;
@@ -75,12 +75,6 @@ abstract class FormItem implements
         ComponentContext<HTMLElement, FormItem>,
         WithIdentifier<HTMLElement, FormItem> {
 
-    enum InputMode {
-        NATIVE,
-        EXPRESSION,
-        MIXED
-    }
-
     private static final Logger logger = Logger.getLogger(FormItem.class.getName());
 
     final String identifier;
@@ -92,7 +86,7 @@ abstract class FormItem implements
     private final Map<String, Object> data;
     private final FormGroupLabel label;
 
-    InputMode inputMode;
+    FormItemInputMode inputMode;
     FormGroup formGroup;
     FormGroupControl formGroupControl;
     TextInput textControl;
@@ -204,7 +198,7 @@ abstract class FormItem implements
     }
 
     /**
-     * Verifies that the current value contains an expression when {@link #inputMode} is {@link InputMode#EXPRESSION}.
+     * Verifies that the current value contains an expression when {@link #inputMode} is {@link FormItemInputMode#EXPRESSION}.
      */
     boolean noExpressionInExpressionMode() {
         if (supportsExpression() && inputMode == EXPRESSION) {
@@ -215,7 +209,7 @@ abstract class FormItem implements
 
     /**
      * Helper method meant to be used in an overridden {@link #validate()} method, when {@link #inputMode} is
-     * {@link InputMode#EXPRESSION}.
+     * {@link FormItemInputMode#EXPRESSION}.
      * <p>
      * Fails if the form item is {@link #requiredOnItsOwn()} and {@link #emptyTextControl()} or
      * {@link #noExpressionInExpressionMode()}.
@@ -402,7 +396,7 @@ abstract class FormItem implements
         formGroupControl.add(expressionContainer);
         tooltip(By.id(switchToNativeModeId), "Switch to native mode").appendTo(expressionContainer);
         tooltip(By.id(resolveExpressionId), "Resolve expression").appendTo(expressionContainer);
-        inputMode = InputMode.EXPRESSION;
+        inputMode = FormItemInputMode.EXPRESSION;
         afterSwitchedToExpressionMode();
     }
 
@@ -422,7 +416,7 @@ abstract class FormItem implements
         failSafeRemoveFromParent(expressionContainer);
         formGroupControl.add(nativeContainer);
         tooltip(By.id(switchToExpressionModeId), "Switch to expression mode").appendTo(nativeContainer);
-        inputMode = InputMode.NATIVE;
+        inputMode = FormItemInputMode.NATIVE;
         afterSwitchedToNativeMode();
     }
 

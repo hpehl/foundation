@@ -27,7 +27,6 @@ import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
-import org.patternfly.component.codeblock.CodeBlock;
 import org.patternfly.component.label.Label;
 import org.patternfly.component.list.DescriptionListTerm;
 import org.patternfly.core.Roles;
@@ -54,6 +53,8 @@ import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.resources.HalClasses.undefined;
 import static org.jboss.hal.resources.HalClasses.view;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescriptionPopover;
+import static org.jboss.hal.ui.BuildingBlocks.modelNodeCode;
+import static org.jboss.hal.ui.BuildingBlocks.nestedElementSeparator;
 import static org.jboss.hal.ui.BuildingBlocks.renderExpression;
 import static org.jboss.hal.ui.BuildingBlocks.resolveExpression;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
@@ -117,7 +118,7 @@ class ViewItemFactory {
                     .trigger(nestedTextElement)
                     .appendToBody();
             wrapHtmlContainer(term.element())
-                    .add("/")
+                    .add(nestedElementSeparator())
                     .add(nestedTextElement);
             // </unstable>
         } else {
@@ -226,10 +227,10 @@ class ViewItemFactory {
                                                 v -> listItem(Id.build(v, "value")).text(v))
                                         .element();
                             } else {
-                                element = codeBlock(ra);
+                                element = modelNodeCode(ra.value).element();
                             }
                         } else if (type == OBJECT) {
-                            element = codeBlock(ra);
+                            element = modelNodeCode(ra.value).element();
                         } else {
                             element = plainText(ra);
                         }
@@ -246,13 +247,6 @@ class ViewItemFactory {
         }
 
         return element;
-    }
-
-    private static HTMLElement codeBlock(ResourceAttribute ra) {
-        return CodeBlock.codeBlock()
-                .truncate(5)
-                .code(ra.value.toJSONString().replace("\\/", "/"))
-                .element();
     }
 
     private static HTMLElement plainText(ResourceAttribute ra) {

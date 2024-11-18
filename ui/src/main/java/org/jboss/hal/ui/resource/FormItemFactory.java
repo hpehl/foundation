@@ -25,6 +25,7 @@ import org.jboss.hal.dmr.Property;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.meta.description.AttributeDescription;
+import org.jboss.hal.meta.security.SecurityContext;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.resources.Keys;
 import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
@@ -52,6 +53,7 @@ import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.resource;
 import static org.jboss.hal.resources.HalClasses.stabilityLevel;
 import static org.jboss.hal.ui.BuildingBlocks.attributeDescriptionPopover;
+import static org.jboss.hal.ui.BuildingBlocks.nestedElementSeparator;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.resource.ItemIdentifier.identifier;
@@ -103,7 +105,7 @@ class FormItemFactory {
                         .element();
                 // Use insert-first calls and add the elements in reverse order
                 // to not mess with the required marker added in FormGroupLabel.attach()
-                insertFirst(formGroupLabel.element(), span().textContent("/"));
+                insertFirst(formGroupLabel.element(), nestedElementSeparator());
                 insertFirst(formGroupLabel.element(), parentHelpButton);
                 insertFirst(formGroupLabel.element(), parentLabelElement);
                 attributeDescriptionPopover(parentLabel, parentDescription)
@@ -147,7 +149,7 @@ class FormItemFactory {
         nameDescription.get(ACCESS_TYPE).set(READ_WRITE);
         nameDescription.get(EXPRESSIONS_ALLOWED).set(false);
 
-        ResourceAttribute ra = new ResourceAttribute(new ModelNode(), metadata, nameDescription);
+        ResourceAttribute ra = new ResourceAttribute(new ModelNode(), nameDescription, SecurityContext.RWX);
         String identifier = identifier(ra, EDIT);
         FormGroupLabel formGroupLabel = label(identifier, metadata, ra);
         return new StringFormItem(identifier, ra, formGroupLabel, new FormItemFlags(Placeholder.NONE));

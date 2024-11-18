@@ -22,7 +22,7 @@ import org.patternfly.component.form.FormGroupLabel;
 import org.patternfly.component.form.TextInput;
 
 import static org.jboss.hal.dmr.Expression.containsExpression;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.MIXED;
+import static org.jboss.hal.ui.resource.FormItemInputMode.MIXED;
 import static org.jboss.hal.ui.resource.HelperTexts.required;
 import static org.patternfly.component.ValidationStatus.error;
 import static org.patternfly.component.form.FormGroup.formGroup;

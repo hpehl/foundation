@@ -36,8 +36,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.MAX;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.MIN;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.EXPRESSION;
-import static org.jboss.hal.ui.resource.FormItem.InputMode.NATIVE;
+import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
+import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.notInRange;
 import static org.jboss.hal.ui.resource.HelperTexts.notNumeric;
 import static org.jboss.hal.ui.resource.HelperTexts.required;
@@ -158,9 +158,23 @@ class NumberFormItem extends FormItem {
 
     FormGroupControl nativeGroup() {
         if (ra.description.hasDefined(ALLOWED)) {
-            return formGroupControl().addControl(allowedValuesControl());
+            if (ra.description.unit() != null) {
+                return formGroupControl()
+                        .addInputGroup(inputGroup()
+                                .addItem(inputGroupItem().fill().addControl(allowedValuesControl()))
+                                .addText(unitInputGroupText()));
+            } else {
+                return formGroupControl().addControl(allowedValuesControl());
+            }
         } else {
-            return formGroupControl().addControl(minMaxControl());
+            if (ra.description.unit() != null) {
+                return formGroupControl()
+                        .addInputGroup(inputGroup()
+                                .addItem(inputGroupItem().fill().addControl(minMaxControl()))
+                                .addText(unitInputGroupText()));
+            } else {
+                return formGroupControl().addControl(minMaxControl());
+            }
         }
     }
 
@@ -189,6 +203,8 @@ class NumberFormItem extends FormItem {
                 .run(fs -> {
                     if (ra.value.isDefined()) {
                         fs.value(ra.value.asString());
+                    } else if (ra.description.hasDefault()) {
+                        fs.value(ra.description.get(DEFAULT).asString());
                     } else if (ra.description.nillable()) {
                         fs.value(UNDEFINED);
                     }

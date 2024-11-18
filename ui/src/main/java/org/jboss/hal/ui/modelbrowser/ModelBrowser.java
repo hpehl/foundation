@@ -17,10 +17,12 @@ package org.jboss.hal.ui.modelbrowser;
 
 import org.jboss.elemento.IsElement;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.Notifications;
 import org.jboss.hal.dmr.Operation;
 import org.jboss.hal.dmr.ResourceAddress;
 import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.AddResource;
+import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.DeleteResource;
 import org.jboss.hal.ui.modelbrowser.ModelBrowserEvents.SelectInTree;
 
 import elemental2.dom.HTMLElement;
@@ -32,7 +34,8 @@ import static org.jboss.hal.resources.HalClasses.modelBrowser;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserEngine.parseChildren;
 import static org.jboss.hal.ui.modelbrowser.ModelBrowserNode.Type.RESOURCE;
-import static org.jboss.hal.ui.resource.AddResourceDialog.addResourceDialog;
+import static org.jboss.hal.ui.resource.ResourceDialogs.addResource;
+import static org.jboss.hal.ui.resource.ResourceDialogs.deleteResource;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
 
@@ -76,8 +79,9 @@ public class ModelBrowser implements IsElement<HTMLElement> {
                 .addItem(gridItem().add(detail))
                 .element();
 
-        SelectInTree.listen(root, this::select);
         AddResource.listen(root, this::add);
+        DeleteResource.listen(root, this::delete);
+        SelectInTree.listen(root, this::select);
         load();
     }
 
@@ -116,11 +120,24 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     }
 
     private void add(AddResource.Details details) {
-        addResourceDialog(details.parent, details.child, details.singleton).add().then(__ -> {
+        addResource(details.parent, details.child, details.singleton).then(__ -> {
             tree.select(details.parent.identifier());
             tree.reload();
             return null;
         });
+    }
+
+    private void delete(DeleteResource.Details details) {
+        deleteResource(details.template)
+                .then(__ -> {
+                    tree.select(details.template.anonymous().identifier());
+                    tree.reload();
+                    return null;
+                })
+                .catch_(error -> {
+                    Notifications.error("Failed to delete resource", String.valueOf(error));
+                    return null;
+                });
     }
 
     private void select(SelectInTree.Details details) {

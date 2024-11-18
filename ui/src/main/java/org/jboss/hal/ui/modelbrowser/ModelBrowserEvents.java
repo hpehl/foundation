@@ -76,6 +76,43 @@ public interface ModelBrowserEvents {
         }
     }
 
+    interface DeleteResource extends UIEvent {
+
+        String TYPE = UIEvent.type("model-browser", "delete");
+
+        class Details {
+
+            AddressTemplate template;
+        }
+
+        /**
+         * Creates and returns a custom event to delete a singleton resource.
+         *
+         * @param source   the source element used to dispatch the event.
+         * @param template the address template to delete.
+         */
+        @SuppressWarnings("unchecked")
+        static void dispatch(HTMLElement source, AddressTemplate template) {
+            Details details = new Details();
+            details.template = template;
+            //noinspection DuplicatedCode
+            CustomEventInit<Details> init = CustomEventInit.create();
+            init.setBubbles(true);
+            init.setCancelable(true);
+            init.setDetail(details);
+            CustomEvent<Details> event = new CustomEvent<>(TYPE, init);
+            source.dispatchEvent(event);
+        }
+
+        @SuppressWarnings("unchecked")
+        static void listen(HTMLElement element, Consumer<Details> listener) {
+            element.addEventListener(TYPE, event -> {
+                CustomEvent<Details> customEvent = (CustomEvent<Details>) event;
+                listener.accept(customEvent.detail);
+            });
+        }
+    }
+
     // ------------------------------------------------------ select
 
     interface SelectInTree extends UIEvent {

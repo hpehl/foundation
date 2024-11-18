@@ -15,20 +15,11 @@
  */
 package org.jboss.hal.ui.resource;
 
-class FormItemFlags {
+enum FormItemInputMode {
 
-    enum Placeholder {
+    NATIVE,
 
-        NONE,
+    EXPRESSION,
 
-        UNDEFINED,
-
-        DEFAULT_VALUE
-    }
-
-    final Placeholder placeholder;
-
-    FormItemFlags(Placeholder placeholder) {
-        this.placeholder = placeholder;
-    }
+    MIXED
 }
