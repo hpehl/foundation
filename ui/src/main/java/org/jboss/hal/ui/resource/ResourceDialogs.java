@@ -28,6 +28,7 @@ import org.jboss.hal.meta.WildcardResolver;
 import org.jboss.hal.meta.description.OperationDescription;
 import org.jboss.hal.resources.HalClasses;
 import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
+import org.jboss.hal.ui.resource.FormItemFlags.Scope;
 import org.patternfly.component.modal.Modal;
 import org.patternfly.layout.stack.StackItem;
 
@@ -117,7 +118,8 @@ public class ResourceDialogs {
             resourceForm.addItem(nameFormItem(metadata));
         }
         for (ResourceAttribute ra : resourceAttributes) {
-            resourceForm.addItem(formItem(template, metadata, ra, new FormItemFlags(Placeholder.DEFAULT_VALUE)));
+            resourceForm.addItem(formItem(template, metadata, ra,
+                    new FormItemFlags(Scope.NEW_RESOURCE, Placeholder.DEFAULT_VALUE)));
         }
         return resourceForm;
     }
@@ -154,16 +156,19 @@ public class ResourceDialogs {
                 .then(metadata -> {
                     OperationDescription operationDescription = metadata.resourceDescription().operations().get(operation);
                     if (operationDescription.isDefined()) {
+                        String title = template.template + ":" + operation + "()";
                         boolean parameters = !operationDescription.parameters().isEmpty();
                         StackItem resultContainer = stackItem();
                         ResourceForm resourceForm = operationForm(template, metadata, operationDescription);
                         modal().size(lg).top()
                                 .addHeader(modalHeader()
-                                        .addTitle("Execute " + operationDescription.name())
+                                        .addTitle(title)
                                         .addDescription(operationDescription.description()))
                                 .addBody(modalBody()
                                         .add(stack().gutter()
-                                                .addItem(stackItem().fill(parameters).add(resourceForm))
+                                                .addItem(stackItem().fill(parameters)
+                                                        .add(div().css(halComponent(HalClasses.resource))
+                                                                .add(resourceForm)))
                                                 .addItem(resultContainer)))
                                 .addFooter(modalFooter()
                                         .addButton(button("Execute").primary(), (__, modal) ->
@@ -191,7 +196,8 @@ public class ResourceDialogs {
         List<ResourceAttribute> resourceAttributes = resourceAttributes(operationDescription, __ -> true);
         ResourceForm resourceForm = new ResourceForm(template);
         for (ResourceAttribute ra : resourceAttributes) {
-            resourceForm.addItem(formItem(template, metadata, ra, new FormItemFlags(Placeholder.DEFAULT_VALUE)));
+            resourceForm.addItem(formItem(template, metadata, ra,
+                    new FormItemFlags(Scope.NEW_RESOURCE, Placeholder.DEFAULT_VALUE)));
         }
         return resourceForm;
     }
@@ -239,23 +245,19 @@ public class ResourceDialogs {
     public static Promise<ModelNode> deleteResource(AddressTemplate template) {
         AddressTemplate resolvedTemplate = new StatementContextResolver(uic().statementContext()).resolve(template);
         String name = resolvedTemplate.last().value;
-        return new Promise<>((resolve, reject) -> {
-            modal().size(sm)
-                    .addHeader("Delete resource")
-                    .addBody(modalBody()
-                            .add("Do you really want to delete ")
-                            .add(span().css(util("font-weight-bold")).textContent(name))
-                            .add("?"))
-                    .addFooter(modalFooter()
-                            .addButton(button("Delete").primary(), (__, modal) -> {
-                                uic().crud().delete(resolvedTemplate)
-                                        .then(result -> success(modal, result, resolve))
-                                        .catch_(error -> error(modal, error, reject));
-                            })
-                            .addButton(button("Cancel").link(), (__, modal) -> cancel(modal, resolve)))
-                    .appendToBody()
-                    .open();
-        });
+        return new Promise<>((resolve, reject) -> modal().size(sm)
+                .addHeader("Delete resource")
+                .addBody(modalBody()
+                        .add("Do you really want to delete ")
+                        .add(span().css(util("font-weight-bold")).textContent(name))
+                        .add("?"))
+                .addFooter(modalFooter()
+                        .addButton(button("Delete").primary(), (__, modal) -> uic().crud().delete(resolvedTemplate)
+                                .then(result -> success(modal, result, resolve))
+                                .catch_(error -> error(modal, error, reject)))
+                        .addButton(button("Cancel").link(), (__, modal) -> cancel(modal, resolve)))
+                .appendToBody()
+                .open());
     }
 
     // ------------------------------------------------------ internal

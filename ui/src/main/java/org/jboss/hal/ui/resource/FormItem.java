@@ -48,6 +48,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REQUIRES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
 import static org.jboss.hal.ui.BuildingBlocks.resolveExpression;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.EXISTING_RESOURCE;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.NEW_RESOURCE;
 import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.noExpression;
@@ -236,13 +238,24 @@ abstract class FormItem implements
     abstract boolean isModified();
 
     boolean isExpressionModified() {
-        String originalValue = ra.value.asString();
-        boolean wasDefined = ra.value.isDefined();
-        if (wasDefined) {
-            return !originalValue.equals(textControlValue());
-        } else {
+        if (flags.scope == NEW_RESOURCE) {
             return !textControlValue().isEmpty();
+        } else if (flags.scope == EXISTING_RESOURCE) {
+            String originalValue = ra.value.asString();
+            boolean wasDefined = ra.value.isDefined();
+            if (wasDefined) {
+                return !originalValue.equals(textControlValue());
+            } else {
+                return !textControlValue().isEmpty();
+            }
+        } else {
+            unknownScope();
         }
+        return false;
+    }
+
+    void unknownScope() {
+        logger.error("Unknown scope '%s' in form item %s: %o", flags.scope, identifier, this.element());
     }
 
     /**

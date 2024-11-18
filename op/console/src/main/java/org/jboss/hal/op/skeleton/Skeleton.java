@@ -15,6 +15,7 @@
  */
 package org.jboss.hal.op.skeleton;
 
+import org.gwtproject.safehtml.shared.SafeHtmlUtils;
 import org.jboss.elemento.By;
 import org.jboss.elemento.IsElement;
 import org.jboss.hal.env.Environment;
@@ -35,7 +36,6 @@ import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.failSafeRemoveFromParent;
 import static org.jboss.hal.op.skeleton.StabilityBanner.stabilityBanner;
 import static org.patternfly.component.backtotop.BackToTop.backToTop;
-import static org.patternfly.component.brand.Brand.brand;
 import static org.patternfly.component.page.Masthead.masthead;
 import static org.patternfly.component.page.MastheadBrand.mastheadBrand;
 import static org.patternfly.component.page.MastheadContent.mastheadContent;
@@ -54,14 +54,10 @@ import static org.patternfly.layout.flex.FlexItem.flexItem;
 import static org.patternfly.layout.flex.FlexWrap.noWrap;
 import static org.patternfly.layout.flex.SpaceItems.none;
 import static org.patternfly.style.Breakpoint.default_;
-import static org.patternfly.style.Classes.brand;
-import static org.patternfly.style.Classes.component;
 import static org.patternfly.style.Classes.fullHeight;
 import static org.patternfly.style.Classes.modifier;
 import static org.patternfly.style.Classes.static_;
-import static org.patternfly.style.Variable.componentVar;
 import static org.patternfly.style.Variable.globalVar;
-import static org.patternfly.style.Variables.Height;
 
 public class Skeleton implements IsElement<HTMLElement> {
 
@@ -88,9 +84,9 @@ public class Skeleton implements IsElement<HTMLElement> {
                 .addSkipToContent(skipToContent(Ids.MAIN_ID))
                 .addMasthead(masthead()
                         .addMain(mastheadMain()
-                                .addBrand(mastheadBrand(a("/"))
-                                        .addBrand(brand(Assets.INSTANCE.logo().getSrc(), "HAL Management Console")
-                                                .style(componentVar(component(brand), Height).name, "36px"))))
+                                .addBrand(mastheadBrand(a("/")
+                                        .style("height", "36px")
+                                        .innerHtml(SafeHtmlUtils.fromTrustedString(Assets.INSTANCE.logo().getText())))))
                         .addContent(mastheadContent()
                                 .addToolbar(toolbar().css(modifier(fullHeight), modifier(static_))
                                         .addContent(toolbarContent()

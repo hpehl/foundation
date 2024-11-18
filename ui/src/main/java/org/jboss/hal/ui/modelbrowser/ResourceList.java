@@ -55,6 +55,7 @@ import static org.jboss.elemento.Elements.isAttached;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.elemento.Elements.setVisible;
 import static org.jboss.elemento.Elements.small;
+import static org.jboss.hal.dmr.ModelDescriptionConstants.ADD;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.REMOVE;
@@ -206,7 +207,7 @@ class ResourceList implements IsElement<HTMLElement> {
     private boolean supportsAdd(ModelBrowserNode parent, List<ModelBrowserNode> children) {
         // TODO RBAC
         if (parent.type == ModelBrowserNode.Type.FOLDER) {
-            return true;
+            return metadata.resourceDescription().operations().supports(ADD);
         } else if (parent.type == ModelBrowserNode.Type.SINGLETON_FOLDER) {
             return !children.isEmpty();
         } else {
@@ -234,17 +235,19 @@ class ResourceList implements IsElement<HTMLElement> {
         setVisible(toolbar, false);
         removeChildrenFrom(listContainer);
 
-        boolean singleton = parent.type == SINGLETON_FOLDER;
         EmptyStateActions actions = emptyStateActions();
-        if (missingChildren.isEmpty()) {
-            actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
-                    parent.template, null, singleton)));
-        } else if (missingChildren.size() == 1) {
-            actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
-                    parent.template, missingChildren.get(0).name, singleton)));
-        } else {
-            actions.add(dropdown(menuToggle(plainText).text("Add"))
-                    .addMenu(missingChildrenMenu(missingChildren)));
+        if (supportsAdd(parent, missingChildren)) {
+            boolean singleton = parent.type == SINGLETON_FOLDER;
+            if (missingChildren.isEmpty()) {
+                actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
+                        parent.template, null, singleton)));
+            } else if (missingChildren.size() == 1) {
+                actions.add(button("Add").link().onClick((e, b) -> AddResource.dispatch(element(),
+                        parent.template, missingChildren.get(0).name, singleton)));
+            } else {
+                actions.add(dropdown(menuToggle(plainText).text("Add"))
+                        .addMenu(missingChildrenMenu(missingChildren)));
+            }
         }
         actions.add(button("Refresh").link().onClick((e, b) -> refresh()));
 

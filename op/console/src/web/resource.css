@@ -19,9 +19,6 @@
     --hal-resource-label-width-on-lg: 23ch;
     --hal-resource-label-width-on-xl: 25ch;
     --hal-resource-label-width-on-2xl: 28ch;
-    padding-left: var(--pf-v5-global--spacer--md);
-    padding-right: var(--pf-v5-global--spacer--md);
-    padding-bottom: var(--pf-v5-global--spacer--md);
 }
 
 .hal-c-resource__nested-label {
@@ -41,6 +38,14 @@
     margin-top: var(--pf-v5-global--spacer--md);
 }
 
+.hal-c-resource__form {
+    --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-md);
+}
+
+.hal-c-resource__form-expression-switch {
+    min-height: calc(var(--pf-v5-global--FontSize--md) * var(--pf-v5-global--LineHeight--md) + 2 * var(--pf-v5-global--spacer--form-element));
+}
+
 .hal-c-resource__view {
     --pf-v5-c-description-list__group--ColumnGap: var(--pf-v5-global--spacer--md);
     --pf-v5-c-description-list--m-horizontal__term--width-on-md: var(--hal-resource-label-width-on-md);
@@ -57,14 +62,6 @@
 
 .hal-c-resource__view-undefined {
     color: var(--pf-v5-global--disabled-color--100);
-}
-
-.hal-c-resource__form {
-    --pf-v5-c-form--m-horizontal__group-label--md--GridColumnWidth: var(--hal-resource-label-width-on-md);
-}
-
-.hal-c-resource__form-expression-switch {
-    min-height: calc(var(--pf-v5-global--FontSize--md) * var(--pf-v5-global--LineHeight--md) + 2 * var(--pf-v5-global--spacer--form-element));
 }
 
 @media (min-width: 992px) {

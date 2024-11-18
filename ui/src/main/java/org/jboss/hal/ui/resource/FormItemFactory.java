@@ -152,7 +152,8 @@ class FormItemFactory {
         ResourceAttribute ra = new ResourceAttribute(new ModelNode(), nameDescription, SecurityContext.RWX);
         String identifier = identifier(ra, EDIT);
         FormGroupLabel formGroupLabel = label(identifier, metadata, ra);
-        return new StringFormItem(identifier, ra, formGroupLabel, new FormItemFlags(Placeholder.NONE));
+        return new StringFormItem(identifier, ra, formGroupLabel,
+                new FormItemFlags(FormItemFlags.Scope.NEW_RESOURCE, Placeholder.NONE));
     }
 
     static FormItem formItem(AddressTemplate template, Metadata metadata, ResourceAttribute ra, FormItemFlags flags) {

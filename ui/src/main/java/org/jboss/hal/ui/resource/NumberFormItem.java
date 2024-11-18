@@ -36,6 +36,8 @@ import static org.jboss.hal.dmr.ModelDescriptionConstants.MAX;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.MIN;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TYPE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.EXISTING_RESOURCE;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.NEW_RESOURCE;
 import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.notInRange;
@@ -338,33 +340,56 @@ class NumberFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        boolean wasDefined = ra.value.isDefined();
-        if (inputMode == NATIVE) {
-            if (allowedValuesControl != null) {
-                String selectedValue = allowedValuesControl.value();
-                if (wasDefined) {
-                    // modified if the original value was an expression or is different from the current user input
-                    String originalValue = ra.value.asString();
-                    return ra.expression || !originalValue.equals(selectedValue);
-                } else {
-                    return !UNDEFINED.equals(selectedValue);
+        if (flags.scope == NEW_RESOURCE) {
+            if (inputMode == NATIVE) {
+                if (allowedValuesControl != null) {
+                    String selectedValue = allowedValuesControl.value();
+                    if (ra.description.hasDefault()) {
+                        return !ra.description.get(DEFAULT).asString().equals(selectedValue);
+                    } else {
+                        return !UNDEFINED.equals(selectedValue);
+                    }
+                } else if (minMaxControl != null) {
+                    if (ra.description.hasDefault()) {
+                        return !ra.description.get(DEFAULT).asString().equals(minMaxControl.value());
+                    } else {
+                        return !minMaxControl.value().isEmpty();
+                    }
                 }
-            } else if (minMaxControl != null) {
+            } else if (inputMode == EXPRESSION) {
+                return isExpressionModified();
+            }
+        } else if (flags.scope == EXISTING_RESOURCE) {
+            boolean wasDefined = ra.value.isDefined();
+            if (inputMode == NATIVE) {
+                if (allowedValuesControl != null) {
+                    String selectedValue = allowedValuesControl.value();
+                    if (wasDefined) {
+                        // modified if the original value was an expression or is different from the current user input
+                        String originalValue = ra.value.asString();
+                        return ra.expression || !originalValue.equals(selectedValue);
+                    } else {
+                        return !UNDEFINED.equals(selectedValue);
+                    }
+                } else if (minMaxControl != null) {
+                    if (wasDefined) {
+                        // modified if the original value was an expression or is different from the current user input
+                        String originalValue = ra.value.asString();
+                        return ra.expression || !originalValue.equals(minMaxControl.value());
+                    } else {
+                        return !minMaxControl.value().isEmpty();
+                    }
+                }
+            } else if (inputMode == EXPRESSION) {
                 if (wasDefined) {
-                    // modified if the original value was an expression or is different from the current user input
                     String originalValue = ra.value.asString();
-                    return ra.expression || !originalValue.equals(minMaxControl.value());
+                    return !originalValue.equals(textControlValue());
                 } else {
-                    return !minMaxControl.value().isEmpty();
+                    return !textControlValue().isEmpty();
                 }
             }
-        } else if (inputMode == EXPRESSION) {
-            if (wasDefined) {
-                String originalValue = ra.value.asString();
-                return !originalValue.equals(textControlValue());
-            } else {
-                return !textControlValue().isEmpty();
-            }
+        } else {
+            unknownScope();
         }
         return false;
     }

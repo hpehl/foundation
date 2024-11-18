@@ -21,6 +21,7 @@ import org.jboss.hal.model.filter.DeprecatedAttribute;
 import org.jboss.hal.model.filter.NameAttribute;
 import org.jboss.hal.model.filter.RequiredAttribute;
 import org.jboss.hal.model.filter.StorageAttribute;
+import org.jboss.hal.model.filter.TypesAttribute;
 import org.patternfly.filter.Filter;
 import org.patternfly.filter.FilterOperator;
 
@@ -29,6 +30,7 @@ class ResourceFilter extends Filter<ResourceAttribute> {
     ResourceFilter() {
         super(FilterOperator.AND);
         add(new NameAttribute<>(ra -> ra.name));
+        add(new TypesAttribute<>(ra -> ra.description));
         add(new DefinedAttribute<>(ra -> ra.value));
         add(new RequiredAttribute<>(ra -> ra.description));
         add(new DeprecatedAttribute<>(ra -> ra.description));

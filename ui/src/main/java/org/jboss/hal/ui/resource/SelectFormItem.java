@@ -30,6 +30,8 @@ import static java.util.stream.Collectors.toList;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.UNDEFINED;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.EXISTING_RESOURCE;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.NEW_RESOURCE;
 import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.jboss.hal.ui.resource.HelperTexts.required;
@@ -130,18 +132,33 @@ class SelectFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        boolean wasDefined = ra.value.isDefined();
-        if (inputMode == NATIVE) {
-            String selectedValue = selectControl.value();
-            if (wasDefined) {
-                // modified if the original value was an expression or is different from the current user input
-                String originalValue = ra.value.asString();
-                return ra.expression || !originalValue.equals(selectedValue);
-            } else {
-                return !UNDEFINED.equals(selectedValue);
+        if (flags.scope == NEW_RESOURCE) {
+            if (inputMode == NATIVE) {
+                String selectedValue = selectControl.value();
+                if (ra.description.hasDefault()) {
+                    return !ra.description.get(DEFAULT).asString().equals(selectedValue);
+                } else {
+                    return !UNDEFINED.equals(selectedValue);
+                }
+            } else if (inputMode == EXPRESSION) {
+                return isExpressionModified();
             }
-        } else if (inputMode == EXPRESSION) {
-            return isExpressionModified();
+        } else if (flags.scope == EXISTING_RESOURCE) {
+            boolean wasDefined = ra.value.isDefined();
+            if (inputMode == NATIVE) {
+                String selectedValue = selectControl.value();
+                if (wasDefined) {
+                    // modified if the original value was an expression or is different from the current user input
+                    String originalValue = ra.value.asString();
+                    return ra.expression || !originalValue.equals(selectedValue);
+                } else {
+                    return !UNDEFINED.equals(selectedValue);
+                }
+            } else if (inputMode == EXPRESSION) {
+                return isExpressionModified();
+            }
+        } else {
+            unknownScope();
         }
         return false;
     }

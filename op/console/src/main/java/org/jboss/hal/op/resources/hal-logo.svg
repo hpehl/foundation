@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg viewBox="0 0 705 280" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
         <radialGradient cx="355.6181" cy="263.47437" r="214.64285" id="radialGradient4735" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0.49590542,0.02361451,-0.04756507,0.99886814,191.79733,-8.0995301)" xlink:href="#linearGradient4662"/>
         <linearGradient id="linearGradient4662">
@@ -111,7 +110,7 @@
             <feGaussianBlur id="feGaussianBlur4513" stdDeviation="0.36832783"/>
         </filter>
     </defs>
-    <g transform="matrix(0.9999999999999999, 0, 0, 0.9999999999999999, 19.31768798828125, -784.3622436523438)" id="layer1">
+    <g transform="matrix(1, 0, 0, 1, 19.317687988281257, -784.3622436523438)" id="layer1">
         <g transform="translate(-727,-21)" id="g4726">
             <path d="m 568.57141,471.29074 a 214.64285,214.64285 0 1 1 -429.2857,0 214.64285,214.64285 0 1 1 429.2857,0 z" transform="matrix(0.59186864,0,0,0.59186864,645.52079,666.41997)" id="path4724" style="fill:#5d5f5f;fill-opacity:1;stroke:none"/>
             <path d="m 568.57141,471.29074 a 214.64285,214.64285 0 1 1 -429.2857,0 214.64285,214.64285 0 1 1 429.2857,0 z" transform="matrix(0.59186864,0,0,0.59186864,645.52079,666.41997)" id="path4642" style="fill:url(#radialGradient4735);fill-opacity:1;stroke:none"/>
@@ -166,5 +165,5 @@
             </g>
         </g>
     </g>
-    <text style="fill: rgb(255, 255, 255); font-family: 'Red Hat Display'; font-size: 140px; font-weight: 500; white-space: pre;" x="300" y="189.868" transform="matrix(0.9999999999999999, 0, 0, 0.9999999999999999, 0, 0)">halOP</text>
+    <path d="M 339.94 189.87 L 354.64 189.87 L 354.64 147.17 L 406.72 147.17 L 406.72 189.87 L 421.42 189.87 L 421.42 91.87 L 406.72 91.87 L 406.72 133.87 L 354.64 133.87 L 354.64 91.87 L 339.94 91.87 Z M 425.14 189.87 L 440.4 189.87 L 451.88 161.17 L 495.7 161.17 L 507.04 189.87 L 523 189.87 L 482.96 91.87 L 465.6 91.87 Z M 456.64 148.99 L 473.86 105.87 L 490.94 148.99 Z M 534.94 189.87 L 606.06 189.87 L 606.06 176.85 L 549.64 176.85 L 549.64 91.87 L 534.94 91.87 Z" style="fill: rgb(255, 255, 255); text-wrap-mode: nowrap;"/>
 </svg>

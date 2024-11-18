@@ -18,12 +18,13 @@ package org.jboss.hal.op.resources;
 import org.kie.j2cl.tools.processors.annotations.GWT3Resource;
 import org.kie.j2cl.tools.processors.common.resources.ClientBundle;
 import org.kie.j2cl.tools.processors.common.resources.ImageResource;
+import org.kie.j2cl.tools.processors.common.resources.TextResource;
 
 @GWT3Resource
 public interface Assets extends ClientBundle {
 
     Assets INSTANCE = AssetsImpl.INSTANCE;
 
-    @Source("halop-logo.png")
-    ImageResource logo();
+    @Source("hal-logo.svg")
+    TextResource logo();
 }

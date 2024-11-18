@@ -66,7 +66,7 @@ class OperationsToolbar implements IsElement<HTMLElement> {
     private OperationsToolbar(Filter<OperationDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
         boolean showGlobalOperations = uic().settings().get(Settings.Key.SHOW_GLOBAL_OPERATIONS).asBoolean();
-        toolbar = toolbar()
+        toolbar = toolbar().css(modifier("inset-none"))
                 .addContent(toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
                         .addGroup(toolbarGroup(filterGroup)

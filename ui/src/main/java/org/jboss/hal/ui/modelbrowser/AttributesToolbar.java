@@ -60,7 +60,7 @@ class AttributesToolbar implements IsElement<HTMLElement> {
 
     private AttributesToolbar(Filter<AttributeDescription> filter,
             ObservableValue<Integer> visible, ObservableValue<Integer> total) {
-        toolbar = toolbar()
+        toolbar = toolbar().css(modifier("inset-none"))
                 .addContent(toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
                         .addGroup(toolbarGroup(filterGroup)

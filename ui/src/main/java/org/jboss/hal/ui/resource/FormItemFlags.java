@@ -17,18 +17,19 @@ package org.jboss.hal.ui.resource;
 
 class FormItemFlags {
 
-    enum Placeholder {
-
-        NONE,
-
-        UNDEFINED,
-
-        DEFAULT_VALUE
+    enum Scope {
+        NEW_RESOURCE, EXISTING_RESOURCE
     }
 
+    enum Placeholder {
+        NONE, UNDEFINED, DEFAULT_VALUE
+    }
+
+    final Scope scope;
     final Placeholder placeholder;
 
-    FormItemFlags(Placeholder placeholder) {
+    FormItemFlags(Scope scope, Placeholder placeholder) {
+        this.scope = scope;
         this.placeholder = placeholder;
     }
 }

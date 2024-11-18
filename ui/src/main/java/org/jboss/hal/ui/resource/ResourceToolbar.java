@@ -25,6 +25,7 @@ import org.jboss.hal.model.filter.DefinedAttribute;
 import org.jboss.hal.model.filter.DeprecatedAttribute;
 import org.jboss.hal.model.filter.RequiredAttribute;
 import org.jboss.hal.model.filter.StorageAttribute;
+import org.jboss.hal.model.filter.TypesAttribute;
 import org.jboss.hal.ui.filter.FilterChips;
 import org.jboss.hal.ui.resource.ResourceManager.State;
 import org.patternfly.component.toolbar.Toolbar;
@@ -41,6 +42,7 @@ import static org.jboss.hal.ui.filter.DefinedRequiredDeprecatedMultiSelect.defin
 import static org.jboss.hal.ui.filter.ItemCount.itemCount;
 import static org.jboss.hal.ui.filter.NameTextInputGroup.nameFilterTextInputGroup;
 import static org.jboss.hal.ui.filter.StorageAccessTypeMultiSelect.storageAccessTypeMultiSelect;
+import static org.jboss.hal.ui.filter.TypesMultiSelect.typesFilterMultiSelect;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
 import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.patternfly.component.button.Button.button;
@@ -114,6 +116,7 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                 .addContent(toolbarContent = toolbarContent()
                         .addItem(toolbarItem(searchFilter).add(nameFilterTextInputGroup(filter)))
                         .addGroup(toolbarGroup(filterGroup)
+                                .addItem(toolbarItem().add(typesFilterMultiSelect(filter)))
                                 .addItem(toolbarItem().add(definedRequiredDeprecatedMultiSelect(filter)))
                                 .addItem(toolbarItem().add(storageAccessTypeMultiSelect(filter))))
                         .addItem(toolbarItem()
@@ -121,12 +124,16 @@ class ResourceToolbar implements IsElement<HTMLElement> {
                                 .add(itemCount(visible, total, "attribute", "attributes"))))
                 .addFilterContent(toolbarFilterContent()
                         .bindVisibility(filter,
+                                TypesAttribute.NAME,
                                 DefinedAttribute.NAME,
                                 RequiredAttribute.NAME,
                                 DeprecatedAttribute.NAME,
                                 StorageAttribute.NAME,
                                 AccessTypeAttribute.NAME)
                         .addGroup(toolbarGroup()
+                                .add(toolbarFilterChipGroup(filter, "Type")
+                                        .filterAttributes(TypesAttribute.NAME)
+                                        .filterToChips(FilterChips::typeChips))
                                 .add(toolbarFilterChipGroup(filter, "Status")
                                         .filterAttributes(DefinedAttribute.NAME,
                                                 RequiredAttribute.NAME,

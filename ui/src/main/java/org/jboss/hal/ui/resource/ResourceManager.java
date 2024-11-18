@@ -28,6 +28,7 @@ import org.jboss.hal.meta.AddressTemplate;
 import org.jboss.hal.meta.Metadata;
 import org.jboss.hal.ui.modelbrowser.NoMatch;
 import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
+import org.jboss.hal.ui.resource.FormItemFlags.Scope;
 import org.patternfly.component.HasItems;
 import org.patternfly.core.ObservableValue;
 import org.patternfly.filter.Filter;
@@ -48,20 +49,20 @@ import static org.jboss.hal.resources.HalClasses.filtered;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.halModifier;
 import static org.jboss.hal.resources.HalClasses.resource;
+import static org.jboss.hal.ui.BuildingBlocks.errorCode;
 import static org.jboss.hal.ui.UIContext.uic;
 import static org.jboss.hal.ui.resource.FormItemFactory.formItem;
 import static org.jboss.hal.ui.resource.ResourceAttribute.includes;
 import static org.jboss.hal.ui.resource.ResourceAttribute.resourceAttributes;
 import static org.jboss.hal.ui.resource.ResourceManager.State.EDIT;
-import static org.jboss.hal.ui.resource.ResourceManager.State.EMPTY;
 import static org.jboss.hal.ui.resource.ResourceManager.State.ERROR;
+import static org.jboss.hal.ui.resource.ResourceManager.State.NO_ATTRIBUTES;
 import static org.jboss.hal.ui.resource.ResourceManager.State.VIEW;
 import static org.jboss.hal.ui.resource.ResourceToolbar.resourceToolbar;
 import static org.jboss.hal.ui.resource.ViewItemFactory.viewItem;
 import static org.patternfly.component.Severity.danger;
 import static org.patternfly.component.alert.Alert.alert;
 import static org.patternfly.component.button.Button.button;
-import static org.patternfly.component.codeblock.CodeBlock.codeBlock;
 import static org.patternfly.component.emptystate.EmptyState.emptyState;
 import static org.patternfly.component.emptystate.EmptyStateActions.emptyStateActions;
 import static org.patternfly.component.emptystate.EmptyStateBody.emptyStateBody;
@@ -86,7 +87,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
     // ------------------------------------------------------ instance
 
     enum State {
-        EMPTY, VIEW, EDIT, ERROR
+        VIEW, EDIT, NO_ATTRIBUTES, ERROR
     }
 
     private static final Logger logger = Logger.getLogger(ResourceManager.class.getName());
@@ -192,7 +193,8 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                     } else if (state == EDIT) {
                         resourceForm = new ResourceForm(template);
                         for (ResourceAttribute ra : resourceAttributes) {
-                            resourceForm.addItem(formItem(template, metadata, ra, new FormItemFlags(Placeholder.UNDEFINED)));
+                            resourceForm.addItem(formItem(template, metadata, ra,
+                                    new FormItemFlags(Scope.EXISTING_RESOURCE, Placeholder.UNDEFINED)));
                         }
                         items = resourceForm;
                     }
@@ -209,7 +211,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                         rootContainer.append(items.element());
                     }
                 } else {
-                    empty();
+                    noAttributes();
                 }
             }, (op, error) -> operationError(op.asCli(), error));
         } else {
@@ -217,8 +219,8 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
         }
     }
 
-    private void empty() {
-        changeState(EMPTY);
+    private void noAttributes() {
+        changeState(NO_ATTRIBUTES);
         rootContainer.append(emptyState()
                 .addHeader(emptyStateHeader()
                         .icon(ban())
@@ -238,7 +240,7 @@ public class ResourceManager implements HasElement<HTMLElement, ResourceManager>
                         .add("Unable to view resource. Operation ")
                         .add(code().textContent(operation))
                         .add(" failed:")
-                        .add(codeBlock().code(error)))
+                        .add(errorCode(error)))
                 .addFooter(emptyStateFooter()
                         .addActions(emptyStateActions()
                                 .add(button("Try again").link().onClick((e, b) -> refresh()))))

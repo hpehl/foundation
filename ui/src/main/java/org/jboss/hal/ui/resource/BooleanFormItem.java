@@ -30,6 +30,8 @@ import static org.jboss.hal.resources.HalClasses.expression;
 import static org.jboss.hal.resources.HalClasses.form;
 import static org.jboss.hal.resources.HalClasses.halComponent;
 import static org.jboss.hal.resources.HalClasses.resource;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.EXISTING_RESOURCE;
+import static org.jboss.hal.ui.resource.FormItemFlags.Scope.NEW_RESOURCE;
 import static org.jboss.hal.ui.resource.FormItemInputMode.EXPRESSION;
 import static org.jboss.hal.ui.resource.FormItemInputMode.NATIVE;
 import static org.patternfly.component.button.Button.button;
@@ -118,16 +120,30 @@ public class BooleanFormItem extends FormItem {
 
     @Override
     boolean isModified() {
-        boolean wasDefined = ra.value.isDefined();
-        if (inputMode == NATIVE) {
-            if (wasDefined) {
-                // modified if the original value was an expression or is different from the current user input
-                return ra.expression || ra.value.asBoolean() != switchControl.value();
-            } else {
-                return true;
+        if (flags.scope == NEW_RESOURCE) {
+            if (inputMode == NATIVE) {
+                if (ra.description.hasDefault()) {
+                    return ra.description.get(DEFAULT).asBoolean() != switchControl.value();
+                } else {
+                    return ra.value.asBoolean(false) != switchControl.value();
+                }
+            } else if (inputMode == EXPRESSION) {
+                return isExpressionModified();
             }
-        } else if (inputMode == EXPRESSION) {
-            return isExpressionModified();
+        } else if (flags.scope == EXISTING_RESOURCE) {
+            boolean wasDefined = ra.value.isDefined();
+            if (inputMode == NATIVE) {
+                if (wasDefined) {
+                    // modified if the original value was an expression or is different from the current user input
+                    return ra.expression || ra.value.asBoolean() != switchControl.value();
+                } else {
+                    return true;
+                }
+            } else if (inputMode == EXPRESSION) {
+                return isExpressionModified();
+            }
+        } else {
+            unknownScope();
         }
         return false;
     }
