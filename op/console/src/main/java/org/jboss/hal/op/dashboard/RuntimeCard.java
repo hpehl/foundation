@@ -51,7 +51,7 @@ class RuntimeCard implements DashboardCard {
     RuntimeCard(StatementContext statementContext, Dispatcher dispatcher) {
         this.statementContext = statementContext;
         this.dispatcher = dispatcher;
-        this.gallery = gallery().gutter().style("--pf-v5-l-gallery--GridTemplateColumns--min: 320px");
+        this.gallery = gallery().gutter().style("--pf-v5-l-gallery--GridTemplateColumns--min: 400px");
     }
 
     @Override
