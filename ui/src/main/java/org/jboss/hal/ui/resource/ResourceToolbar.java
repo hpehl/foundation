@@ -60,7 +60,6 @@ import static org.patternfly.component.tooltip.Tooltip.tooltip;
 import static org.patternfly.icon.IconSets.fas.edit;
 import static org.patternfly.icon.IconSets.fas.powerOff;
 import static org.patternfly.icon.IconSets.fas.redo;
-import static org.patternfly.icon.IconSets.fas.undo;
 import static org.patternfly.popper.Placement.auto;
 import static org.patternfly.style.Classes.modifier;
 

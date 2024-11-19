@@ -30,9 +30,7 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.model.deployment.Deployments;
-import org.patternfly.layout.flex.Direction;
 import org.patternfly.layout.flex.FlexItem;
-import org.patternfly.layout.flex.Gap;
 
 import elemental2.dom.HTMLElement;
 

@@ -29,7 +29,6 @@ import org.jboss.hal.dmr.ResourceCheck;
 import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.meta.AddressTemplate;
 import org.patternfly.component.icon.Icon;
-import org.patternfly.style.Classes;
 
 import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLElement;
@@ -56,7 +55,6 @@ import static org.patternfly.icon.IconSets.fas.arrowUp;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
 import static org.patternfly.style.Classes.modifier;
-import static org.patternfly.style.GridBreakpoint.none;
 import static org.patternfly.style.Status.danger;
 import static org.patternfly.style.Status.success;
 import static org.patternfly.style.Status.warning;

@@ -95,7 +95,7 @@
         <version.mockito>5.14.2</version.mockito>
         <version.node>v20.18.0</version.node>
         <version.patternfly>5.2.1</version.patternfly>
-        <version.patternfly.java>0.2.11-SNAPSHOT</version.patternfly.java>
+        <version.patternfly.java>0.2.11</version.patternfly.java>
 
         <!-- Plugin versions -->
         <version.checkstyle.plugin>3.3.0</version.checkstyle.plugin>

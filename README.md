@@ -1,6 +1,7 @@
 # HAL Foundation
 
-This repository contains the foundation for the next major version of the HAL management console and the upcoming OpenShift version halOS.
+This repository contains the foundation for the next major version of the HAL management console (halOP) and the upcoming
+OpenShift version halOS.
 
 The work is in a very early state and very much in progress.
 
@@ -11,7 +12,7 @@ The work is in a very early state and very much in progress.
 - [Crysknife CDI](https://github.com/crysknife-io/crysknife)
 - [Elemento](https://github.com/hal/elemento)
 - [PatternFly Java](https://github.com/patternfly-java)
-- [Maven](https://maven.apache.org/) and [Parcel](https://parceljs.org/)
+- [Maven](https://maven.apache.org/), [Parcel](https://parceljs.org/), and [NPM](https://www.npmjs.com/)
 
 # Get Started
 
@@ -33,10 +34,12 @@ In another shell run
 
 ```shell
 cd op/console
-yarn run watch
+npm run watch
 ```
 
-This will open a browser at http://localhost:1234 and watch for changes to your HTML, CSS, JavaScript, and Java code. Each time a change is made, the browser reloads the page automatically.
+This will open a browser at http://localhost:1234. Changes to HTML and CSS will be detected by Parcel, and the browser reloads
+the page automatically. Changes to the Java code will be detected by the J2CL Maven plugin, but you need to reload the browser
+manually.
 
 ## Production mode
 
@@ -66,7 +69,8 @@ to start it and open a browser at http://localhost:9090.
 
 # Contributing
 
-This is an open source project. That means that everybody can contribute. It's not hard to get started. So start [contributing](CONTRIBUTING.md) today!
+This is an open source project. That means that everybody can contribute. It's not hard to get started. So
+start [contributing](CONTRIBUTING.md) today!
 
 # Licenses
 

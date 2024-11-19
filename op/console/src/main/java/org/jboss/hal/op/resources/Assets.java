@@ -17,7 +17,6 @@ package org.jboss.hal.op.resources;
 
 import org.kie.j2cl.tools.processors.annotations.GWT3Resource;
 import org.kie.j2cl.tools.processors.common.resources.ClientBundle;
-import org.kie.j2cl.tools.processors.common.resources.ImageResource;
 import org.kie.j2cl.tools.processors.common.resources.TextResource;
 
 @GWT3Resource
