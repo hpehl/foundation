@@ -1,7 +1,10 @@
 # HAL Foundation
 
 This repository contains the foundation for the next major version of the HAL management console (halOP) and the upcoming
-OpenShift version halOS.
+OpenShift version (halOS).
+
+- halOP: HAL on premise
+- halOS: HAL OpenShift
 
 The work is in a very early state and very much in progress.
 
