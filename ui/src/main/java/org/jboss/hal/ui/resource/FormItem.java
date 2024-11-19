@@ -22,6 +22,7 @@ import org.jboss.elemento.By;
 import org.jboss.elemento.HasElement;
 import org.jboss.elemento.Id;
 import org.jboss.elemento.logger.Logger;
+import org.jboss.hal.core.Notifications;
 import org.jboss.hal.dmr.ModelNode;
 import org.jboss.hal.ui.BuildingBlocks;
 import org.jboss.hal.ui.resource.FormItemFlags.Placeholder;
@@ -375,8 +376,9 @@ abstract class FormItem implements
         return button().id(resolveExpressionId).control().icon(resolveExpression().get())
                 .onClick((e, b) -> {
                     if (textControl != null) {
-                        logger.info("Resolve expression: %s", textControl.value());
                         // TODO Resolve expression
+                        Notifications.nyi();
+                        logger.info("Resolve expression: %s", textControl.value());
                     }
                 });
     }

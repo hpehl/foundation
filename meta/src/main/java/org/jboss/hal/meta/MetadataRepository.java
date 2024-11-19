@@ -51,7 +51,13 @@ import static java.util.stream.Collectors.joining;
 @ApplicationScoped
 public class MetadataRepository {
 
-    // TODO: Add support for 2nd level cache!
+    // TODO Do not cache specific resources (they have different attributes/operations depending on their state):
+    //  /host=*
+    //  /host=*server=*
+    //  /server-group=* ?
+    //  anything else?
+
+    // TODO Add support for 2nd level cache!
     private static final int FIRST_LEVEL_CACHE_SIZE = 500;
     private static final Logger logger = Logger.getLogger(MetadataRepository.class.getName());
 

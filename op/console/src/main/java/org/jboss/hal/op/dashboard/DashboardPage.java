@@ -30,6 +30,9 @@ import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
 import org.jboss.hal.meta.StatementContext;
 import org.jboss.hal.model.deployment.Deployments;
+import org.patternfly.layout.flex.Direction;
+import org.patternfly.layout.flex.FlexItem;
+import org.patternfly.layout.flex.Gap;
 
 import elemental2.dom.HTMLElement;
 
@@ -39,6 +42,10 @@ import static org.patternfly.component.page.PageMainBody.pageMainBody;
 import static org.patternfly.component.page.PageMainSection.pageMainSection;
 import static org.patternfly.component.text.TextContent.textContent;
 import static org.patternfly.component.title.Title.title;
+import static org.patternfly.layout.flex.Direction.column;
+import static org.patternfly.layout.flex.Flex.flex;
+import static org.patternfly.layout.flex.FlexShorthand._1;
+import static org.patternfly.layout.flex.Gap.md;
 import static org.patternfly.layout.grid.Grid.grid;
 import static org.patternfly.layout.grid.GridItem.gridItem;
 import static org.patternfly.style.Brightness.light;
@@ -73,26 +80,25 @@ public class DashboardPage implements Page {
     public Iterable<HTMLElement> elements(Place place, Parameter parameter, LoadedData data) {
         DashboardCard deploymentCard = new DeploymentCard(environment, deployments);
         DashboardCard documentationCard = new DocumentationCard(environment);
-        DashboardCard domainCard = new DomainCard();
         DashboardCard healthCard = new HealthCard(dispatcher);
         DashboardCard logCard = new LogCard(dispatcher);
         DashboardCard productInfoCard = new ProductInfoCard(environment);
-        DashboardCard runtimeCard = new RuntimeCard(dispatcher);
+        DashboardCard runtimeCard = new RuntimeCard(statementContext, dispatcher);
 
         if (environment.standalone()) {
             cards.addAll(asList(
                     deploymentCard,
                     documentationCard,
+                    healthCard,
                     logCard,
                     productInfoCard,
-                    runtimeCard,
-                    healthCard));
+                    runtimeCard));
         } else {
             cards.addAll(asList(
                     deploymentCard,
                     documentationCard,
-                    domainCard,
-                    productInfoCard));
+                    productInfoCard,
+                    runtimeCard));
         }
 
         HTMLElement header = pageMainSection().limitWidth().background(light)
@@ -107,23 +113,23 @@ public class DashboardPage implements Page {
                                 grid
                                         .addItem(gridItem().span(12)
                                                 .add(productInfoCard))
-                                        .addItem(gridItem().span(12)
-                                                .add(deploymentCard))
-                                        .addItem(gridItem().span(12)
+                                        .addItem(gridItem().span(8)
                                                 .add(runtimeCard))
-                                        .addItem(gridItem().span(12)
-                                                .add(logCard))
-                                        .addItem(gridItem().span(12)
-                                                .add(healthCard))
-                                        .addItem(gridItem().span(12)
+                                        .addItem(gridItem().span(4).rowSpan(3)
+                                                .add(flex().direction(column).gap(md)
+                                                        .addItem(FlexItem.flexItem().flex(_1).add(logCard))
+                                                        .addItem(FlexItem.flexItem().flex(_1).add(healthCard))))
+                                        .addItem(gridItem().span(8)
+                                                .add(deploymentCard))
+                                        .addItem(gridItem().span(8)
                                                 .add(documentationCard));
                             } else {
                                 grid
                                         .addItem(gridItem().span(12)
                                                 .add(productInfoCard))
-                                        .addItem(gridItem().span(12)
-                                                .add(domainCard))
-                                        .addItem(gridItem().span(12)
+                                        .addItem(gridItem().span(6)
+                                                .add(runtimeCard))
+                                        .addItem(gridItem().span(6)
                                                 .add(deploymentCard))
                                         .addItem(gridItem().span(12)
                                                 .add(documentationCard));

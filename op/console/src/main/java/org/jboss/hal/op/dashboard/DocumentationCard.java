@@ -64,8 +64,7 @@ class DocumentationCard implements DashboardCard {
 
     DocumentationCard(Environment environment) {
         this.version = environment.productVersionLink();
-        this.root = card()
-                .add(flex()
+        this.root = card().add(flex()
                         .alignItems(AlignItems.stretch)
                         .alignSelf(AlignSelf.stretch)
                         .addItem(flexItem().flex(_1)

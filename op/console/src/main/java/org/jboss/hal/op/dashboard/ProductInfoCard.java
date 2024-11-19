@@ -15,18 +15,16 @@
  */
 package org.jboss.hal.op.dashboard;
 
+import org.jboss.hal.dmr.dispatch.Dispatcher;
 import org.jboss.hal.env.Environment;
+import org.patternfly.component.card.CardBody;
 
 import elemental2.dom.HTMLElement;
 
-import static org.jboss.elemento.Elements.a;
 import static org.jboss.hal.ui.StabilityLabel.stabilityLabel;
 import static org.patternfly.component.card.Card.card;
 import static org.patternfly.component.card.CardBody.cardBody;
-import static org.patternfly.component.card.CardFooter.cardFooter;
 import static org.patternfly.component.card.CardTitle.cardTitle;
-import static org.patternfly.component.divider.Divider.divider;
-import static org.patternfly.component.divider.DividerType.hr;
 import static org.patternfly.component.list.DescriptionList.descriptionList;
 import static org.patternfly.component.list.DescriptionListDescription.descriptionListDescription;
 import static org.patternfly.component.list.DescriptionListGroup.descriptionListGroup;
@@ -64,9 +62,6 @@ class ProductInfoCard implements DashboardCard {
                                         .addTerm(descriptionListTerm("Stability"))
                                         .addDescription(descriptionListDescription()
                                                 .add(stabilityLabel(environment.serverStability()))))))
-                .add(divider(hr))
-                .addFooter(cardFooter()
-                        .add(a("#").textContent("View settings")))
                 .element();
     }
 

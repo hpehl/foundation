@@ -187,7 +187,7 @@ class ModelBrowserEngine {
     }
 
     private static Popover nonExistingSingletonPopover(ModelBrowserNode mbn) {
-        AddressTemplate anonymous = mbn.template.anonymous(); // /a=b/c=d -> /a=b/c=*
+        AddressTemplate anonymous = mbn.template.anonymiseLast(); // /a=b/c=d -> /a=b/c=*
         return popover(By.data(identifier, mbn.identifier))
                 .addHeader(mbn.name)
                 .addBody(popoverBody()

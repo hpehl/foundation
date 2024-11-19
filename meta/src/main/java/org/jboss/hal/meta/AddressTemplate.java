@@ -232,7 +232,7 @@ public final class AddressTemplate implements Iterable<Segment> {
         }
     }
 
-    public AddressTemplate anonymous() {
+    public AddressTemplate anonymiseLast() {
         if (isEmpty()) {
             return AddressTemplate.of("");
         } else if (!"*".equals(last().value)) {

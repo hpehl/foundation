@@ -31,15 +31,11 @@ import elemental2.dom.HTMLElement;
 
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
-import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
-import static org.jboss.hal.op.dashboard.DashboardCard.emptyState;
-import static org.patternfly.component.button.Button.button;
+import static org.jboss.hal.op.dashboard.DashboardCard.dashboardEmptyState;
 import static org.patternfly.component.card.Card.card;
-import static org.patternfly.component.card.CardActions.cardActions;
 import static org.patternfly.component.card.CardBody.cardBody;
-import static org.patternfly.component.card.CardFooter.cardFooter;
 import static org.patternfly.component.card.CardHeader.cardHeader;
 import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.component.divider.Divider.divider;
@@ -50,11 +46,11 @@ import static org.patternfly.icon.IconSets.fas.checkCircle;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.pauseCircle;
 import static org.patternfly.icon.IconSets.fas.question;
-import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.icon.IconSets.fas.timesCircle;
 import static org.patternfly.layout.flex.Display.inlineFlex;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.SpaceItems.sm;
+import static org.patternfly.style.Classes.util;
 import static org.patternfly.style.Orientation.vertical;
 import static org.patternfly.style.Variable.globalVar;
 
@@ -62,21 +58,18 @@ class DeploymentCard implements DashboardCard {
 
     private final Environment environment;
     private final Deployments deployments;
-    private final HTMLElement root;
     private final CardTitle cardTitle;
     private final CardBody cardBody;
+    private final HTMLElement root;
 
     DeploymentCard(Environment environment, Deployments deployments) {
         this.environment = environment;
         this.deployments = deployments;
-        this.root = card()
+        this.root = card().css(util("h-100"))
                 .addHeader(cardHeader()
-                        .addActions(cardActions()
-                                .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
-                .addTitle(cardTitle = cardTitle().style("text-align", "center"))
+                        .addTitle(cardTitle = cardTitle())
+                        .addActions(refreshActions()))
                 .addBody(cardBody = cardBody().style("text-align", "center"))
-                .addFooter(cardFooter()
-                        .add(a("#").textContent("View deployments")))
                 .element();
     }
 
@@ -88,10 +81,11 @@ class DeploymentCard implements DashboardCard {
     @Override
     public void refresh() {
         removeChildrenFrom(cardBody);
+
         if (environment.standalone()) {
             deployments.readStandaloneDeployments().then(deployments -> {
                 if (deployments.isEmpty()) {
-                    cardBody.add(emptyState()
+                    cardBody.add(dashboardEmptyState()
                             .addHeader(emptyStateHeader()
                                     .icon(IconSets.fas.ban())
                                     .text("No deployments"))
@@ -126,7 +120,7 @@ class DeploymentCard implements DashboardCard {
             });
         } else {
             // TODO Add support for domain mode
-            cardBody.add(emptyState()
+            cardBody.add(dashboardEmptyState()
                     .addHeader(emptyStateHeader()
                             .icon(exclamationCircle())
                             .text("Domain mode"))

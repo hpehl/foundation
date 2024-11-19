@@ -34,19 +34,16 @@ import static elemental2.dom.DomGlobal.alert;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
-import static org.jboss.elemento.Elements.a;
 import static org.jboss.elemento.Elements.code;
 import static org.jboss.elemento.Elements.div;
 import static org.jboss.elemento.Elements.removeChildrenFrom;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.LINES;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.READ_LOG_FILE;
 import static org.jboss.hal.dmr.ModelDescriptionConstants.TAIL;
-import static org.jboss.hal.op.dashboard.DashboardCard.emptyState;
+import static org.jboss.hal.op.dashboard.DashboardCard.dashboardEmptyState;
 import static org.patternfly.component.button.Button.button;
 import static org.patternfly.component.card.Card.card;
-import static org.patternfly.component.card.CardActions.cardActions;
 import static org.patternfly.component.card.CardBody.cardBody;
-import static org.patternfly.component.card.CardFooter.cardFooter;
 import static org.patternfly.component.card.CardHeader.cardHeader;
 import static org.patternfly.component.card.CardTitle.cardTitle;
 import static org.patternfly.component.divider.Divider.divider;
@@ -58,7 +55,6 @@ import static org.patternfly.component.emptystate.EmptyStateHeader.emptyStateHea
 import static org.patternfly.icon.IconSets.fas.checkCircle;
 import static org.patternfly.icon.IconSets.fas.exclamationCircle;
 import static org.patternfly.icon.IconSets.fas.exclamationTriangle;
-import static org.patternfly.icon.IconSets.fas.redo;
 import static org.patternfly.icon.IconSets.fas.timesCircle;
 import static org.patternfly.layout.flex.Flex.flex;
 import static org.patternfly.layout.flex.FlexItem.flexItem;
@@ -95,21 +91,18 @@ class LogCard implements DashboardCard {
     }
 
     private final Dispatcher dispatcher;
-    private final HTMLElement root;
     private final CardTitle cardTitle;
     private final CardBody cardBody;
+    private final HTMLElement root;
     private String logFile = "server.log";
 
     LogCard(Dispatcher dispatcher) {
         this.dispatcher = dispatcher;
         this.root = card()
                 .addHeader(cardHeader()
-                        .addActions(cardActions()
-                                .add(button().plain().icon(redo()).onClick((e, c) -> refresh()))))
-                .addTitle(cardTitle = cardTitle().style("text-align", "center"))
+                        .addTitle(cardTitle = cardTitle())
+                        .addActions(refreshActions()))
                 .addBody(cardBody = cardBody().style("text-align", "center"))
-                .addFooter(cardFooter()
-                        .add(a("#").textContent("View log file")))
                 .element();
     }
 
@@ -122,6 +115,7 @@ class LogCard implements DashboardCard {
     public void refresh() {
         cardTitle.textContent(logFile);
         removeChildrenFrom(cardBody);
+
         ResourceAddress address = AddressTemplate.of("subsystem=logging/log-file=" + logFile).resolve();
         Operation operation = new Operation.Builder(address, READ_LOG_FILE)
                 .param(LINES, 100)
@@ -161,7 +155,7 @@ class LogCard implements DashboardCard {
                         }
                     }
                 },
-                (op, error) -> cardBody.add(emptyState()
+                (op, error) -> cardBody.add(dashboardEmptyState()
                         .addHeader(emptyStateHeader()
                                 .icon(exclamationCircle().attr("color", globalVar("danger-color", "100").asVar()))
                                 .text("Log file not found"))

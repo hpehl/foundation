@@ -736,6 +736,7 @@ public interface ModelDescriptionConstants {
     String PROCESSING_TIME = "processing-time";
     String PRODUCES = "produces";
     String PRODUCT_NAME = "product-name";
+    String PRODUCT_INFO = "product-info";
     String PRODUCT_VERSION = "product-version";
     String PROFILE = "profile";
     String PROFILE_NAME = "profile-name";

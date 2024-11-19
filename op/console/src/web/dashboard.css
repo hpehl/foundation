@@ -1,4 +1,4 @@
-/*
+/**
  *  Copyright 2024 Red Hat
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,19 +14,7 @@
  *  limitations under the License.
  */
 
-// External first
-import "@patternfly/patternfly/patternfly.css";
-import "@patternfly/patternfly/patternfly-addons.css";
-
-// Variables second
-import "./variables.css"
-
-// Remaining third (a-z)
-import "./capability.css"
-import "./dashboard.css"
-import "./expression.css"
-import "./model-browser.css"
-import "./resource.css"
-import "./stability.css"
-import "./tree-view.css"
-import "./ui.css"
+.hal-c-dashboard__health-status {
+    flex-grow: 1;
+    min-width: 20%;
+}

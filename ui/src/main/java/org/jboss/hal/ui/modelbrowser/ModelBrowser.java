@@ -130,7 +130,7 @@ public class ModelBrowser implements IsElement<HTMLElement> {
     private void delete(DeleteResource.Details details) {
         deleteResource(details.template)
                 .then(__ -> {
-                    tree.select(details.template.anonymous().identifier());
+                    tree.select(details.template.anonymiseLast().identifier());
                     tree.reload();
                     return null;
                 })
